@@ -13,6 +13,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.awt.Color;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
@@ -21,7 +22,7 @@ import java.util.stream.Collectors;
 public class GeneralConfig extends BungeeConfig {
 
     private final DiscordChatBridge plugin;
-    private final List<LinkedChannel> linkedChannels = new LinkedList<>();
+    private List<LinkedChannel> linkedChannels = Collections.emptyList();
 
     public GeneralConfig(@NotNull DiscordChatBridge plugin) {
         super(plugin, "config.yml", true);
@@ -35,7 +36,7 @@ public class GeneralConfig extends BungeeConfig {
             Configuration section = getConfig().getSection("channels");
 
             if (section != null) {
-                linkedChannels.clear();
+                linkedChannels = new LinkedList<>();
 
                 for (String key : section.getKeys()) {
                     linkedChannels.add(new LinkedChannel(key, section.getLong(key, 0)));
