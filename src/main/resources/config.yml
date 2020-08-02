@@ -1,0 +1,17 @@
+discord:
+  token: ""
+  status: "ONLINE"
+  activity:
+    type: "DEFAULT"
+    game: "%count% players in server"
+    url: ""
+
+chat-max-length: 150
+
+discord-souce-name: "Dis"
+
+channels:
+  chat: 123456789
+
+role-prefix:
+  default: "&f* "
