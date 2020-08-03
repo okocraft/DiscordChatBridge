@@ -30,6 +30,7 @@ public class DiscordBot {
             return new DiscordBot(plugin,
                     JDABuilder.createDefault(plugin.getGeneralConfig().getToken())
                             .addEventListeners(new DiscordListener(plugin))
+                            .setAutoReconnect(true)
                             .setStatus(plugin.getGeneralConfig().getStatus())
                             .setActivity(plugin.getGeneralConfig().getActivity())
                             .build().awaitReady()
@@ -60,7 +61,7 @@ public class DiscordBot {
         });
     }
 
-    public void sendMessage(@NotNull TextChannel channel, @NotNull String message) {
+    public void sendMessage(@NotNull TextChannel channel, @NotNull Message message) {
         executor.submit(() -> {
             if (channel.canTalk()) {
                 channel.sendMessage(message).queue();
