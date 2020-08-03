@@ -32,6 +32,12 @@ public class DiscordListener extends ListenerAdapter {
             return;
         }
 
+        Optional<String> channelName = plugin.getGeneralConfig().getLunaChatChannel(event.getChannel().getIdLong());
+
+        if (channelName.isEmpty()) {
+            return;
+        }
+
         String message = event.getMessage().getContentStripped();
 
         if (message.startsWith("!playerlist")) {
@@ -44,11 +50,6 @@ public class DiscordListener extends ListenerAdapter {
             return;
         }
 
-        Optional<String> channelName = plugin.getGeneralConfig().getLunaChatChannel(event.getChannel().getIdLong());
-
-        if (channelName.isEmpty()) {
-            return;
-        }
 
         Channel channel = LunaChatBungee.getInstance().getLunaChatAPI().getChannel(channelName.get());
 
