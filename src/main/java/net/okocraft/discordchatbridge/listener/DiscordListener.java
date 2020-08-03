@@ -2,6 +2,7 @@ package net.okocraft.discordchatbridge.listener;
 
 import com.github.ucchyocean.lc3.LunaChatBungee;
 import com.github.ucchyocean.lc3.channel.Channel;
+import net.dv8tion.jda.api.MessageBuilder;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
@@ -17,6 +18,9 @@ import java.util.stream.Collectors;
 public class DiscordListener extends ListenerAdapter {
 
     private final DiscordChatBridge plugin;
+    private final String lineSeparator = System.getProperty("line.separator");
+
+    private long lastPlayerListUsed;
 
     public DiscordListener(@NotNull DiscordChatBridge plugin) {
         this.plugin = plugin;
@@ -60,12 +64,16 @@ public class DiscordListener extends ListenerAdapter {
     }
 
     private void onPlayerListCommand(@NotNull TextChannel channel) {
-        StringBuilder builder = new StringBuilder(
+        if (System.currentTimeMillis() - lastPlayerListUsed < 5000) {
+            return;
+        }
+
+        MessageBuilder builder = new MessageBuilder(
                 plugin.getFormatConfig().getPlayerListTop()
                         .replace("%count%", String.valueOf(plugin.getProxy().getOnlineCount()))
         );
 
-        builder.append("\\r```\\r");
+        builder.append(lineSeparator).append("```").append(lineSeparator);
 
         for (ServerInfo server : plugin.getProxy().getServers().values()) {
             builder.append(plugin.getFormatConfig().getPlayerListFormat()
@@ -76,13 +84,14 @@ public class DiscordListener extends ListenerAdapter {
 
             );
 
-            builder.append("\\r");
+            builder.append(lineSeparator);
         }
 
-        builder.append("```");
+        builder.append(lineSeparator).append("```");
 
         if (channel.canTalk()) {
-            plugin.getBot().sendMessage(channel, builder.toString());
+            plugin.getBot().sendMessage(channel, builder.build());
+            lastPlayerListUsed = System.currentTimeMillis();
         }
     }
 }
