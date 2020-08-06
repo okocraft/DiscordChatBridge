@@ -89,15 +89,15 @@ public class GeneralConfig extends BungeeConfig {
     }
 
     public Optional<Long> getDiscordChannel(@NotNull String channelName) {
-        return linkedChannels.stream().
-                filter(c -> c.getChannelName().equals(channelName))
+        return linkedChannels.stream()
+                .filter(c -> c.getChannelName().equals(channelName))
                 .map(LinkedChannel::getId)
                 .findFirst();
     }
 
     public Optional<String> getLunaChatChannel(long id) {
-        return linkedChannels.stream().
-                filter(c -> c.getId() == id)
+        return linkedChannels.stream()
+                .filter(c -> c.getId() == id)
                 .map(LinkedChannel::getChannelName)
                 .findFirst();
     }
