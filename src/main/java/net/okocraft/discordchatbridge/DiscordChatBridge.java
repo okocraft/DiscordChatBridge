@@ -18,77 +18,34 @@ public class DiscordChatBridge extends Plugin {
 
     @Override
     public void onEnable() {
-        getLogger().info("Loading configurations...");
-        config = new GeneralConfig(this);
-        formatConfig = new FormatConfig(this);
-
-        if (!config.isLoaded()) {
-            getLogger().severe("Could not reload config.yml.");
-            return;
+        if (loadConfigurations() && loginToDiscord()) {
+            registerCommandAndListeners();
+            getLogger().info("Successfully enabled.");
         }
-
-        if (!formatConfig.isLoaded()) {
-            getLogger().severe("Could not reload format.yml.");
-            return;
-        }
-
-        try {
-            bot = DiscordBot.login(this);
-            getLogger().info("Logged in to Discord.");
-        } catch (Throwable e) {
-            getLogger().log(Level.SEVERE, "Could not log in to discord.", e);
-            return;
-        }
-
-        getProxy().getPluginManager().registerListener(this, new ServerListener(this));
-        getProxy().getPluginManager().registerListener(this, new LunaChatListener(this));
-        getProxy().getPluginManager().registerCommand(this, new ReloadCommand(this));
-
-        getLogger().info("Successfully enabled.");
     }
 
     @Override
     public void onDisable() {
-        getProxy().getPluginManager().unregisterCommands(this);
-        getProxy().getPluginManager().unregisterListeners(this);
-        bot.shutdown();
+        if (bot != null) {
+            bot.shutdown();
+            unregisterCommandAndListeners();
+        }
 
         getLogger().info("Successfully disabled.");
     }
 
     public boolean reload() {
-        getLogger().info("Reloading DiscordChatBridge...");
-
-        getProxy().getPluginManager().unregisterCommands(this);
-        getProxy().getPluginManager().unregisterListeners(this);
-
-        bot.shutdown();
-
-        getLogger().info("Reloading configurations...");
-        if (!config.reload()) {
-            getLogger().severe("Could not reload config.yml.");
-            return false;
+        if (bot != null) {
+            bot.shutdown();
+            unregisterCommandAndListeners();
         }
 
-        if (!formatConfig.reload()) {
-            getLogger().severe("Could not reload format.yml.");
+        if (loadConfigurations() && loginToDiscord()) {
+            registerCommandAndListeners();
+            return true;
+        } else {
             return false;
         }
-
-        try {
-            bot = DiscordBot.login(this);
-            getLogger().info("Logged in to Discord.");
-        } catch (Throwable e) {
-            getLogger().log(Level.SEVERE, "Could not log in to discord.", e);
-            return false;
-        }
-
-        getProxy().getPluginManager().registerListener(this, new ServerListener(this));
-        getProxy().getPluginManager().registerListener(this, new LunaChatListener(this));
-        getProxy().getPluginManager().registerCommand(this, new ReloadCommand(this));
-
-        getLogger().info("Successfully reloaded.");
-        return true;
     }
 
     @NotNull
@@ -104,5 +61,52 @@ public class DiscordChatBridge extends Plugin {
     @NotNull
     public DiscordBot getBot() {
         return bot;
+    }
+
+    private boolean loadConfigurations() {
+        if (config == null) {
+            config = new GeneralConfig(this);
+        } else {
+            config.reload();
+        }
+
+        if (!config.isLoaded()) {
+            getLogger().severe("Could not load config.yml.");
+            return false;
+        }
+
+        if (formatConfig == null) {
+            formatConfig = new FormatConfig(this);
+        } else {
+            formatConfig.reload();
+        }
+
+        if (!formatConfig.isLoaded()) {
+            getLogger().severe("Could not load format.yml.");
+            return false;
+        }
+
+        return true;
+    }
+
+    private boolean loginToDiscord() {
+        try {
+            bot = DiscordBot.login(this);
+            return true;
+        } catch (Throwable e) {
+            getLogger().log(Level.SEVERE, "Could not log in to discord.", e);
+            return false;
+        }
+    }
+
+    private void registerCommandAndListeners() {
+        getProxy().getPluginManager().registerListener(this, new ServerListener(this));
+        getProxy().getPluginManager().registerListener(this, new LunaChatListener(this));
+        getProxy().getPluginManager().registerCommand(this, new ReloadCommand(this));
+    }
+
+    private void unregisterCommandAndListeners() {
+        getProxy().getPluginManager().unregisterCommands(this);
+        getProxy().getPluginManager().unregisterListeners(this);
     }
 }
