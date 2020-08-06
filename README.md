@@ -2,7 +2,7 @@
 ![GitHub Workflow Status](https://img.shields.io/github/workflow/status/okocraft/DiscordChatBridge/Java%20CI)
 ![GitHub](https://img.shields.io/github/license/okocraft/DiscordChatBridge)
 
-# Scoreboard
+# DiscordChatBridge
 
 LunaChat と Discord をチャット連携する BungeeCord プラグインです。
 
