@@ -10,6 +10,8 @@ import net.okocraft.discordchatbridge.DiscordChatBridge;
 import net.okocraft.discordchatbridge.LinkedChannel;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.concurrent.TimeUnit;
+
 public class ServerListener implements Listener {
 
     private final DiscordChatBridge plugin;
@@ -26,7 +28,7 @@ public class ServerListener implements Listener {
             sendMessage(replace(format, e.getPlayer()));
         }
 
-        plugin.getBot().updateGame();
+        plugin.getProxy().getScheduler().schedule(plugin, () -> plugin.getBot().updateGame(), 3, TimeUnit.SECONDS);
     }
 
     @EventHandler
@@ -45,7 +47,7 @@ public class ServerListener implements Listener {
             }
         }
 
-        plugin.getBot().updateGame();
+        plugin.getProxy().getScheduler().schedule(plugin, () -> plugin.getBot().updateGame(), 3, TimeUnit.SECONDS);
     }
 
     private void sendMessage(@NotNull String message) {
