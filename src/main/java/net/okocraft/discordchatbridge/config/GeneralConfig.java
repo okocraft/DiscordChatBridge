@@ -28,30 +28,21 @@ public class GeneralConfig extends BungeeConfig {
         super(plugin, "config.yml", true);
 
         this.plugin = plugin;
-    }
 
-    @Override
-    public boolean load() {
-        if (super.load()) {
-            Configuration section = getConfig().getSection("channels");
-
-            if (section != null) {
-                linkedChannels = new LinkedList<>();
-
-                for (String key : section.getKeys()) {
-                    linkedChannels.add(new LinkedChannel(key, section.getLong(key, 0)));
-                }
-            }
-
-            return true;
-        } else {
-            return false;
+        if (isLoaded()) {
+            loadChannels();
         }
     }
 
     @Override
     public boolean reload() {
-        return load();
+        if (load()) {
+            loadChannels();
+            return true;
+        } else {
+            linkedChannels = Collections.emptyList();
+            return false;
+        }
     }
 
     @NotNull
@@ -137,6 +128,18 @@ public class GeneralConfig extends BungeeConfig {
         }
 
         return prefix;
+    }
+
+    private void loadChannels() {
+        Configuration section = getConfig().getSection("channels");
+
+        if (section != null) {
+            linkedChannels = new LinkedList<>();
+
+            for (String key : section.getKeys()) {
+                linkedChannels.add(new LinkedChannel(key, section.getLong(key, 0)));
+            }
+        }
     }
 
     @NotNull
