@@ -72,6 +72,8 @@ public class DiscordListener extends ListenerAdapter {
             return;
         }
 
+        plugin.getBot().updateGame();
+
         MessageBuilder builder = new MessageBuilder(
                 plugin.getFormatConfig().getPlayerListTop()
                         .replace("%count%", String.valueOf(plugin.getProxy().getOnlineCount()))
