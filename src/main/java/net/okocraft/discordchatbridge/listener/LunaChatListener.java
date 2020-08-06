@@ -36,6 +36,10 @@ public class LunaChatListener implements Listener {
                 .replace("%display_name%", e.getMember().getDisplayName())
                 .replace("%message%", message);
 
+        if (message.isEmpty()) {
+            return;
+        }
+
         if (message.length() < 2000) {
             plugin.getBot().sendMessage(id.get(), ChatColor.stripColor(message));
         } else {
