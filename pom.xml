@@ -74,13 +74,13 @@
         <dependency>
             <groupId>com.github.ucchyocean</groupId>
             <artifactId>LunaChat</artifactId>
-            <version>3.0.8</version>
+            <version>3.0.10</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>net.dv8tion</groupId>
             <artifactId>JDA</artifactId>
-            <version>4.2.0_183</version>
+            <version>4.2.0_194</version>
             <scope>compile</scope>
             <exclusions>
                 <exclusion>
