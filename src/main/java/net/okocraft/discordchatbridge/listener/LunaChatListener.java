@@ -1,6 +1,6 @@
 package net.okocraft.discordchatbridge.listener;
 
-import com.github.ucchyocean.lc3.bungee.event.LunaChatBungeeChannelChatEvent;
+import com.github.ucchyocean.lc3.bungee.event.LunaChatBungeeChannelMessageEvent;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.event.EventHandler;
@@ -18,8 +18,8 @@ public class LunaChatListener implements Listener {
     }
 
     @EventHandler
-    public void onChat(@NotNull LunaChatBungeeChannelChatEvent e) {
-        String message = e.getNgMaskedMessage();
+    public void onChat(@NotNull LunaChatBungeeChannelMessageEvent e) {
+        String message = e.getOriginalMessage();
 
         if (message.isEmpty()) {
             return;
