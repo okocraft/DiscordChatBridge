@@ -31,6 +31,11 @@ public class LunaChatListener implements Listener {
             return;
         }
 
+        if (plugin.getIgnoringMessages().contains(message)) {
+            plugin.getIgnoringMessages().remove(message);
+            return;
+        }
+
         message = plugin.getFormatConfig().getDiscordChatFormat()
                 .replace("%player%", e.getMember().getName())
                 .replace("%display_name%", e.getMember().getDisplayName())

@@ -50,7 +50,6 @@ public class DiscordListener extends ListenerAdapter {
             return;
         }
 
-
         Channel channel = LunaChatBungee.getInstance().getLunaChatAPI().getChannel(channelName.get());
 
         if (channel == null) {
@@ -60,10 +59,12 @@ public class DiscordListener extends ListenerAdapter {
         String name = event.getMember().getNickname() != null ?
                 event.getMember().getNickname() : event.getMember().getEffectiveName();
 
+        plugin.getIgnoringMessages().add(message);
+
         channel.chatFromOtherSource(
                 plugin.getGeneralConfig().getPrefix(event.getMember()) + name,
                 plugin.getGeneralConfig().getSourceName(),
-                event.getMessage().getContentStripped()
+                message
         );
     }
 
