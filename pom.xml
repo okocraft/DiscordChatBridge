@@ -101,6 +101,12 @@
             <version>1.6</version>
             <scope>compile</scope>
         </dependency>
+        <dependency>
+            <groupId>com.github.siroshun09.mcmessage</groupId>
+            <artifactId>mcmessage</artifactId>
+            <version>1.0.0</version>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
 
     <build>
