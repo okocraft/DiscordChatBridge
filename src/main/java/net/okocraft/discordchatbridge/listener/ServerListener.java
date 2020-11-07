@@ -1,5 +1,6 @@
 package net.okocraft.discordchatbridge.listener;
 
+import com.github.siroshun09.mcmessage.util.Colorizer;
 import net.md_5.bungee.api.config.ServerInfo;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.event.PlayerDisconnectEvent;
@@ -62,7 +63,7 @@ public class ServerListener implements Listener {
     private String replace(@NotNull String format, @NotNull ProxiedPlayer player) {
         return format
                 .replace("%player%", player.getName())
-                .replace("%display_name%", player.getDisplayName());
+                .replace("%display_name%", Colorizer.stripColorCode(player.getDisplayName()));
     }
 
     @NotNull
