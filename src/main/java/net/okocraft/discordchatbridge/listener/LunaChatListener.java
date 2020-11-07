@@ -31,8 +31,8 @@ public class LunaChatListener implements Listener {
             return;
         }
 
-        if (plugin.getIgnoringMessages().contains(message)) {
-            plugin.getIgnoringMessages().remove(message);
+        if (plugin.getReceivedMessages().contains(message)) {
+            plugin.getReceivedMessages().remove(message);
             return;
         }
 

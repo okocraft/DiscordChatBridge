@@ -59,7 +59,7 @@ public class DiscordListener extends ListenerAdapter {
         String name = event.getMember().getNickname() != null ?
                 event.getMember().getNickname() : event.getMember().getEffectiveName();
 
-        plugin.getIgnoringMessages().add(message);
+        plugin.getReceivedMessages().add(message);
 
         channel.chatFromOtherSource(
                 plugin.getGeneralConfig().getPrefix(event.getMember()) + name,

@@ -68,7 +68,7 @@ public class DiscordChatBridge extends Plugin {
     }
 
     @NotNull
-    public ReceivedMessages getIgnoringMessages() {
+    public ReceivedMessages getReceivedMessages() {
         return receivedMessages;
     }
 
