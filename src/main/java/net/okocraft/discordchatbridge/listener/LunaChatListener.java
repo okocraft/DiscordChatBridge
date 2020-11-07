@@ -1,7 +1,7 @@
 package net.okocraft.discordchatbridge.listener;
 
+import com.github.siroshun09.mcmessage.util.Colorizer;
 import com.github.ucchyocean.lc3.bungee.event.LunaChatBungeeChannelMessageEvent;
-import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.event.EventHandler;
 import net.okocraft.discordchatbridge.DiscordChatBridge;
@@ -19,7 +19,7 @@ public class LunaChatListener implements Listener {
 
     @EventHandler
     public void onChat(@NotNull LunaChatBungeeChannelMessageEvent e) {
-        String message = e.getOriginalMessage();
+        String message = Colorizer.stripColorCode(e.getOriginalMessage());
 
         if (message.isEmpty()) {
             return;
@@ -46,7 +46,7 @@ public class LunaChatListener implements Listener {
         }
 
         if (message.length() < 2000) {
-            plugin.getBot().sendMessage(id.get(), ChatColor.stripColor(message));
+            plugin.getBot().sendMessage(id.get(), Colorizer.stripColorCode(message));
         } else {
             plugin.getLogger().warning("The message is too long! " + message);
         }
