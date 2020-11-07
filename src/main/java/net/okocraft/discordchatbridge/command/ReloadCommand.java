@@ -1,6 +1,6 @@
 package net.okocraft.discordchatbridge.command;
 
-import net.md_5.bungee.api.ChatColor;
+import com.github.siroshun09.mcmessage.util.Colorizer;
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.plugin.Command;
@@ -36,6 +36,6 @@ public class ReloadCommand extends Command {
     }
 
     private void sendMessage(@NotNull CommandSender sender, @NotNull String message) {
-        sender.sendMessage(TextComponent.fromLegacyText(ChatColor.translateAlternateColorCodes('&', message)));
+        sender.sendMessage(TextComponent.fromLegacyText(Colorizer.colorize(message)));
     }
 }
