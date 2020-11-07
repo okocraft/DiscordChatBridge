@@ -1,5 +1,6 @@
 package net.okocraft.discordchatbridge.data;
 
+import com.github.siroshun09.mcmessage.util.Colorizer;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashSet;
@@ -10,6 +11,8 @@ public final class ReceivedMessages {
     private final Set<String> messages = new HashSet<>();
 
     public void add(@NotNull String message){
+        message = Colorizer.stripMarkedColorCode(message);
+        message = Colorizer.stripColorCode(message);
         synchronized (messages) {
             messages.add(message);
         }
