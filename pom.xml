@@ -54,10 +54,6 @@
             <url>https://raw.github.com/ucchyocean/mvn-repo/master</url>
         </repository>
         <repository>
-            <id>siroplugins-maven-repo</id>
-            <url>https://dl.bintray.com/siroplugins/maven-repo</url>
-        </repository>
-        <repository>
             <id>jcenter</id>
             <name>jcenter-bintray</name>
             <url>https://jcenter.bintray.com</url>
