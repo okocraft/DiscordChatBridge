@@ -9,6 +9,7 @@ import net.okocraft.discordchatbridge.listener.LunaChatListener;
 import net.okocraft.discordchatbridge.listener.ServerListener;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.IOException;
 import java.util.logging.Level;
 
 public class DiscordChatBridge extends Plugin {
@@ -20,11 +21,23 @@ public class DiscordChatBridge extends Plugin {
 
     @Override
     public void onEnable() {
-        if (loadConfigurations() && loginToDiscord()) {
-            receivedMessages = new ReceivedMessages();
-            registerCommandAndListeners();
-            getLogger().info("Successfully enabled.");
+        try {
+            loadConfigurations();
+        } catch (IOException e) {
+            getLogger().log(Level.SEVERE, "Could not load files.", e);
+            return;
         }
+
+        try {
+            bot = DiscordBot.login(this);
+        } catch (Throwable e) {
+            getLogger().log(Level.SEVERE, "Could not log in to discord.", e);
+            return;
+        }
+
+        receivedMessages = new ReceivedMessages();
+        registerCommandAndListeners();
+        getLogger().info("Successfully enabled.");
     }
 
     @Override
@@ -44,12 +57,23 @@ public class DiscordChatBridge extends Plugin {
             unregisterCommandAndListeners();
         }
 
-        if (loadConfigurations() && loginToDiscord()) {
-            registerCommandAndListeners();
-            return true;
-        } else {
+        try {
+            loadConfigurations();
+        } catch (IOException e) {
+            getLogger().log(Level.SEVERE, "Could not load files.", e);
             return false;
         }
+
+        try {
+            bot = DiscordBot.login(this);
+        } catch (Throwable e) {
+            getLogger().log(Level.SEVERE, "Could not log in to discord.", e);
+            return false;
+        }
+
+        receivedMessages.clear();
+        registerCommandAndListeners();
+        return true;
     }
 
     @NotNull
@@ -72,39 +96,17 @@ public class DiscordChatBridge extends Plugin {
         return receivedMessages;
     }
 
-    private boolean loadConfigurations() {
+    private void loadConfigurations() throws IOException {
         if (config == null) {
             config = new GeneralConfig(this);
         } else {
             config.reload();
         }
 
-        if (!config.isLoaded()) {
-            getLogger().severe("Could not load config.yml.");
-            return false;
-        }
-
         if (formatConfig == null) {
             formatConfig = new FormatConfig(this);
         } else {
             formatConfig.reload();
-        }
-
-        if (!formatConfig.isLoaded()) {
-            getLogger().severe("Could not load format.yml.");
-            return false;
-        }
-
-        return true;
-    }
-
-    private boolean loginToDiscord() {
-        try {
-            bot = DiscordBot.login(this);
-            return true;
-        } catch (Throwable e) {
-            getLogger().log(Level.SEVERE, "Could not log in to discord.", e);
-            return false;
         }
     }
 

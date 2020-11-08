@@ -1,6 +1,8 @@
 package net.okocraft.discordchatbridge.config;
 
-import com.github.siroshun09.configapi.bungee.BungeeConfig;
+import com.github.siroshun09.configapi.bungee.BungeeYaml;
+import com.github.siroshun09.configapi.bungee.BungeeYamlFactory;
+import com.github.siroshun09.configapi.common.yaml.Yaml;
 import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.Member;
@@ -13,46 +15,39 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.awt.Color;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-public class GeneralConfig extends BungeeConfig {
+public class GeneralConfig {
 
     private final DiscordChatBridge plugin;
+    private final Yaml yaml;
     private List<LinkedChannel> linkedChannels = Collections.emptyList();
 
-    public GeneralConfig(@NotNull DiscordChatBridge plugin) {
-        super(plugin, "config.yml", true);
-
+    public GeneralConfig(@NotNull DiscordChatBridge plugin) throws IOException {
         this.plugin = plugin;
+        this.yaml = BungeeYamlFactory.load(plugin, "config.yml");
 
-        if (isLoaded()) {
-            loadChannels();
-        }
+        loadChannels();
     }
 
-    @Override
-    public boolean reload() {
-        if (load()) {
-            loadChannels();
-            return true;
-        } else {
-            linkedChannels = Collections.emptyList();
-            return false;
-        }
+    public void reload() throws IOException {
+        yaml.reload();
+        loadChannels();
     }
 
     @NotNull
     public String getToken() {
-        return getString("discord.token");
+        return yaml.getString("discord.token");
     }
 
     @NotNull
     public OnlineStatus getStatus() {
-        String value = getString("discord.status", "ONLINE");
+        String value = yaml.getString("discord.status", "ONLINE");
         try {
             return OnlineStatus.valueOf(value);
         } catch (IllegalArgumentException e) {
@@ -65,7 +60,7 @@ public class GeneralConfig extends BungeeConfig {
     public Activity getActivity() {
         Activity.ActivityType type;
 
-        String typeValue = getString("discord.activity.type", "DEFAULT");
+        String typeValue = yaml.getString("discord.activity.type", "DEFAULT");
         try {
             type = Activity.ActivityType.valueOf(typeValue);
         } catch (IllegalArgumentException e) {
@@ -73,8 +68,8 @@ public class GeneralConfig extends BungeeConfig {
             return null;
         }
 
-        String game = getString("discord.activity.game", "%count% players in server");
-        String url = getString("discord.activity.url");
+        String game = yaml.getString("discord.activity.game", "%count% players in server");
+        String url = yaml.getString("discord.activity.url");
 
         return Activity.of(type, game.replace("%count%", String.valueOf(plugin.getProxy().getOnlineCount())), url);
     }
@@ -103,12 +98,12 @@ public class GeneralConfig extends BungeeConfig {
     }
 
     public int getChatMaxLength() {
-        return getInt("chat-max-length", 150);
+        return yaml.getInteger("chat-max-length", 150);
     }
 
     @NotNull
     public String getSourceName() {
-        return getString("discord-source-name", "Dis");
+        return yaml.getString("discord-source-name", "Dis");
     }
 
     @NotNull
@@ -116,7 +111,7 @@ public class GeneralConfig extends BungeeConfig {
         String prefix = null;
 
         for (Role role : member.getRoles().stream().sorted().collect(Collectors.toList())) {
-            String temp = getString("role-prefix." + role.getIdLong());
+            String temp = yaml.getString("role-prefix." + role.getIdLong());
 
             if (!temp.isEmpty()) {
                 prefix = temp.replace("%color%", ChatColor.of(getColor(role)).toString());
@@ -124,14 +119,15 @@ public class GeneralConfig extends BungeeConfig {
         }
 
         if (prefix == null) {
-            prefix = getString("role-prefix.default", "&f* ");
+            prefix = yaml.getString("role-prefix.default", "&f* ");
         }
 
         return prefix;
     }
 
     private void loadChannels() {
-        Configuration section = getConfig().getSection("channels");
+        BungeeYaml bungeeYaml = (BungeeYaml) yaml;
+        Configuration section = bungeeYaml.getConfig().getSection("channels");
 
         if (section != null) {
             linkedChannels = new LinkedList<>();
