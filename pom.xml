@@ -25,7 +25,7 @@
 
     <groupId>net.okocraft.discordchatbridge</groupId>
     <artifactId>discordchatbridge</artifactId>
-    <version>1.5</version>
+    <version>1.6</version>
     <packaging>jar</packaging>
 
     <name>DiscordChatBridge</name>
