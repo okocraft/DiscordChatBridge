@@ -118,7 +118,7 @@
         <dependency>
             <groupId>com.github.siroshun09.configapi</groupId>
             <artifactId>bungee</artifactId>
-            <version>2.0.1</version>
+            <version>2.2.0</version>
             <scope>compile</scope>
         </dependency>
         <!-- MCMessage https://bintray.com/siroshun09/maven/MCMessage/_latestVersion -->
