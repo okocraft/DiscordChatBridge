@@ -33,10 +33,10 @@ import java.util.logging.Level;
 
 public class DiscordChatBridge extends Plugin {
 
+    private final ReceivedMessages receivedMessages = new ReceivedMessages();
     private GeneralConfig config;
     private FormatConfig formatConfig;
     private DiscordBot bot;
-    private ReceivedMessages receivedMessages;
 
     @Override
     public void onEnable() {
