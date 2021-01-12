@@ -72,7 +72,8 @@ public class DiscordChatBridge extends Plugin {
         try {
             bot = DiscordBot.login(this);
         } catch (Throwable e) {
-            getLogger().log(Level.SEVERE, "Could not log in to discord.", e);
+            getLogger().warning("Could not login to discord.");
+            getLogger().warning("Please check the token of discord bot.");
             return false;
         }
 
