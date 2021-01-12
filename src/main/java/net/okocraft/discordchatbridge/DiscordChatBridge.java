@@ -40,23 +40,9 @@ public class DiscordChatBridge extends Plugin {
 
     @Override
     public void onEnable() {
-        try {
-            loadConfigurations();
-        } catch (IOException e) {
-            getLogger().log(Level.SEVERE, "Could not load files.", e);
-            return;
-        }
-
-        try {
-            bot = DiscordBot.login(this);
-        } catch (Throwable e) {
-            getLogger().log(Level.SEVERE, "Could not log in to discord.", e);
-            return;
-        }
-
-        receivedMessages = new ReceivedMessages();
-        registerCommandAndListeners();
-        getLogger().info("Successfully enabled.");
+       if (reload()) {
+           getLogger().info("Successfully enabled.");
+       }
     }
 
     @Override
