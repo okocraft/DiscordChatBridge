@@ -64,18 +64,17 @@ public class DiscordBot {
         executor.shutdown();
     }
 
-    public void sendMessage(long id, @NotNull String message) {
-        if (message.isEmpty()) {
-            return;
-        }
-
+    public void sendMessage(long id, @NotNull Message message) {
         executor.submit(() -> {
             TextChannel channel = jda.getTextChannelById(id);
 
             if (channel != null && channel.canTalk()) {
                 channel.sendMessage(message).queue();
             } else {
-                plugin.getLogger().warning("Could not send message to channel: " + id);
+                plugin.getLogger().warning(
+                        "Could not send message to channel. " +
+                                "id: " + id + " content: " + message.getContentRaw()
+                );
             }
         });
     }

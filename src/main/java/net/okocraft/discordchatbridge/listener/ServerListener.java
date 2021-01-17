@@ -20,6 +20,8 @@
 package net.okocraft.discordchatbridge.listener;
 
 import com.github.siroshun09.mcmessage.util.Colorizer;
+import net.dv8tion.jda.api.MessageBuilder;
+import net.dv8tion.jda.api.entities.Message;
 import net.md_5.bungee.api.config.ServerInfo;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.event.PlayerDisconnectEvent;
@@ -72,9 +74,10 @@ public class ServerListener implements Listener {
 
     private void sendMessage(@NotNull String message) {
         LinkedChannel system = plugin.getGeneralConfig().getSystemChannel();
+        Message toSend = new MessageBuilder(message).build();
 
         if (system != null) {
-            plugin.getBot().sendMessage(system.getId(), message);
+            plugin.getBot().sendMessage(system.getId(), toSend);
         }
     }
 
