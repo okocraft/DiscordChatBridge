@@ -51,7 +51,7 @@ public class DiscordBot {
                             .addEventListeners(new DiscordListener(plugin))
                             .setAutoReconnect(true)
                             .setStatus(plugin.getGeneralConfig().getStatus())
-                            .setActivity(plugin.getGeneralConfig().getActivity())
+                            .setActivity(plugin.getGeneralConfig().createActivity())
                             .build().awaitReady()
             );
         } catch (InterruptedException | LoginException e) {
@@ -92,6 +92,6 @@ public class DiscordBot {
     }
 
     public void updateGame() {
-        executor.submit(() -> jda.getPresence().setActivity(plugin.getGeneralConfig().getActivity()));
+        executor.submit(() -> jda.getPresence().setActivity(plugin.getGeneralConfig().createActivity()));
     }
 }

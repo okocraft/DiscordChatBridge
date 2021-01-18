@@ -76,7 +76,7 @@ public class GeneralConfig {
     }
 
     @Nullable
-    public Activity getActivity() {
+    public Activity createActivity() {
         Activity.ActivityType type;
 
         String typeValue = yaml.getString("discord.activity.type", "DEFAULT");
