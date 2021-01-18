@@ -1,5 +1,5 @@
 /*
- *     Copyright (c) 2020 Okocraft
+ *     Copyright (c) 2021 Okocraft
  *
  *     This file is part of DiscordChatBridge.
  *
@@ -17,7 +17,7 @@
  *     along with DiscordChatBridge. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.okocraft.discordchatbridge;
+package net.okocraft.discordchatbridge.data;
 
 import org.jetbrains.annotations.NotNull;
 

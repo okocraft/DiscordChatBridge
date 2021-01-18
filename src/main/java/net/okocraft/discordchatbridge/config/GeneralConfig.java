@@ -28,7 +28,7 @@ import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
 import net.md_5.bungee.api.ChatColor;
 import net.okocraft.discordchatbridge.DiscordChatBridge;
-import net.okocraft.discordchatbridge.LinkedChannel;
+import net.okocraft.discordchatbridge.data.LinkedChannel;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
