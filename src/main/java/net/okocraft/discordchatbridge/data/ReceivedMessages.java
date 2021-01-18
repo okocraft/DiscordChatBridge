@@ -29,9 +29,10 @@ public final class ReceivedMessages {
 
     private final Set<String> messages = new HashSet<>();
 
-    public void add(@NotNull String message){
+    public void add(@NotNull String message) {
         message = Colorizer.stripMarkedColorCode(message);
         message = Colorizer.stripColorCode(message);
+
         synchronized (messages) {
             messages.add(message);
         }

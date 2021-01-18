@@ -29,7 +29,6 @@ import net.okocraft.discordchatbridge.DiscordChatBridge;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
-import java.util.Optional;
 import java.util.Set;
 
 import static net.dv8tion.jda.api.entities.Message.MentionType.CHANNEL;
@@ -48,13 +47,13 @@ public class LunaChatListener implements Listener {
 
     @EventHandler
     public void onChat(@NotNull LunaChatBungeeChannelMessageEvent e) {
-        String message = Colorizer.stripColorCode(e.getOriginalMessage());
+        var message = Colorizer.stripColorCode(e.getOriginalMessage());
 
         if (message.isEmpty()) {
             return;
         }
 
-        Optional<Long> id = plugin.getGeneralConfig().getDiscordChannel(e.getChannel().getName());
+        var id = plugin.getGeneralConfig().getDiscordChannel(e.getChannel().getName());
 
         if (id.isEmpty()) {
             return;

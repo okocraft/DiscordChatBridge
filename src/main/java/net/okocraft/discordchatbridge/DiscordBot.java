@@ -46,7 +46,8 @@ public class DiscordBot {
     @Contract("_ -> new")
     static @NotNull DiscordBot login(@NotNull DiscordChatBridge plugin) throws IllegalStateException {
         try {
-            return new DiscordBot(plugin,
+            return new DiscordBot(
+                    plugin,
                     JDABuilder.createDefault(plugin.getGeneralConfig().getToken())
                             .addEventListeners(new DiscordListener(plugin))
                             .setAutoReconnect(true)
@@ -66,7 +67,7 @@ public class DiscordBot {
 
     public void sendMessage(long id, @NotNull Message message) {
         executor.submit(() -> {
-            TextChannel channel = jda.getTextChannelById(id);
+            var channel = jda.getTextChannelById(id);
 
             if (channel != null && channel.canTalk()) {
                 channel.sendMessage(message).queue();
@@ -92,6 +93,9 @@ public class DiscordBot {
     }
 
     public void updateGame() {
-        executor.submit(() -> jda.getPresence().setActivity(plugin.getGeneralConfig().createActivity()));
+        executor.submit(() -> {
+            var newActivity = plugin.getGeneralConfig().createActivity();
+            jda.getPresence().setActivity(newActivity);
+        });
     }
 }

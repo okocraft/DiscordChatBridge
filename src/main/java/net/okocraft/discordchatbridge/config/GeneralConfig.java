@@ -27,7 +27,6 @@ import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
 import net.md_5.bungee.api.ChatColor;
-import net.md_5.bungee.config.Configuration;
 import net.okocraft.discordchatbridge.DiscordChatBridge;
 import net.okocraft.discordchatbridge.LinkedChannel;
 import org.jetbrains.annotations.NotNull;
@@ -66,7 +65,8 @@ public class GeneralConfig {
 
     @NotNull
     public OnlineStatus getStatus() {
-        String value = yaml.getString("discord.status", "ONLINE");
+        var value = yaml.getString("discord.status", "ONLINE");
+
         try {
             return OnlineStatus.valueOf(value);
         } catch (IllegalArgumentException e) {
@@ -79,7 +79,8 @@ public class GeneralConfig {
     public Activity createActivity() {
         Activity.ActivityType type;
 
-        String typeValue = yaml.getString("discord.activity.type", "DEFAULT");
+        var typeValue = yaml.getString("discord.activity.type", "DEFAULT");
+
         try {
             type = Activity.ActivityType.valueOf(typeValue);
         } catch (IllegalArgumentException e) {
@@ -87,8 +88,8 @@ public class GeneralConfig {
             return null;
         }
 
-        String game = yaml.getString("discord.activity.game", "%count% players in server");
-        String url = yaml.getString("discord.activity.url");
+        var game = yaml.getString("discord.activity.game", "%count% players in server");
+        var url = yaml.getString("discord.activity.url");
 
         return Activity.of(type, game.replace("%count%", String.valueOf(plugin.getProxy().getOnlineCount())), url);
     }
@@ -130,7 +131,7 @@ public class GeneralConfig {
         String prefix = null;
 
         for (Role role : member.getRoles().stream().sorted().collect(Collectors.toList())) {
-            String temp = yaml.getString("role-prefix." + role.getIdLong());
+            var temp = yaml.getString("role-prefix." + role.getIdLong());
 
             if (!temp.isEmpty()) {
                 prefix = temp.replace("%color%", ChatColor.of(getColor(role)).toString());
@@ -145,8 +146,8 @@ public class GeneralConfig {
     }
 
     private void loadChannels() {
-        BungeeYaml bungeeYaml = (BungeeYaml) yaml;
-        Configuration section = bungeeYaml.getConfig().getSection("channels");
+        var bungeeYaml = (BungeeYaml) yaml;
+        var section = bungeeYaml.getConfig().getSection("channels");
 
         if (section != null) {
             linkedChannels = new LinkedList<>();
@@ -159,7 +160,7 @@ public class GeneralConfig {
 
     @NotNull
     private Color getColor(@NotNull Role role) {
-        Color color = role.getColor();
+        var color = role.getColor();
 
         if (color == null) {
             color = new Color(Role.DEFAULT_COLOR_RAW);

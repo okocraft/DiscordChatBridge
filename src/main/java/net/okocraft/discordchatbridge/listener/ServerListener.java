@@ -21,7 +21,6 @@ package net.okocraft.discordchatbridge.listener;
 
 import com.github.siroshun09.mcmessage.util.Colorizer;
 import net.dv8tion.jda.api.MessageBuilder;
-import net.dv8tion.jda.api.entities.Message;
 import net.md_5.bungee.api.config.ServerInfo;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.event.PlayerDisconnectEvent;
@@ -29,7 +28,6 @@ import net.md_5.bungee.api.event.ServerSwitchEvent;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.event.EventHandler;
 import net.okocraft.discordchatbridge.DiscordChatBridge;
-import net.okocraft.discordchatbridge.LinkedChannel;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.concurrent.TimeUnit;
@@ -44,7 +42,7 @@ public class ServerListener implements Listener {
 
     @EventHandler
     public void onDisconnect(@NotNull PlayerDisconnectEvent e) {
-        String format = plugin.getFormatConfig().getServerLeftFormat();
+        var format = plugin.getFormatConfig().getServerLeftFormat();
 
         if (!format.isEmpty()) {
             sendMessage(replace(format, e.getPlayer()));
@@ -56,13 +54,13 @@ public class ServerListener implements Listener {
     @EventHandler
     public void onJoinOrSwitch(@NotNull ServerSwitchEvent e) {
         if (e.getFrom() == null) {
-            String format = plugin.getFormatConfig().getServerJoinFormat();
+            var format = plugin.getFormatConfig().getServerJoinFormat();
 
             if (!format.isEmpty()) {
                 sendMessage(replace(format, e.getPlayer()));
             }
         } else {
-            String format = plugin.getFormatConfig().getServerSwitchFormat();
+            var format = plugin.getFormatConfig().getServerSwitchFormat();
 
             if (!format.isEmpty()) {
                 sendMessage(replace(format, e.getPlayer(), e.getPlayer().getServer().getInfo()));
@@ -73,8 +71,8 @@ public class ServerListener implements Listener {
     }
 
     private void sendMessage(@NotNull String message) {
-        LinkedChannel system = plugin.getGeneralConfig().getSystemChannel();
-        Message toSend = new MessageBuilder(message).build();
+        var system = plugin.getGeneralConfig().getSystemChannel();
+        var toSend = new MessageBuilder(message).build();
 
         if (system != null) {
             plugin.getBot().sendMessage(system.getId(), toSend);

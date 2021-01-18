@@ -20,7 +20,6 @@
 package net.okocraft.discordchatbridge.listener;
 
 import com.github.ucchyocean.lc3.LunaChatBungee;
-import com.github.ucchyocean.lc3.channel.Channel;
 import net.dv8tion.jda.api.MessageBuilder;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
@@ -31,7 +30,6 @@ import net.okocraft.discordchatbridge.DiscordChatBridge;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class DiscordListener extends ListenerAdapter {
@@ -51,13 +49,13 @@ public class DiscordListener extends ListenerAdapter {
             return;
         }
 
-        Optional<String> channelName = plugin.getGeneralConfig().getLunaChatChannel(event.getChannel().getIdLong());
+        var channelName = plugin.getGeneralConfig().getLunaChatChannel(event.getChannel().getIdLong());
 
         if (channelName.isEmpty()) {
             return;
         }
 
-        String message = event.getMessage().getContentStripped();
+        var message = event.getMessage().getContentStripped();
 
         if (message.startsWith("!playerlist")) {
             onPlayerListCommand(event.getTextChannel());
@@ -69,13 +67,13 @@ public class DiscordListener extends ListenerAdapter {
             return;
         }
 
-        Channel channel = LunaChatBungee.getInstance().getLunaChatAPI().getChannel(channelName.get());
+        var channel = LunaChatBungee.getInstance().getLunaChatAPI().getChannel(channelName.get());
 
         if (channel == null) {
             return;
         }
 
-        String name = event.getMember().getNickname() != null ?
+        var name = event.getMember().getNickname() != null ?
                 event.getMember().getNickname() : event.getMember().getEffectiveName();
 
         plugin.getReceivedMessages().add(message);
