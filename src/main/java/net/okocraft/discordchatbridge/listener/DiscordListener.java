@@ -45,7 +45,9 @@ public class DiscordListener extends ListenerAdapter {
 
     @Override
     public void onMessageReceived(@Nonnull MessageReceivedEvent event) {
-        if (event.getAuthor().isBot() || event.getMember() == null) {
+        var member = event.getMember();
+
+        if (event.getAuthor().isBot() || member == null) {
             return;
         }
 
@@ -73,13 +75,12 @@ public class DiscordListener extends ListenerAdapter {
             return;
         }
 
-        var name = event.getMember().getNickname() != null ?
-                event.getMember().getNickname() : event.getMember().getEffectiveName();
+        var name = member.getNickname() != null ? member.getNickname() : member.getEffectiveName();
 
         plugin.getReceivedMessages().add(message);
 
         channel.chatFromOtherSource(
-                plugin.getGeneralConfig().getPrefix(event.getMember()) + name,
+                plugin.getBot().getRolePrefix(member) + name,
                 plugin.getGeneralConfig().getSourceName(),
                 message
         );

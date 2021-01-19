@@ -20,6 +20,8 @@
 package net.okocraft.discordchatbridge.config;
 
 import com.github.siroshun09.configapi.bungee.BungeeYamlFactory;
+import com.github.siroshun09.configapi.common.configurable.Configurable;
+import com.github.siroshun09.configapi.common.configurable.StringValue;
 import com.github.siroshun09.configapi.common.yaml.Yaml;
 import net.okocraft.discordchatbridge.DiscordChatBridge;
 import org.jetbrains.annotations.NotNull;
@@ -27,6 +29,37 @@ import org.jetbrains.annotations.NotNull;
 import java.io.IOException;
 
 public class FormatConfig {
+
+    private static final StringValue SERVER_CHAT =
+            Configurable.create("server.chat", "%player%: %message%");
+
+    private static final StringValue SERVER_JOIN =
+            Configurable.create("server.join", ":heavy_plus_sign: **%player%** joined the server.");
+
+    private static final StringValue SERVER_LEAVE =
+            Configurable.create("server.leave", ":heavy_minus_sign: **%player%** left the server.");
+
+    private static final StringValue SERVER_SWITCH =
+            Configurable.create("server.switch", ":heavy_plus_sign: **%player%** moved to **%server%**");
+
+    private static final StringValue PLAYER_LIST_TOP =
+            Configurable.create("server.player-list.top", "**===== Player List (%count%) =====**");
+
+    private static final StringValue PLAYER_LIST_FORMAT =
+            Configurable.create("server.player-list.list", "%server%: %players%");
+
+    private static final StringValue COMMAND_NO_PERMISSION =
+            Configurable.create("command.no-permission", "&c* You have no permission: %perm%");
+
+    private static final StringValue COMMAND_RELOAD_START =
+            Configurable.create("command.reload.start", "&7* Reloading DiscordChatBridge...");
+
+    private static final StringValue COMMAND_RELOAD_SUCCESS =
+            Configurable.create("command.reload.success", "&7* The reload was successful.");
+
+    private static final StringValue COMMAND_RELOAD_FAILURE =
+            Configurable.create("command.reload.failure", "&c* Failed to reload. Please check the console.");
+
 
     private final Yaml yaml;
 
@@ -38,53 +71,43 @@ public class FormatConfig {
         yaml.reload();
     }
 
-    @NotNull
-    public String getDiscordChatFormat() {
-        return yaml.getString("server.chat", "%player%: %message%");
+    public @NotNull String getDiscordChatFormat() {
+        return yaml.get(SERVER_CHAT);
     }
 
-    @NotNull
-    public String getServerJoinFormat() {
-        return yaml.getString("server.join", ":heavy_plus_sign: **%player%** joined the server.");
+    public @NotNull String getServerJoinFormat() {
+        return yaml.get(SERVER_JOIN);
     }
 
-    @NotNull
-    public String getServerLeftFormat() {
-        return yaml.getString("server.leave", ":heavy_minus_sign: **%player%** left the server.");
+    public @NotNull String getServerLeftFormat() {
+        return yaml.get(SERVER_LEAVE);
     }
 
-    @NotNull
-    public String getServerSwitchFormat() {
-        return yaml.getString("server.switch", ":heavy_plus_sign: **%player%** moved to **%server%**");
+    public @NotNull String getServerSwitchFormat() {
+        return yaml.get(SERVER_SWITCH);
     }
 
-    @NotNull
-    public String getPlayerListTop() {
-        return yaml.getString("server.player-list.top", "**===== Player List (%count%) =====**");
+    public @NotNull String getPlayerListTop() {
+        return yaml.get(PLAYER_LIST_TOP);
     }
 
-    @NotNull
-    public String getPlayerListFormat() {
-        return yaml.getString("server.player-list.list", "%server%: %players%");
+    public @NotNull String getPlayerListFormat() {
+        return yaml.get(PLAYER_LIST_FORMAT);
     }
 
-    @NotNull
-    public String getNoPermissionMessage() {
-        return yaml.getString("command.no-permission", "&c* You have no permission: %perm%");
+    public @NotNull String getNoPermissionMessage() {
+        return yaml.get(COMMAND_NO_PERMISSION);
     }
 
-    @NotNull
-    public String getReloadingMessage() {
-        return yaml.getString("command.reload.start", "&7* Reloading DiscordChatBridge...");
+    public @NotNull String getReloadingMessage() {
+        return yaml.get(COMMAND_RELOAD_START);
     }
 
-    @NotNull
-    public String getReloadSuccessMessage() {
-        return yaml.getString("command.reload.success", "&7* The reload was successful.");
+    public @NotNull String getReloadSuccessMessage() {
+        return yaml.get(COMMAND_RELOAD_SUCCESS);
     }
 
-    @NotNull
-    public String getReloadFailureMessage() {
-        return yaml.getString("command.reload.failure", "&c* Failed to reload. Please check the console.");
+    public @NotNull String getReloadFailureMessage() {
+        return yaml.get(COMMAND_RELOAD_FAILURE);
     }
 }

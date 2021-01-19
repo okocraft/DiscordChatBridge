@@ -82,23 +82,19 @@ public class DiscordChatBridge extends Plugin {
         return true;
     }
 
-    @NotNull
-    public GeneralConfig getGeneralConfig() {
+    public @NotNull GeneralConfig getGeneralConfig() {
         return config;
     }
 
-    @NotNull
-    public FormatConfig getFormatConfig() {
+    public @NotNull FormatConfig getFormatConfig() {
         return formatConfig;
     }
 
-    @NotNull
-    public DiscordBot getBot() {
+    public @NotNull DiscordBot getBot() {
         return bot;
     }
 
-    @NotNull
-    public ReceivedMessages getReceivedMessages() {
+    public @NotNull ReceivedMessages getReceivedMessages() {
         return receivedMessages;
     }
 

@@ -21,26 +21,65 @@ package net.okocraft.discordchatbridge.config;
 
 import com.github.siroshun09.configapi.bungee.BungeeYaml;
 import com.github.siroshun09.configapi.bungee.BungeeYamlFactory;
+import com.github.siroshun09.configapi.common.Configuration;
+import com.github.siroshun09.configapi.common.configurable.AbstractConfigurableValue;
+import com.github.siroshun09.configapi.common.configurable.Configurable;
+import com.github.siroshun09.configapi.common.configurable.IntegerValue;
+import com.github.siroshun09.configapi.common.configurable.StringValue;
 import com.github.siroshun09.configapi.common.yaml.Yaml;
 import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Activity;
-import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.Role;
-import net.md_5.bungee.api.ChatColor;
 import net.okocraft.discordchatbridge.DiscordChatBridge;
 import net.okocraft.discordchatbridge.data.LinkedChannel;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.awt.Color;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 public class GeneralConfig {
+
+    private static final StringValue DISCORD_TOKEN = Configurable.create("discord.token", "");
+
+    private static final Configurable<OnlineStatus> DISCORD_STATUS =
+            new AbstractConfigurableValue<>("discord.status", OnlineStatus.ONLINE) {
+                @Override
+                public @Nullable OnlineStatus getValueOrNull(@NotNull Configuration configuration) {
+                    try {
+                        var value = configuration.getString(getKey());
+                        return OnlineStatus.valueOf(value);
+                    } catch (IllegalArgumentException e) {
+                        return null;
+                    }
+                }
+            };
+
+    private static final Configurable<Activity.ActivityType> DISCORD_ACTIVITY_TYPE =
+            new AbstractConfigurableValue<>("discord.activity.type", Activity.ActivityType.DEFAULT) {
+                @Override
+                public @Nullable Activity.ActivityType getValueOrNull(@NotNull Configuration configuration) {
+                    try {
+                        var value = configuration.getString(getKey());
+                        return Activity.ActivityType.valueOf(value);
+                    } catch (IllegalArgumentException e) {
+                        return null;
+                    }
+                }
+            };
+
+    private static final StringValue DISCORD_ACTIVITY_GAME =
+            Configurable.create("discord.activity.game", "%count% players in server");
+
+    private static final StringValue DISCORD_ACTIVITY_URL = Configurable.create("discord.activity.", "");
+
+    private static final IntegerValue CHAT_MAX_LENGTH = Configurable.create("chat-max-length", 150);
+
+    private static final StringValue DISCORD_SOURCE_NAME = Configurable.create("discord-source-name", "Dis");
+
+    private static final StringValue DEFAULT_PREFIX = Configurable.create("role-prefix.default", "&f* ");
 
     private final DiscordChatBridge plugin;
     private final Yaml yaml;
@@ -58,58 +97,39 @@ public class GeneralConfig {
         loadChannels();
     }
 
-    @NotNull
-    public String getToken() {
-        return yaml.getString("discord.token");
+    public @NotNull String getToken() {
+        return yaml.get(DISCORD_TOKEN);
     }
 
-    @NotNull
-    public OnlineStatus getStatus() {
-        var value = yaml.getString("discord.status", "ONLINE");
-
-        try {
-            return OnlineStatus.valueOf(value);
-        } catch (IllegalArgumentException e) {
-            plugin.getLogger().warning("Invalid online status: " + value);
-            return OnlineStatus.ONLINE;
-        }
+    public @NotNull OnlineStatus getStatus() {
+        return yaml.get(DISCORD_STATUS);
     }
 
-    @Nullable
-    public Activity createActivity() {
-        Activity.ActivityType type;
+    public @NotNull Activity createActivity() {
+        var type = yaml.get(DISCORD_ACTIVITY_TYPE);
+        var game = yaml.get(DISCORD_ACTIVITY_GAME);
+        var url = yaml.get(DISCORD_ACTIVITY_URL);
 
-        var typeValue = yaml.getString("discord.activity.type", "DEFAULT");
+        var playerCount = plugin.getProxy().getOnlineCount();
 
-        try {
-            type = Activity.ActivityType.valueOf(typeValue);
-        } catch (IllegalArgumentException e) {
-            plugin.getLogger().warning("Invalid online status: " + typeValue);
-            return null;
-        }
-
-        var game = yaml.getString("discord.activity.game", "%count% players in server");
-        var url = yaml.getString("discord.activity.url");
-
-        return Activity.of(type, game.replace("%count%", String.valueOf(plugin.getProxy().getOnlineCount())), url);
+        return Activity.of(type, game.replace("%count%", String.valueOf(playerCount)), url);
     }
 
-    public Optional<Long> getDiscordChannel(@NotNull String channelName) {
+    public @NotNull Optional<Long> getDiscordChannel(@NotNull String channelName) {
         return linkedChannels.stream()
                 .filter(c -> c.getChannelName().equals(channelName))
                 .map(LinkedChannel::getId)
                 .findFirst();
     }
 
-    public Optional<String> getLunaChatChannel(long id) {
+    public @NotNull Optional<String> getLunaChatChannel(long id) {
         return linkedChannels.stream()
                 .filter(c -> c.getId() == id)
                 .map(LinkedChannel::getChannelName)
                 .findFirst();
     }
 
-    @Nullable
-    public LinkedChannel getSystemChannel() {
+    public @Nullable LinkedChannel getSystemChannel() {
         if (linkedChannels.isEmpty()) {
             return null;
         } else {
@@ -118,31 +138,19 @@ public class GeneralConfig {
     }
 
     public int getChatMaxLength() {
-        return yaml.getInteger("chat-max-length", 150);
+        return yaml.get(CHAT_MAX_LENGTH);
     }
 
-    @NotNull
-    public String getSourceName() {
-        return yaml.getString("discord-source-name", "Dis");
+    public @NotNull String getSourceName() {
+        return yaml.get(DISCORD_SOURCE_NAME);
     }
 
-    @NotNull
-    public String getPrefix(@NotNull Member member) {
-        String prefix = null;
+    public @NotNull String getRolePrefix(long roleId) {
+        return yaml.getString("role-prefix." + roleId);
+    }
 
-        for (Role role : member.getRoles().stream().sorted().collect(Collectors.toList())) {
-            var temp = yaml.getString("role-prefix." + role.getIdLong());
-
-            if (!temp.isEmpty()) {
-                prefix = temp.replace("%color%", ChatColor.of(getColor(role)).toString());
-            }
-        }
-
-        if (prefix == null) {
-            prefix = yaml.getString("role-prefix.default", "&f* ");
-        }
-
-        return prefix;
+    public @NotNull String getDefaultPrefix() {
+        return yaml.get(DEFAULT_PREFIX);
     }
 
     private void loadChannels() {
@@ -156,16 +164,5 @@ public class GeneralConfig {
                 linkedChannels.add(new LinkedChannel(key, section.getLong(key, 0)));
             }
         }
-    }
-
-    @NotNull
-    private Color getColor(@NotNull Role role) {
-        var color = role.getColor();
-
-        if (color == null) {
-            color = new Color(Role.DEFAULT_COLOR_RAW);
-        }
-
-        return color;
     }
 }

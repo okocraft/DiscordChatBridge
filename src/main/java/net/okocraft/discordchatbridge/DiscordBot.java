@@ -27,13 +27,17 @@ import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.MessageBuilder;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.TextChannel;
+import net.md_5.bungee.api.ChatColor;
 import net.okocraft.discordchatbridge.listener.DiscordListener;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import javax.security.auth.login.LoginException;
+import java.awt.Color;
 import java.util.Collection;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -41,20 +45,32 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class DiscordBot {
 
     private static final Collection<Message.MentionType> ALLOWED_MENTION_TYPE =
             Set.of(Message.MentionType.EMOTE, Message.MentionType.USER, Message.MentionType.CHANNEL);
+
     private static final String PLAYER_NAME = "%player%";
+
     private static final String DISPLAY_NAME = "%display_name%";
+
     private static final String MESSAGE = "%message%";
+
     private static final String MENTION_MARK = "@";
+
     private static final String CHANNEL_MARK = "#";
+
     private static final Pattern EVERYONE_PATTERN = Pattern.compile("@everyone");
+
     private static final String EVERYONE_REPLACEMENT = "@.everyone";
+
     private static final Pattern HERE_PATTERN = Pattern.compile("@here");
+
     private static final String HERE_REPLACEMENT = "@.here";
+
+    private static final Color DEFAULT_ROLE_COLOR = new Color(Role.DEFAULT_COLOR_RAW);
 
     private final DiscordChatBridge plugin;
     private final JDA jda;
@@ -119,6 +135,25 @@ public class DiscordBot {
 
     public void addReaction(@NotNull Message message, @NotNull String unicode) {
         executor.submit(() -> message.addReaction(unicode).queue());
+    }
+
+    public @NotNull String getRolePrefix(@NotNull Member member) {
+        String prefix = null;
+
+        for (var role : member.getRoles().stream().sorted().collect(Collectors.toList())) {
+            var temp = plugin.getGeneralConfig().getRolePrefix(role.getIdLong());
+
+            if (!temp.isEmpty()) {
+                var roleColor = Objects.requireNonNullElse(role.getColor(), DEFAULT_ROLE_COLOR);
+                prefix = temp.replace("%color%", ChatColor.of(roleColor).toString());
+            }
+        }
+
+        if (prefix == null) {
+            prefix = plugin.getGeneralConfig().getDefaultPrefix();
+        }
+
+        return prefix;
     }
 
     private void processChat(long id, @NotNull String original,

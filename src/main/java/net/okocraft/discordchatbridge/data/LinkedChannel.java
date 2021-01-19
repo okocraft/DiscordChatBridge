@@ -31,8 +31,7 @@ public class LinkedChannel {
         this.id = id;
     }
 
-    @NotNull
-    public String getChannelName() {
+    public @NotNull String getChannelName() {
         return channelName;
     }
 

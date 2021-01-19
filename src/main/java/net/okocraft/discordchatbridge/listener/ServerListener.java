@@ -79,15 +79,13 @@ public class ServerListener implements Listener {
         }
     }
 
-    @NotNull
-    private String replace(@NotNull String format, @NotNull ProxiedPlayer player) {
+    private @NotNull String replace(@NotNull String format, @NotNull ProxiedPlayer player) {
         return format
                 .replace("%player%", player.getName())
                 .replace("%display_name%", Colorizer.stripColorCode(player.getDisplayName()));
     }
 
-    @NotNull
-    private String replace(@NotNull String format, @NotNull ProxiedPlayer player, @NotNull ServerInfo server) {
+    private @NotNull String replace(@NotNull String format, @NotNull ProxiedPlayer player, @NotNull ServerInfo server) {
         return replace(format, player).replace("%server%", server.getName());
     }
 }
