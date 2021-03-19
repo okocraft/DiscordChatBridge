@@ -114,11 +114,11 @@
             <version>1.7.30</version>
             <scope>compile</scope>
         </dependency>
-        <!-- ConfigAPI https://bintray.com/siroshun09/maven/ConfigAPI/_latestVersion -->
+        <!-- ConfigAPI https://github.com/Siroshun09/ConfigAPI -->
         <dependency>
             <groupId>com.github.siroshun09.configapi</groupId>
-            <artifactId>bungee</artifactId>
-            <version>2.2.0</version>
+            <artifactId>yaml</artifactId>
+            <version>3.0.0</version>
             <scope>compile</scope>
         </dependency>
         <!-- MCMessage https://bintray.com/siroshun09/maven/MCMessage/_latestVersion -->
