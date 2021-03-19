@@ -19,95 +19,77 @@
 
 package net.okocraft.discordchatbridge.config;
 
-import com.github.siroshun09.configapi.bungee.BungeeYamlFactory;
-import com.github.siroshun09.configapi.common.configurable.Configurable;
-import com.github.siroshun09.configapi.common.configurable.StringValue;
-import com.github.siroshun09.configapi.common.yaml.Yaml;
+import com.github.siroshun09.configapi.common.FileConfiguration;
+import com.github.siroshun09.configapi.yaml.YamlConfiguration;
 import net.okocraft.discordchatbridge.DiscordChatBridge;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 public class FormatConfig {
 
-    private static final StringValue SERVER_CHAT =
-            Configurable.create("server.chat", "%player%: %message%");
-
-    private static final StringValue SERVER_JOIN =
-            Configurable.create("server.join", ":heavy_plus_sign: **%player%** joined the server.");
-
-    private static final StringValue SERVER_LEAVE =
-            Configurable.create("server.leave", ":heavy_minus_sign: **%player%** left the server.");
-
-    private static final StringValue SERVER_SWITCH =
-            Configurable.create("server.switch", ":heavy_plus_sign: **%player%** moved to **%server%**");
-
-    private static final StringValue PLAYER_LIST_TOP =
-            Configurable.create("server.player-list.top", "**===== Player List (%count%) =====**");
-
-    private static final StringValue PLAYER_LIST_FORMAT =
-            Configurable.create("server.player-list.list", "%server%: %players%");
-
-    private static final StringValue COMMAND_NO_PERMISSION =
-            Configurable.create("command.no-permission", "&c* You have no permission: %perm%");
-
-    private static final StringValue COMMAND_RELOAD_START =
-            Configurable.create("command.reload.start", "&7* Reloading DiscordChatBridge...");
-
-    private static final StringValue COMMAND_RELOAD_SUCCESS =
-            Configurable.create("command.reload.success", "&7* The reload was successful.");
-
-    private static final StringValue COMMAND_RELOAD_FAILURE =
-            Configurable.create("command.reload.failure", "&c* Failed to reload. Please check the console.");
-
-
-    private final Yaml yaml;
+    private final FileConfiguration file;
 
     public FormatConfig(@NotNull DiscordChatBridge plugin) throws IOException {
-        this.yaml = BungeeYamlFactory.load(plugin, "format.yml");
+        var path = plugin.getDataFolder().toPath().resolve("format.yml");
+
+        if (!Files.exists(path)) {
+            saveDefault(plugin, path);
+        }
+
+        this.file = YamlConfiguration.create(path);
+        file.load();
     }
 
     public void reload() throws IOException {
-        yaml.reload();
+        file.reload();
     }
 
     public @NotNull String getDiscordChatFormat() {
-        return yaml.get(SERVER_CHAT);
+        return file.getString("server.chat", "%player%: %message%");
     }
 
     public @NotNull String getServerJoinFormat() {
-        return yaml.get(SERVER_JOIN);
+        return file.getString("server.join", ":heavy_plus_sign: **%player%** joined the server.");
     }
 
     public @NotNull String getServerLeftFormat() {
-        return yaml.get(SERVER_LEAVE);
+        return file.getString("server.leave", ":heavy_minus_sign: **%player%** left the server.");
     }
 
     public @NotNull String getServerSwitchFormat() {
-        return yaml.get(SERVER_SWITCH);
+        return file.getString("server.switch", ":heavy_plus_sign: **%player%** moved to **%server%**");
     }
 
     public @NotNull String getPlayerListTop() {
-        return yaml.get(PLAYER_LIST_TOP);
+        return file.getString("server.player-list.top", "**===== Player List (%count%) =====**");
     }
 
     public @NotNull String getPlayerListFormat() {
-        return yaml.get(PLAYER_LIST_FORMAT);
+        return file.getString("server.player-list.list", "%server%: %players%");
     }
 
     public @NotNull String getNoPermissionMessage() {
-        return yaml.get(COMMAND_NO_PERMISSION);
+        return file.getString("command.no-permission", "&c* You have no permission: %perm%");
     }
 
     public @NotNull String getReloadingMessage() {
-        return yaml.get(COMMAND_RELOAD_START);
+        return file.getString("command.reload.start", "&7* Reloading DiscordChatBridge...");
     }
 
     public @NotNull String getReloadSuccessMessage() {
-        return yaml.get(COMMAND_RELOAD_SUCCESS);
+        return file.getString("command.reload.success", "&7* The reload was successful.");
     }
 
     public @NotNull String getReloadFailureMessage() {
-        return yaml.get(COMMAND_RELOAD_FAILURE);
+        return file.getString("command.reload.failure", "&c* Failed to reload. Please check the console.");
+    }
+
+    private void saveDefault(@NotNull DiscordChatBridge plugin, @NotNull Path path) throws IOException {
+        try (var def = plugin.getResourceAsStream("format.yml")) {
+            Files.copy(def, path);
+        }
     }
 }

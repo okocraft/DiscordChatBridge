@@ -19,22 +19,19 @@
 
 package net.okocraft.discordchatbridge.config;
 
-import com.github.siroshun09.configapi.bungee.BungeeYaml;
-import com.github.siroshun09.configapi.bungee.BungeeYamlFactory;
-import com.github.siroshun09.configapi.common.Configuration;
-import com.github.siroshun09.configapi.common.configurable.AbstractConfigurableValue;
-import com.github.siroshun09.configapi.common.configurable.Configurable;
-import com.github.siroshun09.configapi.common.configurable.IntegerValue;
-import com.github.siroshun09.configapi.common.configurable.StringValue;
-import com.github.siroshun09.configapi.common.yaml.Yaml;
+import com.github.siroshun09.configapi.common.FileConfiguration;
+import com.github.siroshun09.configapi.yaml.YamlConfiguration;
 import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Activity;
+import net.md_5.bungee.api.ProxyServer;
 import net.okocraft.discordchatbridge.DiscordChatBridge;
 import net.okocraft.discordchatbridge.data.LinkedChannel;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -42,75 +39,53 @@ import java.util.Optional;
 
 public class GeneralConfig {
 
-    private static final StringValue DISCORD_TOKEN = Configurable.create("discord.token", "");
-
-    private static final Configurable<OnlineStatus> DISCORD_STATUS =
-            new AbstractConfigurableValue<>("discord.status", OnlineStatus.ONLINE) {
-                @Override
-                public @Nullable OnlineStatus getValueOrNull(@NotNull Configuration configuration) {
-                    try {
-                        var value = configuration.getString(getKey());
-                        return OnlineStatus.valueOf(value);
-                    } catch (IllegalArgumentException e) {
-                        return null;
-                    }
-                }
-            };
-
-    private static final Configurable<Activity.ActivityType> DISCORD_ACTIVITY_TYPE =
-            new AbstractConfigurableValue<>("discord.activity.type", Activity.ActivityType.DEFAULT) {
-                @Override
-                public @Nullable Activity.ActivityType getValueOrNull(@NotNull Configuration configuration) {
-                    try {
-                        var value = configuration.getString(getKey());
-                        return Activity.ActivityType.valueOf(value);
-                    } catch (IllegalArgumentException e) {
-                        return null;
-                    }
-                }
-            };
-
-    private static final StringValue DISCORD_ACTIVITY_GAME =
-            Configurable.create("discord.activity.game", "%count% players in server");
-
-    private static final StringValue DISCORD_ACTIVITY_URL = Configurable.create("discord.activity.", "");
-
-    private static final IntegerValue CHAT_MAX_LENGTH = Configurable.create("chat-max-length", 150);
-
-    private static final StringValue DISCORD_SOURCE_NAME = Configurable.create("discord-source-name", "Dis");
-
-    private static final StringValue DEFAULT_PREFIX = Configurable.create("role-prefix.default", "&f* ");
-
-    private final DiscordChatBridge plugin;
-    private final Yaml yaml;
+    private final FileConfiguration file;
     private List<LinkedChannel> linkedChannels = Collections.emptyList();
 
     public GeneralConfig(@NotNull DiscordChatBridge plugin) throws IOException {
-        this.plugin = plugin;
-        this.yaml = BungeeYamlFactory.load(plugin, "config.yml");
+        var path = plugin.getDataFolder().toPath().resolve("config.yml");
 
+        if (!Files.exists(path)) {
+            saveDefault(plugin, path);
+        }
+
+        this.file = YamlConfiguration.create(path);
+        file.load();
         loadChannels();
     }
 
     public void reload() throws IOException {
-        yaml.reload();
+        file.reload();
         loadChannels();
     }
 
     public @NotNull String getToken() {
-        return yaml.get(DISCORD_TOKEN);
+        return file.getString("discord.token", "");
     }
 
     public @NotNull OnlineStatus getStatus() {
-        return yaml.get(DISCORD_STATUS);
+        try {
+            var value = file.getString("discord.status");
+            return OnlineStatus.valueOf(value);
+        } catch (IllegalArgumentException e) {
+            return OnlineStatus.ONLINE;
+        }
     }
 
     public @NotNull Activity createActivity() {
-        var type = yaml.get(DISCORD_ACTIVITY_TYPE);
-        var game = yaml.get(DISCORD_ACTIVITY_GAME);
-        var url = yaml.get(DISCORD_ACTIVITY_URL);
+        Activity.ActivityType type;
 
-        var playerCount = plugin.getProxy().getOnlineCount();
+        try {
+            var value = file.getString("discord.activity.type");
+            type = Activity.ActivityType.valueOf(value);
+        } catch (IllegalArgumentException e) {
+            type = Activity.ActivityType.DEFAULT;
+        }
+
+        var game = file.getString("discord.activity.game", "%count% players in server");
+        var url = file.getString("discord.activity.url", "");
+
+        var playerCount = ProxyServer.getInstance().getOnlineCount();
 
         return Activity.of(type, game.replace("%count%", String.valueOf(playerCount)), url);
     }
@@ -138,24 +113,23 @@ public class GeneralConfig {
     }
 
     public int getChatMaxLength() {
-        return yaml.get(CHAT_MAX_LENGTH);
+        return file.getInteger("chat-max-length", 150);
     }
 
     public @NotNull String getSourceName() {
-        return yaml.get(DISCORD_SOURCE_NAME);
+        return file.getString("discord-source-name", "Dis");
     }
 
     public @NotNull String getRolePrefix(long roleId) {
-        return yaml.getString("role-prefix." + roleId);
+        return file.getString("role-prefix." + roleId);
     }
 
     public @NotNull String getDefaultPrefix() {
-        return yaml.get(DEFAULT_PREFIX);
+        return file.getString("role-prefix.default", "&f* ");
     }
 
     private void loadChannels() {
-        var bungeeYaml = (BungeeYaml) yaml;
-        var section = bungeeYaml.getConfig().getSection("channels");
+        var section = file.getSection("channels");
 
         if (section != null) {
             linkedChannels = new LinkedList<>();
@@ -163,6 +137,12 @@ public class GeneralConfig {
             for (String key : section.getKeys()) {
                 linkedChannels.add(new LinkedChannel(key, section.getLong(key, 0)));
             }
+        }
+    }
+
+    private void saveDefault(@NotNull DiscordChatBridge plugin, @NotNull Path path) throws IOException {
+        try (var def = plugin.getResourceAsStream("config.yml")) {
+            Files.copy(def, path);
         }
     }
 }
