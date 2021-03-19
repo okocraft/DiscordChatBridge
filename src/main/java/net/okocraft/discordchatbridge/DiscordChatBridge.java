@@ -23,7 +23,6 @@ import net.md_5.bungee.api.plugin.Plugin;
 import net.okocraft.discordchatbridge.command.ReloadCommand;
 import net.okocraft.discordchatbridge.config.FormatConfig;
 import net.okocraft.discordchatbridge.config.GeneralConfig;
-import net.okocraft.discordchatbridge.data.ReceivedMessages;
 import net.okocraft.discordchatbridge.listener.LunaChatListener;
 import net.okocraft.discordchatbridge.listener.ServerListener;
 import org.jetbrains.annotations.NotNull;
@@ -33,16 +32,15 @@ import java.util.logging.Level;
 
 public class DiscordChatBridge extends Plugin {
 
-    private final ReceivedMessages receivedMessages = new ReceivedMessages();
     private GeneralConfig config;
     private FormatConfig formatConfig;
     private DiscordBot bot;
 
     @Override
     public void onEnable() {
-       if (reload()) {
-           getLogger().info("Successfully enabled.");
-       }
+        if (reload()) {
+            getLogger().info("Successfully enabled.");
+        }
     }
 
     @Override
@@ -50,7 +48,6 @@ public class DiscordChatBridge extends Plugin {
         if (bot != null) {
             bot.shutdown();
             unregisterCommandAndListeners();
-            receivedMessages.clear();
         }
 
         getLogger().info("Successfully disabled.");
@@ -77,7 +74,6 @@ public class DiscordChatBridge extends Plugin {
             return false;
         }
 
-        receivedMessages.clear();
         registerCommandAndListeners();
         return true;
     }
@@ -92,10 +88,6 @@ public class DiscordChatBridge extends Plugin {
 
     public @NotNull DiscordBot getBot() {
         return bot;
-    }
-
-    public @NotNull ReceivedMessages getReceivedMessages() {
-        return receivedMessages;
     }
 
     private void loadConfigurations() throws IOException {

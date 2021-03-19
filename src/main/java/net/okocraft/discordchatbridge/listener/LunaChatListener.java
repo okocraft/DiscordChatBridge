@@ -40,20 +40,12 @@ public class LunaChatListener implements Listener {
 
     @EventHandler
     public void onChat(@NotNull LunaChatBungeeChannelMessageEvent e) {
-        var message = Colorizer.stripColorCode(e.getOriginalMessage());
-
-        if (message.isEmpty()) {
+        if (e.getDisplayName().endsWith(plugin.getGeneralConfig().getSourceName())) {
             return;
         }
 
         var id = plugin.getGeneralConfig().getDiscordChannel(e.getChannel().getName());
-
         if (id.isEmpty()) {
-            return;
-        }
-
-        if (plugin.getReceivedMessages().contains(message)) {
-            plugin.getReceivedMessages().remove(message);
             return;
         }
 

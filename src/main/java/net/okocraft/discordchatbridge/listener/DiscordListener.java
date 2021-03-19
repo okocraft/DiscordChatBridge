@@ -77,8 +77,6 @@ public class DiscordListener extends ListenerAdapter {
 
         var name = member.getNickname() != null ? member.getNickname() : member.getEffectiveName();
 
-        plugin.getReceivedMessages().add(message);
-
         channel.chatFromOtherSource(
                 plugin.getBot().getRolePrefix(member) + name,
                 plugin.getGeneralConfig().getSourceName(),
