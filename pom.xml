@@ -185,6 +185,46 @@
                             <pattern>net.dv8tion.jda</pattern>
                             <shadedPattern>${project.groupId}.lib.jda</shadedPattern>
                         </relocation>
+                        <relocation>
+                            <pattern>com.fasterxml</pattern>
+                            <shadedPattern>${project.groupId}.lib.fasterxml</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>com.iwebpp.crypto</pattern>
+                            <shadedPattern>${project.groupId}.lib.crypto</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>com.neovisionaries.ws</pattern>
+                            <shadedPattern>${project.groupId}.lib.ws</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>gnu.trove</pattern>
+                            <shadedPattern>${project.groupId}.lib.trove</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>javax.annotation</pattern>
+                            <shadedPattern>${project.groupId}.lib.javax.annotation</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>okhttp3</pattern>
+                            <shadedPattern>${project.groupId}.lib.okhttp3</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>okio</pattern>
+                            <shadedPattern>${project.groupId}.lib.okio</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>org.apache.commons</pattern>
+                            <shadedPattern>${project.groupId}.lib.commons</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>org.jetbrains</pattern>
+                            <shadedPattern>${project.groupId}.lib.jetbrains</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>org.yaml</pattern>
+                            <shadedPattern>${project.groupId}.lib.yaml</shadedPattern>
+                        </relocation>
                     </relocations>
                 </configuration>
                 <executions>
