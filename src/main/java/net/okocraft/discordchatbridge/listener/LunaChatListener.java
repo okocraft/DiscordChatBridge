@@ -19,14 +19,18 @@
 
 package net.okocraft.discordchatbridge.listener;
 
-import com.github.siroshun09.mcmessage.util.Colorizer;
 import com.github.ucchyocean.lc3.bungee.event.LunaChatBungeeChannelMessageEvent;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.event.EventHandler;
 import net.okocraft.discordchatbridge.DiscordChatBridge;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.regex.Pattern;
+
 public class LunaChatListener implements Listener {
+
+    private static final Pattern COLOR_SECTION_PATTERN = Pattern.compile("(?i)§[0-9A-FK-ORX]");
+    private static final String EMPTY = "";
 
     private final DiscordChatBridge plugin;
 
@@ -54,7 +58,10 @@ public class LunaChatListener implements Listener {
         }
 
         plugin.getBot().sendChat(
-                id.get(), message, e.getMember().getName(), e.getMember().getDisplayName()
+                id.get(),
+                COLOR_SECTION_PATTERN.matcher(e.getOriginalMessage()).replaceAll(EMPTY),
+                e.getMember().getName(),
+                e.getMember().getDisplayName()
         );
     }
 }

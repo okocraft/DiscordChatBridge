@@ -19,7 +19,6 @@
 
 package net.okocraft.discordchatbridge.listener;
 
-import com.github.siroshun09.mcmessage.util.Colorizer;
 import net.dv8tion.jda.api.MessageBuilder;
 import net.md_5.bungee.api.config.ServerInfo;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
@@ -31,8 +30,12 @@ import net.okocraft.discordchatbridge.DiscordChatBridge;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 
 public class ServerListener implements Listener {
+
+    private static final Pattern COLOR_SECTION_PATTERN = Pattern.compile("(?i)§[0-9A-FK-ORX]");
+    private static final String EMPTY = "";
 
     private final DiscordChatBridge plugin;
 
@@ -82,7 +85,7 @@ public class ServerListener implements Listener {
     private @NotNull String replace(@NotNull String format, @NotNull ProxiedPlayer player) {
         return format
                 .replace("%player%", player.getName())
-                .replace("%display_name%", Colorizer.stripColorCode(player.getDisplayName()));
+                .replace("%display_name%", COLOR_SECTION_PATTERN.matcher(player.getDisplayName()).replaceAll(EMPTY));
     }
 
     private @NotNull String replace(@NotNull String format, @NotNull ProxiedPlayer player, @NotNull ServerInfo server) {

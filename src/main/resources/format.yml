@@ -8,8 +8,8 @@ server:
     list: "%server%: %players%"
 
 command:
-  no-permission: "&c* You have no permission: %perm%"
+  no-permission: "You have no permission: %perm%"
   reload:
-    start: "&7* Reloading DiscordChatBridge..."
-    success: "&7* The reload was successful."
-    failure: "&c* Failed to reload. Please check the console."
+    start: "Reloading DiscordChatBridge..."
+    success: "The reload was successful."
+    failure: "Failed to reload. Please check the console."
