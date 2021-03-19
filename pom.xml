@@ -121,13 +121,6 @@
             <version>3.0.0</version>
             <scope>compile</scope>
         </dependency>
-        <!-- MCMessage https://bintray.com/siroshun09/maven/MCMessage/_latestVersion -->
-        <dependency>
-            <groupId>com.github.siroshun09.mcmessage</groupId>
-            <artifactId>mcmessage</artifactId>
-            <version>1.5.3</version>
-            <scope>compile</scope>
-        </dependency>
     </dependencies>
 
     <build>
