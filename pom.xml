@@ -73,9 +73,9 @@
             <url>https://raw.github.com/ucchyocean/mvn-repo/master</url>
         </repository>
         <repository>
-            <id>jcenter</id>
-            <name>jcenter-bintray</name>
-            <url>https://jcenter.bintray.com</url>
+            <id>dv8tion</id>
+            <name>m2-dv8tion</name>
+            <url>https://m2.dv8tion.net/releases</url>
         </repository>
     </repositories>
 
@@ -94,11 +94,11 @@
             <version>3.0.16</version>
             <scope>provided</scope>
         </dependency>
-        <!-- JDA https://bintray.com/dv8fromtheworld/maven/JDA/_latestVersion -->
+        <!-- JDA https://github.com/DV8FromTheWorld/JDA -->
         <dependency>
             <groupId>net.dv8tion</groupId>
             <artifactId>JDA</artifactId>
-            <version>4.2.0_245</version>
+            <version>4.2.1_253</version>
             <scope>compile</scope>
             <exclusions>
                 <exclusion>
