@@ -20,13 +20,12 @@
 package net.okocraft.discordchatbridge.config;
 
 import com.github.siroshun09.configapi.common.FileConfiguration;
+import com.github.siroshun09.configapi.common.util.ResourceUtils;
 import com.github.siroshun09.configapi.yaml.YamlConfiguration;
 import net.okocraft.discordchatbridge.DiscordChatBridge;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 
 public class FormatConfig {
 
@@ -35,9 +34,11 @@ public class FormatConfig {
     public FormatConfig(@NotNull DiscordChatBridge plugin) throws IOException {
         var path = plugin.getDataFolder().toPath().resolve("format.yml");
 
-        if (!Files.exists(path)) {
-            saveDefault(plugin, path);
-        }
+        ResourceUtils.copyFromClassLoaderIfNotExists(
+                plugin.getClass().getClassLoader(),
+                "format.yml",
+                path
+        );
 
         this.file = YamlConfiguration.create(path);
         file.load();
@@ -85,11 +86,5 @@ public class FormatConfig {
 
     public @NotNull String getReloadFailureMessage() {
         return file.getString("command.reload.failure", "&c* Failed to reload. Please check the console.");
-    }
-
-    private void saveDefault(@NotNull DiscordChatBridge plugin, @NotNull Path path) throws IOException {
-        try (var def = plugin.getResourceAsStream("format.yml")) {
-            Files.copy(def, path);
-        }
     }
 }

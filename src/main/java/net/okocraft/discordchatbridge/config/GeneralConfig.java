@@ -20,6 +20,7 @@
 package net.okocraft.discordchatbridge.config;
 
 import com.github.siroshun09.configapi.common.FileConfiguration;
+import com.github.siroshun09.configapi.common.util.ResourceUtils;
 import com.github.siroshun09.configapi.yaml.YamlConfiguration;
 import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Activity;
@@ -30,8 +31,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -45,9 +44,11 @@ public class GeneralConfig {
     public GeneralConfig(@NotNull DiscordChatBridge plugin) throws IOException {
         var path = plugin.getDataFolder().toPath().resolve("config.yml");
 
-        if (!Files.exists(path)) {
-            saveDefault(plugin, path);
-        }
+        ResourceUtils.copyFromClassLoaderIfNotExists(
+                plugin.getClass().getClassLoader(),
+                "config.yml",
+                path
+        );
 
         this.file = YamlConfiguration.create(path);
         file.load();
@@ -137,12 +138,6 @@ public class GeneralConfig {
             for (String key : section.getKeys()) {
                 linkedChannels.add(new LinkedChannel(key, section.getLong(key, 0)));
             }
-        }
-    }
-
-    private void saveDefault(@NotNull DiscordChatBridge plugin, @NotNull Path path) throws IOException {
-        try (var def = plugin.getResourceAsStream("config.yml")) {
-            Files.copy(def, path);
         }
     }
 }
