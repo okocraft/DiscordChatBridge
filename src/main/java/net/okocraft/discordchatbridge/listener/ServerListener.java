@@ -29,6 +29,9 @@ import net.md_5.bungee.event.EventHandler;
 import net.okocraft.discordchatbridge.DiscordChatBridge;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
@@ -38,6 +41,7 @@ public class ServerListener implements Listener {
     private static final String EMPTY = "";
 
     private final DiscordChatBridge plugin;
+    private final Set<UUID> joinedPlayers = new HashSet<>();
 
     public ServerListener(@NotNull DiscordChatBridge plugin) {
         this.plugin = plugin;
@@ -45,12 +49,17 @@ public class ServerListener implements Listener {
 
     @EventHandler
     public void onDisconnect(@NotNull PlayerDisconnectEvent e) {
+        if (!joinedPlayers.contains(e.getPlayer().getUniqueId())) {
+            return;
+        }
+
         var format = plugin.getFormatConfig().getServerLeftFormat();
 
         if (!format.isEmpty()) {
             sendMessage(replace(format, e.getPlayer()));
         }
 
+        joinedPlayers.remove(e.getPlayer().getUniqueId());
         plugin.getProxy().getScheduler().schedule(plugin, () -> plugin.getBot().updateGame(), 3, TimeUnit.SECONDS);
     }
 
@@ -68,6 +77,8 @@ public class ServerListener implements Listener {
             if (!format.isEmpty()) {
                 sendMessage(replace(format, e.getPlayer(), e.getPlayer().getServer().getInfo()));
             }
+
+            joinedPlayers.add(e.getPlayer().getUniqueId());
         }
 
         plugin.getProxy().getScheduler().schedule(plugin, () -> plugin.getBot().updateGame(), 3, TimeUnit.SECONDS);
