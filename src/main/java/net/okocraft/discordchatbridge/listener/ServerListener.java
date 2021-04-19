@@ -71,14 +71,14 @@ public class ServerListener implements Listener {
             if (!format.isEmpty()) {
                 sendMessage(replace(format, e.getPlayer()));
             }
+
+            joinedPlayers.add(e.getPlayer().getUniqueId());
         } else {
             var format = plugin.getFormatConfig().getServerSwitchFormat();
 
             if (!format.isEmpty()) {
                 sendMessage(replace(format, e.getPlayer(), e.getPlayer().getServer().getInfo()));
             }
-
-            joinedPlayers.add(e.getPlayer().getUniqueId());
         }
 
         plugin.getProxy().getScheduler().schedule(plugin, () -> plugin.getBot().updateGame(), 3, TimeUnit.SECONDS);
