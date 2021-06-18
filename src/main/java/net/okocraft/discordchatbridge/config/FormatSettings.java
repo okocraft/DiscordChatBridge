@@ -24,22 +24,25 @@ import com.github.siroshun09.configapi.common.value.ConfigValue;
 public final class FormatSettings {
 
     public static final ConfigValue<String> DISCORD_CHAT =
-            config -> config.getString("discord.chat-format", "%player_name%: %message%");
+            config -> config.getString("server.chat", "%player_name%: %message%");
 
     public static final ConfigValue<String> SERVER_JOIN =
-            config -> config.getString("discord.server-join", ":heavy_plus_sign: **%player_name%** joined the server.");
+            config -> config.getString("server.join", ":heavy_plus_sign: **%player_name%** joined the server.");
 
     public static final ConfigValue<String> SERVER_LEAVE =
-            config -> config.getString("discord.server-leave", ":heavy_plus_sign: **%player_name%** left the server.");
+            config -> config.getString("server.leave", ":heavy_plus_sign: **%player_name%** left the server.");
 
     public static final ConfigValue<String> SERVER_SWITCH =
-            config -> config.getString("discord.server-switch", ":heavy_plus_sign: **%player_name%** moved to **%server_name%**");
+            config -> config.getString(
+                    "server.switch",
+                    ":heavy_plus_sign: **%player_name%** moved to **%server_name%**"
+            );
 
     public static final ConfigValue<String> PLAYER_LIST_TOP =
-            config -> config.getString("discord.player-list.top", "**===== Player List (%player_count%) =====**");
+            config -> config.getString("server.player-list.top", "**===== Player List (%player_count%) =====**");
 
     public static final ConfigValue<String> PLAYER_LIST_FORMAT =
-            config -> config.getString("discord.player-list.format", "%server%: %player_list%");
+            config -> config.getString("server.player-list.list", "%server%: %player_list%");
 
     public static final ConfigValue<String> COMMAND_NO_PERMISSION =
             config -> config.getString("command.no-permission", "&c* You have no permission: %permission%");
