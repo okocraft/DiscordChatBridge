@@ -79,6 +79,7 @@ public interface DiscordChatBridgePlugin {
     default boolean enable() {
         try {
             loginToDiscord();
+            getBot().updateGame();
         } catch (Exception e) {
             getJavaLogger().log(Level.SEVERE, "Could not login to Discord", e);
             return false;
