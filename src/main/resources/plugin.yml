@@ -6,3 +6,6 @@ description: ${project.description}
 url: ${project.url}
 author: Siroshun09
 softdepend: [LunaChat]
+commands:
+  dcbreload:
+    description: "Reload config.yml amd format.yml"
