@@ -1,5 +1,5 @@
 name: DiscordChatBridge
-main: net.okocraft.discordchatbridge.DiscordChatBridge
+main: net.okocraft.discordchatbridge.platform.bukkit.DiscordChatBridgeBukkit
 version: ${project.version}
 description: ${project.description}
 url: ${project.url}
