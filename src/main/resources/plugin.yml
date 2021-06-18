@@ -1,6 +1,7 @@
 name: DiscordChatBridge
 main: net.okocraft.discordchatbridge.platform.bukkit.DiscordChatBridgeBukkit
 version: ${project.version}
+api-version: "1.16"
 description: ${project.description}
 url: ${project.url}
 author: Siroshun09
