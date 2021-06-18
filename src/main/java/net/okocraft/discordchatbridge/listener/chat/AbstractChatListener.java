@@ -20,7 +20,7 @@
 package net.okocraft.discordchatbridge.listener.chat;
 
 import net.okocraft.discordchatbridge.DiscordChatBridgePlugin;
-import net.okocraft.discordchatbridge.utils.ColorStripper;
+import net.okocraft.discordchatbridge.util.ColorStripper;
 import org.jetbrains.annotations.NotNull;
 
 public abstract class AbstractChatListener {

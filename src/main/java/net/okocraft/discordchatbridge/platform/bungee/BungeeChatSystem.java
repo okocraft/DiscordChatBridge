@@ -22,8 +22,8 @@ package net.okocraft.discordchatbridge.platform.bungee;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.okocraft.discordchatbridge.chat.ChatSystem;
-import net.okocraft.discordchatbridge.constants.Constants;
-import net.okocraft.discordchatbridge.utils.VanillaChatFormatter;
+import net.okocraft.discordchatbridge.constant.Constants;
+import net.okocraft.discordchatbridge.util.VanillaChatFormatter;
 import org.jetbrains.annotations.NotNull;
 
 public class BungeeChatSystem implements ChatSystem {

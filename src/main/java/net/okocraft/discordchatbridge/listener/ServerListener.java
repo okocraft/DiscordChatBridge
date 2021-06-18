@@ -23,8 +23,8 @@ import net.dv8tion.jda.api.MessageBuilder;
 import net.okocraft.discordchatbridge.DiscordChatBridgePlugin;
 import net.okocraft.discordchatbridge.config.FormatSettings;
 import net.okocraft.discordchatbridge.config.GeneralSettings;
-import net.okocraft.discordchatbridge.constants.Placeholders;
-import net.okocraft.discordchatbridge.utils.ColorStripper;
+import net.okocraft.discordchatbridge.constant.Placeholders;
+import net.okocraft.discordchatbridge.util.ColorStripper;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashSet;

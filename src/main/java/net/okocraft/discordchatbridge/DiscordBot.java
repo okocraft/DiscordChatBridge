@@ -34,7 +34,7 @@ import net.dv8tion.jda.api.entities.TextChannel;
 import net.md_5.bungee.api.ChatColor;
 import net.okocraft.discordchatbridge.config.FormatSettings;
 import net.okocraft.discordchatbridge.config.GeneralSettings;
-import net.okocraft.discordchatbridge.constants.Placeholders;
+import net.okocraft.discordchatbridge.constant.Placeholders;
 import net.okocraft.discordchatbridge.listener.DiscordListener;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;

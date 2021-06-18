@@ -21,7 +21,7 @@ package net.okocraft.discordchatbridge.listener.chat;
 
 import net.okocraft.discordchatbridge.DiscordChatBridgePlugin;
 import net.okocraft.discordchatbridge.config.GeneralSettings;
-import net.okocraft.discordchatbridge.constants.Constants;
+import net.okocraft.discordchatbridge.constant.Constants;
 import org.jetbrains.annotations.NotNull;
 
 public abstract class VanillaChatListener extends AbstractChatListener {

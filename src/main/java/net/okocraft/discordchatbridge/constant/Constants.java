@@ -17,17 +17,15 @@
  *     along with DiscordChatBridge. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.okocraft.discordchatbridge.utils;
+package net.okocraft.discordchatbridge.constant;
 
-import org.jetbrains.annotations.NotNull;
+public final class Constants {
 
-public final class VanillaChatFormatter {
+    public static final String LINE_SEPARATOR = System.getProperty("line.separator");
 
-    public static @NotNull String format(@NotNull String sender, @NotNull String source, @NotNull String message) {
-        return "<" + sender + "@" + source + "> " + message;
-    }
+    public static final String GLOBAL_CHANNEL_NAME = "global";
 
-    private VanillaChatFormatter() {
+    private Constants() {
         throw new UnsupportedOperationException();
     }
 }

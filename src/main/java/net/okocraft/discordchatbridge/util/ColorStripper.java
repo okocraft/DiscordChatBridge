@@ -17,24 +17,26 @@
  *     along with DiscordChatBridge. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.okocraft.discordchatbridge.utils;
+package net.okocraft.discordchatbridge.util;
 
-import net.okocraft.discordchatbridge.constants.Placeholders;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Collection;
+import java.util.regex.Pattern;
 
-public final class PlayerListFormatter {
+public final class ColorStripper {
 
-    public static String format(@NotNull String format, @NotNull String serverName,
-                                @NotNull Collection<String> players) {
-        return format
-                .replace(Placeholders.PLAYER_COUNT, String.valueOf(players.size()))
-                .replace(Placeholders.SERVER_NAME, serverName)
-                .replace(Placeholders.PLAYER_LIST, String.join(", ", players));
+    private static final String EMPTY = "";
+    private static final Pattern COLOR_SECTION_PATTERN = Pattern.compile("(?i)§[0-9A-FK-ORX]");
+
+    public static @NotNull String strip(String str) {
+        if (str == null || str.isEmpty()) {
+            return EMPTY;
+        }
+
+        return COLOR_SECTION_PATTERN.matcher(str).replaceAll(EMPTY);
     }
 
-    private PlayerListFormatter() {
+    private ColorStripper() {
         throw new UnsupportedOperationException();
     }
 }

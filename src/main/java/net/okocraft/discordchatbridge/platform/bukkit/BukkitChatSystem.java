@@ -20,8 +20,8 @@
 package net.okocraft.discordchatbridge.platform.bukkit;
 
 import net.okocraft.discordchatbridge.chat.ChatSystem;
-import net.okocraft.discordchatbridge.constants.Constants;
-import net.okocraft.discordchatbridge.utils.VanillaChatFormatter;
+import net.okocraft.discordchatbridge.constant.Constants;
+import net.okocraft.discordchatbridge.util.VanillaChatFormatter;
 import org.bukkit.Bukkit;
 import org.jetbrains.annotations.NotNull;
 

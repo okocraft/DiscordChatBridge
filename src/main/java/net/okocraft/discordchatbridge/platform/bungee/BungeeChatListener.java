@@ -25,7 +25,7 @@ import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.event.EventHandler;
 import net.md_5.bungee.event.EventPriority;
 import net.okocraft.discordchatbridge.DiscordChatBridgePlugin;
-import net.okocraft.discordchatbridge.constants.Constants;
+import net.okocraft.discordchatbridge.constant.Constants;
 import net.okocraft.discordchatbridge.listener.chat.VanillaChatListener;
 import org.jetbrains.annotations.NotNull;
 

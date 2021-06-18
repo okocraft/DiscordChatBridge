@@ -17,27 +17,17 @@
  *     along with DiscordChatBridge. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.okocraft.discordchatbridge.constants;
+package net.okocraft.discordchatbridge.util;
 
-public final class Placeholders {
+import org.jetbrains.annotations.NotNull;
 
-    public static final String PLAYER_COUNT = "%player_count%";
+public final class VanillaChatFormatter {
 
-    public static final String SERVER_NAME = "%server_name%";
+    public static @NotNull String format(@NotNull String sender, @NotNull String source, @NotNull String message) {
+        return "<" + sender + "@" + source + "> " + message;
+    }
 
-    public static final String PLAYER_LIST = "%player_list%";
-
-    public static final String PLAYER_NAME = "%player_name%";
-
-    public static final String DISPLAY_NAME = "%display_name%";
-
-    public static final String ROLE_COLOR = "%role_color%";
-
-    public static final String MESSAGE = "%message%";
-
-    public static final String PERMISSION = "%permission%";
-
-    private Placeholders() {
+    private VanillaChatFormatter() {
         throw new UnsupportedOperationException();
     }
 }

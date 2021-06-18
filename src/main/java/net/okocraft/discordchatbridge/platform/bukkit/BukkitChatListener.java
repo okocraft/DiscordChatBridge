@@ -20,7 +20,7 @@
 package net.okocraft.discordchatbridge.platform.bukkit;
 
 import net.okocraft.discordchatbridge.DiscordChatBridgePlugin;
-import net.okocraft.discordchatbridge.constants.Constants;
+import net.okocraft.discordchatbridge.constant.Constants;
 import net.okocraft.discordchatbridge.listener.chat.VanillaChatListener;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;

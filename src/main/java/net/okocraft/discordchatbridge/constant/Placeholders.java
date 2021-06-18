@@ -17,15 +17,27 @@
  *     along with DiscordChatBridge. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.okocraft.discordchatbridge.constants;
+package net.okocraft.discordchatbridge.constant;
 
-public final class Constants {
+public final class Placeholders {
 
-    public static final String LINE_SEPARATOR = System.getProperty("line.separator");
+    public static final String PLAYER_COUNT = "%player_count%";
 
-    public static final String GLOBAL_CHANNEL_NAME = "global";
+    public static final String SERVER_NAME = "%server_name%";
 
-    private Constants() {
+    public static final String PLAYER_LIST = "%player_list%";
+
+    public static final String PLAYER_NAME = "%player_name%";
+
+    public static final String DISPLAY_NAME = "%display_name%";
+
+    public static final String ROLE_COLOR = "%role_color%";
+
+    public static final String MESSAGE = "%message%";
+
+    public static final String PERMISSION = "%permission%";
+
+    private Placeholders() {
         throw new UnsupportedOperationException();
     }
 }

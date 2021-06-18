@@ -26,8 +26,8 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.okocraft.discordchatbridge.DiscordChatBridgePlugin;
 import net.okocraft.discordchatbridge.config.FormatSettings;
 import net.okocraft.discordchatbridge.config.GeneralSettings;
-import net.okocraft.discordchatbridge.constants.Constants;
-import net.okocraft.discordchatbridge.constants.Placeholders;
+import net.okocraft.discordchatbridge.constant.Constants;
+import net.okocraft.discordchatbridge.constant.Placeholders;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;

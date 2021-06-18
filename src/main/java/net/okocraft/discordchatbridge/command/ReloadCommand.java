@@ -21,7 +21,7 @@ package net.okocraft.discordchatbridge.command;
 
 import net.okocraft.discordchatbridge.DiscordChatBridgePlugin;
 import net.okocraft.discordchatbridge.config.FormatSettings;
-import net.okocraft.discordchatbridge.constants.Placeholders;
+import net.okocraft.discordchatbridge.constant.Placeholders;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.function.Consumer;
