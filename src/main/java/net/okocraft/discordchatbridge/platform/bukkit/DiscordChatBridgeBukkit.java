@@ -26,7 +26,6 @@ import net.okocraft.discordchatbridge.chat.ChatSystem;
 import net.okocraft.discordchatbridge.chat.LunaChatSystem;
 import net.okocraft.discordchatbridge.command.ReloadCommand;
 import net.okocraft.discordchatbridge.platform.PlatformInfo;
-import net.okocraft.discordchatbridge.platform.bungee.BungeeChatSystem;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.event.HandlerList;
@@ -53,7 +52,7 @@ public class DiscordChatBridgeBukkit extends JavaPlugin implements DiscordChatBr
         if (isLunaChatEnabled()) {
             chatSystem = new LunaChatSystem();
         } else {
-            chatSystem = new BungeeChatSystem();
+            chatSystem = new BukkitChatSystem();
         }
 
         enable();
