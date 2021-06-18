@@ -1,0 +1,7 @@
+name: DiscordChatBridge
+main: net.okocraft.discordchatbridge.DiscordChatBridge
+version: ${project.version}
+description: ${project.description}
+url: ${project.url}
+author: Siroshun09
+softdepend: [LunaChat]
