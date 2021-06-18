@@ -24,25 +24,25 @@ import com.github.siroshun09.configapi.common.value.ConfigValue;
 public final class FormatSettings {
 
     public static final ConfigValue<String> DISCORD_CHAT =
-            config -> config.getString("discord.chat-format", "%player%: %message%");
+            config -> config.getString("discord.chat-format", "%player_name%: %message%");
 
     public static final ConfigValue<String> SERVER_JOIN =
-            config -> config.getString("discord.server-join", ":heavy_plus_sign: **%player%** joined the server.");
+            config -> config.getString("discord.server-join", ":heavy_plus_sign: **%player_name%** joined the server.");
 
     public static final ConfigValue<String> SERVER_LEAVE =
-            config -> config.getString("discord.server-leave", ":heavy_plus_sign: **%player%** left the server.");
+            config -> config.getString("discord.server-leave", ":heavy_plus_sign: **%player_name%** left the server.");
 
     public static final ConfigValue<String> SERVER_SWITCH =
-            config -> config.getString("discord.server-switch", ":heavy_plus_sign: **%player%** moved to **%server%**");
+            config -> config.getString("discord.server-switch", ":heavy_plus_sign: **%player_name%** moved to **%server_name%**");
 
     public static final ConfigValue<String> PLAYER_LIST_TOP =
-            config -> config.getString("discord.player-list.top", "**===== Player List (%count%) =====**");
+            config -> config.getString("discord.player-list.top", "**===== Player List (%player_count%) =====**");
 
     public static final ConfigValue<String> PLAYER_LIST_FORMAT =
-            config -> config.getString("discord.player-list.format", "%server%: %players%");
+            config -> config.getString("discord.player-list.format", "%server%: %player_list%");
 
     public static final ConfigValue<String> COMMAND_NO_PERMISSION =
-            config -> config.getString("command.no-permission", "&c* You have no permission: %perm%");
+            config -> config.getString("command.no-permission", "&c* You have no permission: %permission%");
 
     public static final ConfigValue<String> COMMAND_RELOAD_START =
             config -> config.getString("command.reload.start", "&7* Reloading DiscordChatBridge...");
