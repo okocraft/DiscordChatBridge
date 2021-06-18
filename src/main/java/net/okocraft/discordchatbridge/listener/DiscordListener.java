@@ -19,41 +19,46 @@
 
 package net.okocraft.discordchatbridge.listener;
 
-import com.github.ucchyocean.lc3.LunaChatBungee;
 import net.dv8tion.jda.api.MessageBuilder;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
-import net.md_5.bungee.api.config.ServerInfo;
-import net.md_5.bungee.api.connection.ProxiedPlayer;
-import net.okocraft.discordchatbridge.DiscordChatBridge;
+import net.okocraft.discordchatbridge.DiscordChatBridgePlugin;
+import net.okocraft.discordchatbridge.config.FormatSettings;
+import net.okocraft.discordchatbridge.config.GeneralSettings;
+import net.okocraft.discordchatbridge.constants.Constants;
+import net.okocraft.discordchatbridge.constants.Placeholders;
 import org.jetbrains.annotations.NotNull;
 
-import javax.annotation.Nonnull;
-import java.util.stream.Collectors;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class DiscordListener extends ListenerAdapter {
 
-    private final DiscordChatBridge plugin;
-    private final String lineSeparator = System.getProperty("line.separator");
+    private final DiscordChatBridgePlugin plugin;
+    private final Map<Long, String> linkedChannels = new HashMap<>();
 
-    private long lastPlayerListUsed;
+    private final AtomicLong lastPlayerListUsed = new AtomicLong(0);
 
-    public DiscordListener(@NotNull DiscordChatBridge plugin) {
+    public DiscordListener(@NotNull DiscordChatBridgePlugin plugin) {
         this.plugin = plugin;
+
+        var channelSection = plugin.getGeneralConfig().get(GeneralSettings.LINKED_CHANNELS);
+
+        for (var key : channelSection.getKeys()) {
+            var id = channelSection.getLong(key);
+            if (id != 0) {
+                linkedChannels.put(id, key);
+            }
+        }
     }
 
     @Override
-    public void onMessageReceived(@Nonnull MessageReceivedEvent event) {
+    public void onMessageReceived(@NotNull MessageReceivedEvent event) {
         var member = event.getMember();
 
         if (event.getAuthor().isBot() || member == null) {
-            return;
-        }
-
-        var channelName = plugin.getGeneralConfig().getLunaChatChannel(event.getChannel().getIdLong());
-
-        if (channelName.isEmpty()) {
             return;
         }
 
@@ -64,57 +69,59 @@ public class DiscordListener extends ListenerAdapter {
             return;
         }
 
-        if (plugin.getGeneralConfig().getChatMaxLength() < message.length()) {
-            plugin.getBot().addReaction(event.getMessage(), "U+FE0F");
+        var channelName = linkedChannels.get(event.getChannel().getIdLong());
+
+        if (channelName == null) {
             return;
         }
 
-        var channel = LunaChatBungee.getInstance().getLunaChatAPI().getChannel(channelName.get());
-
-        if (channel == null) {
+        if (plugin.getGeneralConfig().get(GeneralSettings.CHAT_MAX_LENGTH) < message.length()) {
+            plugin.getBot().addReaction(event.getMessage(), "U+FE0F");
             return;
         }
 
         var name = member.getNickname() != null ? member.getNickname() : member.getEffectiveName();
 
-        channel.chatFromOtherSource(
+        plugin.getChatSystem().sendChat(
+                channelName,
                 plugin.getBot().getRolePrefix(member) + name,
-                plugin.getGeneralConfig().getSourceName(),
+                plugin.getGeneralConfig().get(GeneralSettings.DISCORD_SOURCE_NAME),
                 message
         );
     }
 
     private void onPlayerListCommand(@NotNull TextChannel channel) {
-        if (System.currentTimeMillis() - lastPlayerListUsed < 5000) {
+        if (System.currentTimeMillis() - lastPlayerListUsed.get() < 5000) {
             return;
         }
 
         plugin.getBot().updateGame();
 
-        MessageBuilder builder = new MessageBuilder(
-                plugin.getFormatConfig().getPlayerListTop()
-                        .replace("%count%", String.valueOf(plugin.getProxy().getOnlineCount()))
-        );
+        MessageBuilder builder = new MessageBuilder();
 
-        builder.append(lineSeparator).append("```").append(lineSeparator);
+        var top =
+                plugin.getFormatConfig()
+                        .get(FormatSettings.PLAYER_LIST_TOP)
+                        .replace(
+                                Placeholders.PLAYER_COUNT,
+                                String.valueOf(plugin.getPlatformInfo().getNumberOfPlayers())
+                        );
 
-        for (ServerInfo server : plugin.getProxy().getServers().values()) {
-            builder.append(plugin.getFormatConfig().getPlayerListFormat()
-                    .replace("%server%", server.getName())
-                    .replace("%players%", server.getPlayers().stream()
-                            .map(ProxiedPlayer::getName)
-                            .sorted().collect(Collectors.joining(", ")))
 
-            );
+        builder.append(top).append(Constants.LINE_SEPARATOR).append("```").append(Constants.LINE_SEPARATOR);
 
-            builder.append(lineSeparator);
-        }
+        plugin.getPlatformInfo()
+                .getPlayerListsPerServer()
+                .forEach(list -> {
+                    builder.append(list);
+                    builder.append(Constants.LINE_SEPARATOR);
+                });
 
-        builder.append(lineSeparator).append("```");
+        builder.append(Constants.LINE_SEPARATOR).append("```");
 
         if (channel.canTalk()) {
             plugin.getBot().sendMessage(channel, builder.build());
-            lastPlayerListUsed = System.currentTimeMillis();
+            lastPlayerListUsed.set(System.currentTimeMillis());
         }
     }
 }

@@ -1,14 +1,14 @@
 server:
-  chat: "%player%: %message%"
-  join: ":heavy_plus_sign: **%player%** joined the server."
-  leave: ":heavy_minus_sign: **%player%** left the server."
-  switch: ":heavy_plus_sign: **%player%** moved to **%server%**"
+  chat: "%player_name%: %message%"
+  join: ":heavy_plus_sign: **%player_name%** joined the server."
+  leave: ":heavy_minus_sign: **%player_name%** left the server."
+  switch: ":heavy_plus_sign: **%player_name%** moved to **%server_name%**"
   player-list:
-    top: "**===== Player List (%count%) =====**"
-    list: "%server%: %players%"
+    top: "**===== Player List (%player_count%) =====**"
+    list: "%server_name%: %player_list%"
 
 command:
-  no-permission: "You have no permission: %perm%"
+  no-permission: "You have no permission: %permission%"
   reload:
     start: "Reloading DiscordChatBridge..."
     success: "The reload was successful."

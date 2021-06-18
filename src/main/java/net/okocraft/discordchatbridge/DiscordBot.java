@@ -19,25 +19,31 @@
 
 package net.okocraft.discordchatbridge;
 
+import com.github.siroshun09.configapi.common.Configuration;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.MessageBuilder;
+import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.md_5.bungee.api.ChatColor;
+import net.okocraft.discordchatbridge.config.FormatSettings;
+import net.okocraft.discordchatbridge.config.GeneralSettings;
+import net.okocraft.discordchatbridge.constants.Placeholders;
 import net.okocraft.discordchatbridge.listener.DiscordListener;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import javax.security.auth.login.LoginException;
 import java.awt.Color;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Objects;
+import java.util.Comparator;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -45,18 +51,11 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 public class DiscordBot {
 
     private static final Collection<Message.MentionType> ALLOWED_MENTION_TYPE =
             Set.of(Message.MentionType.EMOTE, Message.MentionType.USER, Message.MentionType.CHANNEL);
-
-    private static final String PLAYER_NAME = "%player%";
-
-    private static final String DISPLAY_NAME = "%display_name%";
-
-    private static final String MESSAGE = "%message%";
 
     private static final String MENTION_MARK = "@";
 
@@ -70,10 +69,13 @@ public class DiscordBot {
 
     private static final String HERE_REPLACEMENT = "@.here";
 
-    private static final Color DEFAULT_ROLE_COLOR = new Color(Role.DEFAULT_COLOR_RAW);
+    private static final String DEFAULT_ROLE_COLOR_CODE = ChatColor.of(new Color(Role.DEFAULT_COLOR_RAW)).toString();
 
-    private final DiscordChatBridge plugin;
+    private static final Comparator<Role> ROLE_COMPARATOR = Comparator.comparingInt(Role::getPosition);
+
+    private final DiscordChatBridgePlugin plugin;
     private final JDA jda;
+    private final Configuration rolePrefixes;
     private final ExecutorService executor;
 
     private final LoadingCache<String, Pattern> mentionPatternCache =
@@ -88,23 +90,24 @@ public class DiscordBot {
                     Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE
             ));
 
-    private DiscordBot(@NotNull DiscordChatBridge plugin, @NotNull JDA jda) {
+    private DiscordBot(@NotNull DiscordChatBridgePlugin plugin, @NotNull JDA jda) {
         this.plugin = plugin;
         this.jda = jda;
+        this.rolePrefixes = plugin.getGeneralConfig().get(GeneralSettings.ROLE_PREFIX);
         this.executor = Executors.newSingleThreadExecutor(r -> new Thread(r, "DiscordChatBridge-Thread"));
     }
 
     @Contract("_ -> new")
-    static @NotNull DiscordBot login(@NotNull DiscordChatBridge plugin) throws IllegalStateException {
+    public static @NotNull DiscordBot login(@NotNull DiscordChatBridgePlugin plugin) throws IllegalStateException {
         try {
             return new DiscordBot(
                     plugin,
-                    JDABuilder.createDefault(plugin.getGeneralConfig().getToken())
+                    JDABuilder.createDefault(plugin.getGeneralConfig().get(GeneralSettings.DISCORD_TOKEN))
                             .addEventListeners(new DiscordListener(plugin))
                             .setAutoReconnect(true)
-                            .setStatus(plugin.getGeneralConfig().getStatus())
-                            .setActivity(plugin.getGeneralConfig().createActivity())
-                            .build().awaitReady()
+                            .setStatus(plugin.getGeneralConfig().get(GeneralSettings.DISCORD_STATUS))
+                            .build()
+                            .awaitReady()
             );
         } catch (InterruptedException | LoginException e) {
             throw new IllegalStateException("Could not log in to Discord", e);
@@ -138,45 +141,59 @@ public class DiscordBot {
     }
 
     public @NotNull String getRolePrefix(@NotNull Member member) {
-        String prefix = null;
+        var roles = member.getRoles();
 
-        for (var role : member.getRoles().stream().sorted().collect(Collectors.toList())) {
-            var temp = plugin.getGeneralConfig().getRolePrefix(role.getIdLong());
-
-            if (!temp.isEmpty()) {
-                var roleColor = Objects.requireNonNullElse(role.getColor(), DEFAULT_ROLE_COLOR);
-                prefix = temp.replace("%color%", ChatColor.of(roleColor).toString());
-            }
+        if (roles.isEmpty()) {
+            return plugin.getGeneralConfig()
+                    .get(GeneralSettings.DEFAULT_ROLE_PREFIX)
+                    .replace(Placeholders.ROLE_COLOR, DEFAULT_ROLE_COLOR_CODE);
         }
 
-        if (prefix == null) {
-            prefix = plugin.getGeneralConfig().getDefaultPrefix();
+        roles = new ArrayList<>(roles);
+        roles.sort(ROLE_COMPARATOR);
+        var role = roles.get(0);
+        var roleColor = role.getColor();
+
+        String color;
+
+        if (roleColor != null) {
+            color = ChatColor.of(roleColor).toString();
+        } else {
+            color = DEFAULT_ROLE_COLOR_CODE;
         }
 
-        return prefix;
+        var prefix = rolePrefixes.getString(Long.toString(role.getIdLong()));
+
+        if (prefix.isEmpty()) {
+            return plugin.getGeneralConfig()
+                    .get(GeneralSettings.DEFAULT_ROLE_PREFIX)
+                    .replace(Placeholders.ROLE_COLOR, color);
+        } else {
+            return prefix.replace(Placeholders.ROLE_COLOR, color);
+        }
     }
 
     private void processChat(long id, @NotNull String original,
                              @NotNull String name, @NotNull String displayName) {
         var plain =
-                plugin.getFormatConfig().getDiscordChatFormat()
-                        .replace(PLAYER_NAME, name)
-                        .replace(DISPLAY_NAME, displayName)
-                        .replace(MESSAGE, original);
+                plugin.getFormatConfig().get(FormatSettings.DISCORD_CHAT)
+                        .replace(Placeholders.PLAYER_NAME, name)
+                        .replace(Placeholders.DISPLAY_NAME, displayName)
+                        .replace(Placeholders.MESSAGE, original);
 
         plain = EVERYONE_PATTERN.matcher(plain).replaceAll(EVERYONE_REPLACEMENT);
         plain = HERE_PATTERN.matcher(plain).replaceAll(HERE_REPLACEMENT);
 
         if (plain.contains(MENTION_MARK)) {
             try {
-                plain = plugin.getBot().replaceMention(plain);
+                plain = replaceMention(plain);
             } catch (ExecutionException ignored) {
             }
         }
 
         if (plain.contains(CHANNEL_MARK)) {
             try {
-                plain = plugin.getBot().replaceChannel(plain);
+                plain = replaceChannel(plain);
             } catch (ExecutionException ignored) {
             }
         }
@@ -184,15 +201,24 @@ public class DiscordBot {
         if (plain.length() < Message.MAX_CONTENT_LENGTH) {
             sendMessageToChannel(id, new MessageBuilder(plain).build());
         } else {
-            plugin.getLogger().warning("The message is too long! :" + plain);
+            plugin.getJavaLogger().warning("The message is too long! :" + plain);
         }
     }
 
     public void updateGame() {
         executor.submit(() -> {
-            var newActivity = plugin.getGeneralConfig().createActivity();
-            jda.getPresence().setActivity(newActivity);
-        });
+                    var type = plugin.getGeneralConfig().get(GeneralSettings.DISCORD_ACTIVITY_TYPE);
+                    var game =
+                            plugin.getGeneralConfig()
+                                    .get(GeneralSettings.DISCORD_ACTIVITY_GAME)
+                                    .replace(
+                                            Placeholders.PLAYER_COUNT, String.valueOf(plugin.getPlatformInfo().getNumberOfPlayers())
+                                    );
+                    var url = plugin.getGeneralConfig().get(GeneralSettings.DISCORD_ACTIVITY_URL);
+
+                    jda.getPresence().setActivity(Activity.of(type, game, url));
+                }
+        );
     }
 
     private static LoadingCache<String, Pattern> createCache(@NotNull Function<String, Pattern> function) {
@@ -216,7 +242,7 @@ public class DiscordBot {
                     .allowedMentions(ALLOWED_MENTION_TYPE)
                     .queue();
         } else {
-            plugin.getLogger().warning(
+            plugin.getJavaLogger().warning(
                     "Could not send message to channel. " +
                             "id: " + id + " content: " + message.getContentRaw()
             );

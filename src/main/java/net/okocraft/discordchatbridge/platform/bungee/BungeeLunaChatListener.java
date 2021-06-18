@@ -17,43 +17,23 @@
  *     along with DiscordChatBridge. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.okocraft.discordchatbridge.listener;
+package net.okocraft.discordchatbridge.platform.bungee;
 
 import com.github.ucchyocean.lc3.bungee.event.LunaChatBungeeChannelMessageEvent;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.event.EventHandler;
-import net.okocraft.discordchatbridge.DiscordChatBridge;
+import net.okocraft.discordchatbridge.DiscordChatBridgePlugin;
+import net.okocraft.discordchatbridge.listener.chat.LunaChatListener;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.regex.Pattern;
+public class BungeeLunaChatListener extends LunaChatListener implements Listener {
 
-public class LunaChatListener implements Listener {
-
-    private static final Pattern COLOR_SECTION_PATTERN = Pattern.compile("(?i)§[0-9A-FK-ORX]");
-    private static final String EMPTY = "";
-
-    private final DiscordChatBridge plugin;
-
-    public LunaChatListener(@NotNull DiscordChatBridge plugin) {
-        this.plugin = plugin;
+    public BungeeLunaChatListener(@NotNull DiscordChatBridgePlugin plugin) {
+        super(plugin);
     }
 
     @EventHandler
     public void onChat(@NotNull LunaChatBungeeChannelMessageEvent e) {
-        if (e.getDisplayName().endsWith(plugin.getGeneralConfig().getSourceName())) {
-            return;
-        }
-
-        var id = plugin.getGeneralConfig().getDiscordChannel(e.getChannel().getName());
-        if (id.isEmpty()) {
-            return;
-        }
-
-        plugin.getBot().sendChat(
-                id.get(),
-                COLOR_SECTION_PATTERN.matcher(e.getOriginalMessage()).replaceAll(EMPTY),
-                e.getMember().getName(),
-                e.getMember().getDisplayName()
-        );
+        processChat(e.getChannelName(), e.getDisplayName(), e.getMember(), e.getOriginalMessage());
     }
 }

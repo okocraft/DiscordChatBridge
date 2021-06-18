@@ -19,41 +19,42 @@
 
 package net.okocraft.discordchatbridge.command;
 
-import net.md_5.bungee.api.CommandSender;
-import net.md_5.bungee.api.chat.TextComponent;
-import net.md_5.bungee.api.plugin.Command;
-import net.okocraft.discordchatbridge.DiscordChatBridge;
+import net.okocraft.discordchatbridge.DiscordChatBridgePlugin;
+import net.okocraft.discordchatbridge.config.FormatSettings;
+import net.okocraft.discordchatbridge.constants.Placeholders;
 import org.jetbrains.annotations.NotNull;
 
-public class ReloadCommand extends Command {
+import java.util.function.Consumer;
+import java.util.function.Predicate;
 
-    private final static String PERM = "discordchatbridge.reload";
+public class ReloadCommand {
 
-    private final DiscordChatBridge plugin;
+    private final static String PERMISSION = "discordchatbridge.reload";
 
-    public ReloadCommand(@NotNull DiscordChatBridge plugin) {
-        super("dcbreload");
+    private final DiscordChatBridgePlugin plugin;
 
+    public ReloadCommand(@NotNull DiscordChatBridgePlugin plugin) {
         this.plugin = plugin;
     }
 
-    @Override
-    public void execute(CommandSender sender, String[] args) {
-        if (!sender.hasPermission(PERM)) {
-            sendMessage(sender, plugin.getFormatConfig().getNoPermissionMessage().replace("%perm%", PERM));
-            return;
+    public void processCommand(@NotNull Predicate<String> permissionChecker,
+                                  @NotNull Consumer<String> messageSender) {
+        if (!permissionChecker.test(PERMISSION)) {
+            messageSender.accept(
+                    plugin.getFormatConfig()
+                            .get(FormatSettings.COMMAND_NO_PERMISSION)
+                            .replace(Placeholders.PERMISSION, PERMISSION)
+            );
         }
 
-        sendMessage(sender, plugin.getFormatConfig().getReloadingMessage());
+        messageSender.accept(plugin.getFormatConfig().get(FormatSettings.COMMAND_RELOAD_START));
 
-        if (plugin.reload()) {
-            sendMessage(sender, plugin.getFormatConfig().getReloadSuccessMessage());
+        plugin.disable();
+
+        if (plugin.load() && plugin.enable()) {
+            messageSender.accept(plugin.getFormatConfig().get(FormatSettings.COMMAND_RELOAD_SUCCESS));
         } else {
-            sendMessage(sender, plugin.getFormatConfig().getReloadFailureMessage());
+            messageSender.accept(plugin.getFormatConfig().get(FormatSettings.COMMAND_RELOAD_FAILURE));
         }
-    }
-
-    private void sendMessage(@NotNull CommandSender sender, @NotNull String message) {
-        sender.sendMessage(TextComponent.fromLegacyText(message));
     }
 }

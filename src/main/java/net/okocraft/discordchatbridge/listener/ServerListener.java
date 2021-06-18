@@ -20,86 +20,77 @@
 package net.okocraft.discordchatbridge.listener;
 
 import net.dv8tion.jda.api.MessageBuilder;
-import net.md_5.bungee.api.config.ServerInfo;
-import net.md_5.bungee.api.connection.ProxiedPlayer;
-import net.md_5.bungee.api.event.PlayerDisconnectEvent;
-import net.md_5.bungee.api.event.ServerSwitchEvent;
-import net.md_5.bungee.api.plugin.Listener;
-import net.md_5.bungee.event.EventHandler;
-import net.okocraft.discordchatbridge.DiscordChatBridge;
+import net.okocraft.discordchatbridge.DiscordChatBridgePlugin;
+import net.okocraft.discordchatbridge.config.FormatSettings;
+import net.okocraft.discordchatbridge.config.GeneralSettings;
+import net.okocraft.discordchatbridge.constants.Placeholders;
+import net.okocraft.discordchatbridge.utils.ColorStripper;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
-import java.util.regex.Pattern;
 
-public class ServerListener implements Listener {
+public abstract class ServerListener {
 
-    private static final Pattern COLOR_SECTION_PATTERN = Pattern.compile("(?i)§[0-9A-FK-ORX]");
-    private static final String EMPTY = "";
-
-    private final DiscordChatBridge plugin;
+    private final DiscordChatBridgePlugin plugin;
     private final Set<UUID> joinedPlayers = new HashSet<>();
 
-    public ServerListener(@NotNull DiscordChatBridge plugin) {
+    public ServerListener(@NotNull DiscordChatBridgePlugin plugin) {
         this.plugin = plugin;
     }
 
-    @EventHandler
-    public void onDisconnect(@NotNull PlayerDisconnectEvent e) {
-        if (!joinedPlayers.contains(e.getPlayer().getUniqueId())) {
+    protected void processJoin(@NotNull UUID uuid, @NotNull String name, @NotNull String displayName) {
+        var format = plugin.getFormatConfig().get(FormatSettings.SERVER_JOIN);
+
+        if (!format.isEmpty()) {
+            sendMessage(replacePlayer(format, name, displayName));
+        }
+
+        joinedPlayers.add(uuid);
+        plugin.getBot().updateGame();
+    }
+
+    protected void processDisconnection(@NotNull UUID uuid, @NotNull String name, @NotNull String displayName) {
+        if (!joinedPlayers.contains(uuid)) {
             return;
         }
 
-        var format = plugin.getFormatConfig().getServerLeftFormat();
+        var format = plugin.getFormatConfig().get(FormatSettings.SERVER_LEAVE);
 
         if (!format.isEmpty()) {
-            sendMessage(replace(format, e.getPlayer()));
+            sendMessage(replacePlayer(format, name, displayName));
         }
 
-        joinedPlayers.remove(e.getPlayer().getUniqueId());
-        plugin.getProxy().getScheduler().schedule(plugin, () -> plugin.getBot().updateGame(), 3, TimeUnit.SECONDS);
+        joinedPlayers.remove(uuid);
+        plugin.getBot().updateGame();
     }
 
-    @EventHandler
-    public void onJoinOrSwitch(@NotNull ServerSwitchEvent e) {
-        if (e.getFrom() == null) {
-            var format = plugin.getFormatConfig().getServerJoinFormat();
+    protected void processServerSwitch(@NotNull String name, @NotNull String displayName, @NotNull String serverName) {
+        var format = plugin.getFormatConfig().get(FormatSettings.SERVER_SWITCH);
 
-            if (!format.isEmpty()) {
-                sendMessage(replace(format, e.getPlayer()));
-            }
-
-            joinedPlayers.add(e.getPlayer().getUniqueId());
-        } else {
-            var format = plugin.getFormatConfig().getServerSwitchFormat();
-
-            if (!format.isEmpty()) {
-                sendMessage(replace(format, e.getPlayer(), e.getPlayer().getServer().getInfo()));
-            }
+        if (!format.isEmpty()) {
+            var playerReplaced = replacePlayer(format, name, displayName);
+            var serverReplaced = replaceServer(playerReplaced, serverName);
+            sendMessage(serverReplaced);
         }
-
-        plugin.getProxy().getScheduler().schedule(plugin, () -> plugin.getBot().updateGame(), 3, TimeUnit.SECONDS);
     }
 
     private void sendMessage(@NotNull String message) {
-        var system = plugin.getGeneralConfig().getSystemChannel();
-        var toSend = new MessageBuilder(message).build();
+        long systemChannelID = plugin.getGeneralConfig().get(GeneralSettings.SYSTEM_CHANNEL);
 
-        if (system != null) {
-            plugin.getBot().sendMessage(system.getId(), toSend);
+        if (systemChannelID != 0) {
+            plugin.getBot().sendMessage(systemChannelID, new MessageBuilder(message).build());
         }
     }
 
-    private @NotNull String replace(@NotNull String format, @NotNull ProxiedPlayer player) {
-        return format
-                .replace("%player%", player.getName())
-                .replace("%display_name%", COLOR_SECTION_PATTERN.matcher(player.getDisplayName()).replaceAll(EMPTY));
+    private static @NotNull String replacePlayer(@NotNull String original, @NotNull String name, @NotNull String displayName) {
+        return original
+                .replace(Placeholders.PLAYER_NAME, name)
+                .replace(Placeholders.DISPLAY_NAME, ColorStripper.strip(displayName));
     }
 
-    private @NotNull String replace(@NotNull String format, @NotNull ProxiedPlayer player, @NotNull ServerInfo server) {
-        return replace(format, player).replace("%server%", server.getName());
+    private static @NotNull String replaceServer(@NotNull String original, @NotNull String serverName) {
+        return original.replace(Placeholders.SERVER_NAME, serverName);
     }
 }
