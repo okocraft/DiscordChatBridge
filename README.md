@@ -4,13 +4,13 @@
 
 # DiscordChatBridge
 
-LunaChat と Discord をチャット連携する BungeeCord プラグイン。
+LunaChat と Discord をチャット連携するプラグイン。
 
 ## Requirements
 
 - Java 11+
-- BungeeCord
-- [LunaChat 3.0.8+](https://github.com/ucchyocean/LunaChat/releases/tag/v3.0.8)
+- Spigot or BungeeCord
+- (Optional) [LunaChat 3.0.8+](https://github.com/ucchyocean/LunaChat/releases/tag/v3.0.8)
 
 ## Usage
 
@@ -26,4 +26,4 @@ LunaChat と Discord をチャット連携する BungeeCord プラグイン。
 
 This project is under the GPL-3.0 license. Please see [LICENSE](LICENSE) for more info.
 
-Copyright © 2020, Okocraft
+Copyright © 2020-2021, Okocraft
