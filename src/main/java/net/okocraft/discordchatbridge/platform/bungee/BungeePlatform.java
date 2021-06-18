@@ -21,13 +21,23 @@ package net.okocraft.discordchatbridge.platform.bungee;
 
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.ProxyServer;
+import net.okocraft.discordchatbridge.DiscordChatBridgePlugin;
+import net.okocraft.discordchatbridge.config.FormatSettings;
 import net.okocraft.discordchatbridge.platform.PlatformInfo;
+import net.okocraft.discordchatbridge.util.PlayerListFormatter;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.stream.Collectors;
 
 class BungeePlatform implements PlatformInfo {
+
+    private final DiscordChatBridgePlugin plugin;
+
+    BungeePlatform(@NotNull DiscordChatBridgePlugin plugin) {
+        this.plugin = plugin;
+    }
 
     @Override
     public int getNumberOfPlayers() {
@@ -36,11 +46,20 @@ class BungeePlatform implements PlatformInfo {
 
     @Override
     public @NotNull Collection<String> getPlayerListsPerServer() {
-        return ProxyServer.getInstance()
-                .getPlayers()
-                .stream()
-                .map(CommandSender::getName)
-                .sorted()
-                .collect(Collectors.toUnmodifiableList());
+        var format = plugin.getFormatConfig().get(FormatSettings.PLAYER_LIST_FORMAT);
+        var list = new ArrayList<String>();
+
+        for (var server : ProxyServer.getInstance().getServers().values()) {
+            var players =
+                    server.getPlayers()
+                            .stream()
+                            .map(CommandSender::getName)
+                            .sorted()
+                            .collect(Collectors.toUnmodifiableList());
+
+            list.add(PlayerListFormatter.format(format, server.getName(), players));
+        }
+
+        return list;
     }
 }

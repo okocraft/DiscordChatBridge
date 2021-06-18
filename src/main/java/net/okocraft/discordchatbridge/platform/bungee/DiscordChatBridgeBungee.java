@@ -33,7 +33,7 @@ import java.util.logging.Logger;
 
 public class DiscordChatBridgeBungee extends Plugin implements DiscordChatBridgePlugin {
 
-    private final BungeePlatform bungeePlatform = new BungeePlatform();
+    private final BungeePlatform bungeePlatform = new BungeePlatform(this);
     private final YamlConfiguration generalConfig = YamlConfiguration.create(getDataDirectory().resolve("config.yml"));
     private final YamlConfiguration formatConfig = YamlConfiguration.create(getDataDirectory().resolve("format.yml"));
 

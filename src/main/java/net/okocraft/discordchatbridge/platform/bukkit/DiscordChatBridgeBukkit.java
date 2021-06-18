@@ -38,7 +38,7 @@ import java.util.logging.Logger;
 
 public class DiscordChatBridgeBukkit extends JavaPlugin implements DiscordChatBridgePlugin {
 
-    private final BukkitPlatform bungeePlatform = new BukkitPlatform();
+    private final BukkitPlatform bungeePlatform = new BukkitPlatform(this);
     private final ReloadCommand reloadCommand = new ReloadCommand(this);
     private final YamlConfiguration generalConfig = YamlConfiguration.create(getDataDirectory().resolve("config.yml"));
     private final YamlConfiguration formatConfig = YamlConfiguration.create(getDataDirectory().resolve("format.yml"));

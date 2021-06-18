@@ -6,6 +6,8 @@ discord:
     game: "%player_count% players in server"
     url: ""
 
+server-name: "server"
+
 chat-max-length: 150
 
 discord-souce-name: "Dis"

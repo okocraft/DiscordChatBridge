@@ -19,15 +19,26 @@
 
 package net.okocraft.discordchatbridge.platform.bukkit;
 
+import net.okocraft.discordchatbridge.DiscordChatBridgePlugin;
+import net.okocraft.discordchatbridge.config.FormatSettings;
+import net.okocraft.discordchatbridge.config.GeneralSettings;
 import net.okocraft.discordchatbridge.platform.PlatformInfo;
+import net.okocraft.discordchatbridge.util.PlayerListFormatter;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.HumanEntity;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.stream.Collectors;
 
 class BukkitPlatform implements PlatformInfo {
+
+    private final DiscordChatBridgePlugin plugin;
+
+    BukkitPlatform(@NotNull DiscordChatBridgePlugin plugin) {
+        this.plugin = plugin;
+    }
 
     @Override
     public int getNumberOfPlayers() {
@@ -36,10 +47,15 @@ class BukkitPlatform implements PlatformInfo {
 
     @Override
     public @NotNull Collection<String> getPlayerListsPerServer() {
-        return Bukkit.getOnlinePlayers()
-                .stream()
-                .map(HumanEntity::getName)
-                .sorted()
-                .collect(Collectors.toUnmodifiableList());
+        var format = plugin.getFormatConfig().get(FormatSettings.PLAYER_LIST_FORMAT);
+        var serverName = plugin.getGeneralConfig().get(GeneralSettings.SERVER_NAME);
+        var players =
+                Bukkit.getOnlinePlayers()
+                        .stream()
+                        .map(HumanEntity::getName)
+                        .sorted()
+                        .collect(Collectors.toUnmodifiableList());
+
+        return Collections.singletonList(PlayerListFormatter.format(format, serverName, players));
     }
 }

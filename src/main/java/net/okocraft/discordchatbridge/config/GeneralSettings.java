@@ -56,6 +56,9 @@ public final class GeneralSettings {
     public static final ConfigValue<String> DISCORD_ACTIVITY_URL =
             config -> config.getString("discord.activity.url");
 
+    public static final ConfigValue<String> SERVER_NAME =
+            config -> config.getString("server-name", "server");
+
     public static final ConfigValue<Integer> CHAT_MAX_LENGTH =
             config -> config.getInteger("chat-max-length", 150);
 
