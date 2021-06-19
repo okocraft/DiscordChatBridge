@@ -206,7 +206,7 @@ public class DiscordBot {
     }
 
     public void updateGame() {
-        scheduler.submit(() -> {
+        scheduler.schedule(() -> {
                     var type = plugin.getGeneralConfig().get(GeneralSettings.DISCORD_ACTIVITY_TYPE);
                     var game =
                             plugin.getGeneralConfig()
@@ -217,7 +217,7 @@ public class DiscordBot {
                     var url = plugin.getGeneralConfig().get(GeneralSettings.DISCORD_ACTIVITY_URL);
 
                     jda.getPresence().setActivity(Activity.of(type, game, url));
-                }
+                }, 1, TimeUnit.SECONDS
         );
     }
 
