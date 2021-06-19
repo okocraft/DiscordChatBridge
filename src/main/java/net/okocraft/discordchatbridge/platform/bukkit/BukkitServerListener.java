@@ -21,6 +21,8 @@ package net.okocraft.discordchatbridge.platform.bukkit;
 
 import net.okocraft.discordchatbridge.DiscordChatBridgePlugin;
 import net.okocraft.discordchatbridge.listener.ServerListener;
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Entity;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -28,10 +30,22 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.stream.Collectors;
+
 public class BukkitServerListener extends ServerListener implements Listener {
 
     public BukkitServerListener(@NotNull DiscordChatBridgePlugin plugin) {
         super(plugin);
+
+        var players = Bukkit.getOnlinePlayers();
+
+        if (!players.isEmpty()) {
+            addJoinedPlayers(
+                    players.stream()
+                            .map(Entity::getUniqueId)
+                            .collect(Collectors.toUnmodifiableList())
+            );
+        }
     }
 
     @EventHandler(priority = EventPriority.MONITOR)

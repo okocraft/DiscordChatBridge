@@ -19,6 +19,8 @@
 
 package net.okocraft.discordchatbridge.platform.bungee;
 
+import net.md_5.bungee.api.ProxyServer;
+import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.event.PlayerDisconnectEvent;
 import net.md_5.bungee.api.event.ServerSwitchEvent;
 import net.md_5.bungee.api.plugin.Listener;
@@ -27,10 +29,22 @@ import net.okocraft.discordchatbridge.DiscordChatBridgePlugin;
 import net.okocraft.discordchatbridge.listener.ServerListener;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.stream.Collectors;
+
 public class BungeeServerListener extends ServerListener implements Listener {
 
     public BungeeServerListener(@NotNull DiscordChatBridgePlugin plugin) {
         super(plugin);
+
+        var players = ProxyServer.getInstance().getPlayers();
+
+        if (!players.isEmpty()) {
+            addJoinedPlayers(
+                    players.stream()
+                            .map(ProxiedPlayer::getUniqueId)
+                            .collect(Collectors.toUnmodifiableList())
+            );
+        }
     }
 
     @EventHandler

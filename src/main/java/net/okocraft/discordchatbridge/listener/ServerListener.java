@@ -27,6 +27,7 @@ import net.okocraft.discordchatbridge.constant.Placeholders;
 import net.okocraft.discordchatbridge.util.ColorStripper;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -74,6 +75,10 @@ public abstract class ServerListener {
             var serverReplaced = replaceServer(playerReplaced, serverName);
             sendMessage(serverReplaced);
         }
+    }
+
+    protected void addJoinedPlayers(@NotNull Collection<UUID> players) {
+        joinedPlayers.addAll(players);
     }
 
     private void sendMessage(@NotNull String message) {
