@@ -24,7 +24,7 @@ import org.jetbrains.annotations.NotNull;
 public final class VanillaChatFormatter {
 
     public static @NotNull String format(@NotNull String sender, @NotNull String source, @NotNull String message) {
-        return "<" + sender + "@" + source + "> " + message;
+        return "<" + sender + "§r@" + source + "§r> " + message;
     }
 
     private VanillaChatFormatter() {
