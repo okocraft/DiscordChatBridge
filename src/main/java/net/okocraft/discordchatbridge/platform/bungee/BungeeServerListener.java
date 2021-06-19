@@ -53,7 +53,7 @@ public class BungeeServerListener extends ServerListener implements Listener {
         if (e.getFrom() == null) {
             processJoin(player.getUniqueId(), player.getName(), player.getDisplayName());
         } else {
-            processServerSwitch(player.getName(), player.getDisplayName(), e.getFrom().getName());
+            processServerSwitch(player.getName(), player.getDisplayName(), e.getPlayer().getServer().getInfo().getName());
         }
     }
 
