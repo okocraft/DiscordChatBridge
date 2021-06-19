@@ -46,8 +46,8 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.regex.Pattern;
@@ -76,7 +76,7 @@ public class DiscordBot {
     private final DiscordChatBridgePlugin plugin;
     private final JDA jda;
     private final Configuration rolePrefixes;
-    private final ExecutorService executor;
+    private final ScheduledExecutorService scheduler;
 
     private final LoadingCache<String, Pattern> mentionPatternCache =
             createCache(name -> Pattern.compile(
@@ -94,7 +94,7 @@ public class DiscordBot {
         this.plugin = plugin;
         this.jda = jda;
         this.rolePrefixes = plugin.getGeneralConfig().get(GeneralSettings.ROLE_PREFIX);
-        this.executor = Executors.newSingleThreadExecutor(r -> new Thread(r, "DiscordChatBridge-Thread"));
+        this.scheduler = Executors.newSingleThreadScheduledExecutor(r -> new Thread(r, "DiscordChatBridge-Thread"));
     }
 
     @Contract("_ -> new")
@@ -116,15 +116,15 @@ public class DiscordBot {
 
     public void shutdown() {
         jda.shutdown();
-        executor.shutdown();
+        scheduler.shutdown();
     }
 
     public void sendMessage(long id, @NotNull Message message) {
-        executor.submit(() -> sendMessageToChannel(id, message));
+        scheduler.submit(() -> sendMessageToChannel(id, message));
     }
 
     public void sendMessage(@NotNull TextChannel channel, @NotNull Message message) {
-        executor.submit(() -> {
+        scheduler.submit(() -> {
             if (channel.canTalk()) {
                 channel.sendMessage(message).queue();
             }
@@ -133,11 +133,11 @@ public class DiscordBot {
 
     public void sendChat(long id, @NotNull String original,
                          @NotNull String name, @NotNull String displayName) {
-        executor.submit(() -> processChat(id, original, name, displayName));
+        scheduler.submit(() -> processChat(id, original, name, displayName));
     }
 
     public void addReaction(@NotNull Message message, @NotNull String unicode) {
-        executor.submit(() -> message.addReaction(unicode).queue());
+        scheduler.submit(() -> message.addReaction(unicode).queue());
     }
 
     public @NotNull String getRolePrefix(@NotNull Member member) {
@@ -206,7 +206,7 @@ public class DiscordBot {
     }
 
     public void updateGame() {
-        executor.submit(() -> {
+        scheduler.submit(() -> {
                     var type = plugin.getGeneralConfig().get(GeneralSettings.DISCORD_ACTIVITY_TYPE);
                     var game =
                             plugin.getGeneralConfig()
