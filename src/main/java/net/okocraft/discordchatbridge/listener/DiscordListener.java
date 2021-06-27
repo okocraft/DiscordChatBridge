@@ -104,7 +104,7 @@ public class DiscordListener extends ListenerAdapter {
 
         plugin.getBot().updateGame();
 
-        MessageBuilder builder = new MessageBuilder();
+        var builder = new MessageBuilder();
 
         var top =
                 plugin.getFormatConfig()
@@ -113,7 +113,6 @@ public class DiscordListener extends ListenerAdapter {
                                 Placeholders.PLAYER_COUNT,
                                 String.valueOf(plugin.getPlatformInfo().getNumberOfPlayers())
                         );
-
 
         builder.append(top).append(Constants.LINE_SEPARATOR).append("```").append(Constants.LINE_SEPARATOR);
 
