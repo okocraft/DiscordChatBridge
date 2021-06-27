@@ -88,12 +88,13 @@ public class DiscordListener extends ListenerAdapter {
             plugin.getChatSystem().sendChat(channelName, senderName, sourceName, message);
         }
 
-        plugin.getChatSystem().sendChat(
-                channelName,
-                plugin.getBot().getRolePrefix(member) + name,
-                plugin.getGeneralConfig().get(GeneralSettings.DISCORD_SOURCE_NAME),
-                message
-        );
+        var attachments = event.getMessage().getAttachments();
+
+        if (!attachments.isEmpty()) {
+            for (var attachment : attachments) {
+                plugin.getChatSystem().sendChat(channelName, senderName, sourceName, attachment.getUrl());
+            }
+        }
     }
 
     private void onPlayerListCommand(@NotNull TextChannel channel) {
