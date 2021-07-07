@@ -30,7 +30,7 @@
 
     <name>DiscordChatBridge</name>
     <url>https://github.com/okocraft/DiscordChatBridge</url>
-    <description>A BungeeCord plugin that connects LunaChat and Discord</description>
+    <description>A Spigot/Bungeecord plugin that connects LunaChat and Discord</description>
 
     <licenses>
         <license>
