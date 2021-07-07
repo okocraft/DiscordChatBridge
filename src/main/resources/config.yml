@@ -18,4 +18,4 @@ channels:
   global: 0
 
 role-prefix:
-  default: "%role_prefix%* "
+  default: "%role_color%"
