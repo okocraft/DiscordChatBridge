@@ -128,8 +128,8 @@
         <!-- ConfigAPI https://github.com/Siroshun09/ConfigAPI -->
         <dependency>
             <groupId>com.github.siroshun09.configapi</groupId>
-            <artifactId>yaml</artifactId>
-            <version>3.1.0</version>
+            <artifactId>configapi-yaml</artifactId>
+            <version>4.2.0</version>
             <scope>compile</scope>
         </dependency>
     </dependencies>
@@ -231,10 +231,6 @@
                         <relocation>
                             <pattern>org.jetbrains</pattern>
                             <shadedPattern>${project.groupId}.lib.jetbrains</shadedPattern>
-                        </relocation>
-                        <relocation>
-                            <pattern>org.yaml</pattern>
-                            <shadedPattern>${project.groupId}.lib.yaml</shadedPattern>
                         </relocation>
                     </relocations>
                 </configuration>
