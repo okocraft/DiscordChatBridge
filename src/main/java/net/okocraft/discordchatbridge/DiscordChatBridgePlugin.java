@@ -19,7 +19,7 @@
 
 package net.okocraft.discordchatbridge;
 
-import com.github.siroshun09.configapi.common.util.ResourceUtils;
+import com.github.siroshun09.configapi.api.util.ResourceUtils;
 import com.github.siroshun09.configapi.yaml.YamlConfiguration;
 import net.okocraft.discordchatbridge.chat.ChatSystem;
 import net.okocraft.discordchatbridge.platform.PlatformInfo;

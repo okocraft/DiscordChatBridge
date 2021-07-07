@@ -19,8 +19,9 @@
 
 package net.okocraft.discordchatbridge.config;
 
-import com.github.siroshun09.configapi.common.Configuration;
-import com.github.siroshun09.configapi.common.value.ConfigValue;
+import com.github.siroshun09.configapi.api.Configuration;
+import com.github.siroshun09.configapi.api.MappedConfiguration;
+import com.github.siroshun09.configapi.api.value.ConfigValue;
 import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Activity;
 
@@ -66,7 +67,7 @@ public final class GeneralSettings {
             config -> config.getString("discord-source-name", "Dis");
 
     public static final ConfigValue<Configuration> ROLE_PREFIX =
-            config -> Objects.requireNonNullElseGet(config.getSection("role-prefix"), Configuration::create);
+            config -> Objects.requireNonNullElseGet(config.getSection("role-prefix"), MappedConfiguration::create);
 
     public static final ConfigValue<String> DEFAULT_ROLE_PREFIX =
             config -> config.getString("role-prefix.default", "&f*");
@@ -75,7 +76,7 @@ public final class GeneralSettings {
             config -> config.getLong("system-channel");
 
     public static final ConfigValue<Configuration> LINKED_CHANNELS =
-            config -> Objects.requireNonNullElseGet(config.getSection("channels"), Configuration::create);
+            config -> Objects.requireNonNullElseGet(config.getSection("channels"), MappedConfiguration::create);
 
     private GeneralSettings() {
         throw new UnsupportedOperationException();

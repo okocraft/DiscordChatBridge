@@ -19,7 +19,7 @@
 
 package net.okocraft.discordchatbridge;
 
-import com.github.siroshun09.configapi.common.Configuration;
+import com.github.siroshun09.configapi.api.Configuration;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;

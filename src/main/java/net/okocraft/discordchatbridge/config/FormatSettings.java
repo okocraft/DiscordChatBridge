@@ -19,7 +19,7 @@
 
 package net.okocraft.discordchatbridge.config;
 
-import com.github.siroshun09.configapi.common.value.ConfigValue;
+import com.github.siroshun09.configapi.api.value.ConfigValue;
 
 public final class FormatSettings {
 
