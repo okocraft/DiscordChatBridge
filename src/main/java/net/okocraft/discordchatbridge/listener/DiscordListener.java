@@ -77,7 +77,7 @@ public class DiscordListener extends ListenerAdapter {
         }
 
         if (plugin.getGeneralConfig().get(GeneralSettings.CHAT_MAX_LENGTH) < message.length()) {
-            plugin.getBot().addReaction(event.getMessage(), "U+FE0F");
+            plugin.getBot().addReaction(event.getMessage(), "U+26A0");
             return;
         }
 
