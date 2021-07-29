@@ -33,6 +33,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Predicate;
 
 public class DiscordListener extends ListenerAdapter {
 
@@ -84,9 +85,9 @@ public class DiscordListener extends ListenerAdapter {
         var senderName = plugin.getBot().getRolePrefix(member) + name;
         var sourceName = plugin.getGeneralConfig().get(GeneralSettings.DISCORD_SOURCE_NAME);
 
-        if (!message.isEmpty()) {
-            plugin.getChatSystem().sendChat(channelName, senderName, sourceName, message);
-        }
+        message.lines()
+                .filter(Predicate.not(String::isEmpty))
+                .forEach(msg -> plugin.getChatSystem().sendChat(channelName, senderName, sourceName, msg));
 
         var attachments = event.getMessage().getAttachments();
 
