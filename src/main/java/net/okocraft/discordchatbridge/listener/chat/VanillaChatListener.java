@@ -39,7 +39,7 @@ public abstract class VanillaChatListener extends AbstractChatListener {
             long systemChannelID = plugin.getGeneralConfig().get(GeneralSettings.SYSTEM_CHANNEL);
 
             if (systemChannelID != 0) {
-                plugin.getBot().sendChat(systemChannelID, message, name, displayName);
+                sendChatToDiscord(systemChannelID, message, name, displayName);
             }
         }
     }
