@@ -47,7 +47,7 @@ public class DiscordListener extends ListenerAdapter {
 
         var channelSection = plugin.getGeneralConfig().get(GeneralSettings.LINKED_CHANNELS);
 
-        for (var key : channelSection.getPaths()) {
+        for (var key : channelSection.getKeyList()) {
             var id = channelSection.getLong(key);
             if (id != 0) {
                 linkedChannels.put(id, key);
