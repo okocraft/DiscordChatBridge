@@ -63,6 +63,9 @@ public final class GeneralSettings {
     public static final ConfigValue<Integer> CHAT_MAX_LENGTH =
             config -> config.getInteger("chat-max-length", 150);
 
+    public static final ConfigValue<Integer> CHAT_MAX_LINES =
+            config -> config.getInteger("chat-max-lines");
+
     public static final ConfigValue<String> DISCORD_SOURCE_NAME =
             config -> config.getString("discord-source-name", "Dis");
 

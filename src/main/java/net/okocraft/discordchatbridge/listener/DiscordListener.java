@@ -33,7 +33,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 public class DiscordListener extends ListenerAdapter {
 
@@ -76,18 +76,32 @@ public class DiscordListener extends ListenerAdapter {
             return;
         }
 
-        if (plugin.getGeneralConfig().get(GeneralSettings.CHAT_MAX_LENGTH) < message.length()) {
+        var config = plugin.getGeneralConfig();
+
+        int maxLength = config.get(GeneralSettings.CHAT_MAX_LENGTH);
+
+        if (0 < maxLength && maxLength < message.length()) {
+            plugin.getBot().addReaction(event.getMessage(), "U+26A0");
+            return;
+        }
+
+        var lines = message.lines().collect(Collectors.toList());
+        int maxLines = config.get(GeneralSettings.CHAT_MAX_LINES);
+
+        if (0 < maxLines && maxLines < lines.size()) {
             plugin.getBot().addReaction(event.getMessage(), "U+26A0");
             return;
         }
 
         var name = member.getNickname() != null ? member.getNickname() : member.getEffectiveName();
         var senderName = plugin.getBot().getRolePrefix(member) + name;
-        var sourceName = plugin.getGeneralConfig().get(GeneralSettings.DISCORD_SOURCE_NAME);
+        var sourceName = config.get(GeneralSettings.DISCORD_SOURCE_NAME);
 
-        message.lines()
-                .filter(Predicate.not(String::isEmpty))
-                .forEach(msg -> plugin.getChatSystem().sendChat(channelName, senderName, sourceName, msg));
+        for (var line : lines) {
+            if (!line.isEmpty()) {
+                plugin.getChatSystem().sendChat(channelName, senderName, sourceName, line);
+            }
+        }
 
         var attachments = event.getMessage().getAttachments();
 
