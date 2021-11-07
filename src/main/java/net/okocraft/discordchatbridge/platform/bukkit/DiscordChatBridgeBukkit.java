@@ -44,6 +44,7 @@ public class DiscordChatBridgeBukkit extends JavaPlugin implements DiscordChatBr
 
     private DiscordBot bot;
     private ChatSystem chatSystem;
+    private boolean isEnabled;
 
     @Override
     public void onEnable() {
@@ -55,7 +56,7 @@ public class DiscordChatBridgeBukkit extends JavaPlugin implements DiscordChatBr
             chatSystem = new BukkitChatSystem();
         }
 
-        enable();
+        isEnabled = enable();
     }
 
     @Override
@@ -128,6 +129,11 @@ public class DiscordChatBridgeBukkit extends JavaPlugin implements DiscordChatBr
     @Override
     public void unregisterListeners() {
         HandlerList.unregisterAll(this);
+    }
+
+    @Override
+    public boolean enabled() {
+        return isEnabled;
     }
 
     private boolean isLunaChatEnabled() {

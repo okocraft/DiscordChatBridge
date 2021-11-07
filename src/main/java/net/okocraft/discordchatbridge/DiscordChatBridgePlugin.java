@@ -92,9 +92,11 @@ public interface DiscordChatBridgePlugin {
     }
 
     default void disable() {
-        getBot().shutdown();
-        unregisterCommands();
-        unregisterListeners();
+        if (enabled()) {
+            getBot().shutdown();
+            unregisterCommands();
+            unregisterListeners();
+        }
     }
 
     void loginToDiscord();
@@ -106,4 +108,6 @@ public interface DiscordChatBridgePlugin {
     void registerListeners();
 
     void unregisterListeners();
+
+    boolean enabled();
 }

@@ -39,6 +39,7 @@ public class DiscordChatBridgeBungee extends Plugin implements DiscordChatBridge
 
     private DiscordBot bot;
     private ChatSystem chatSystem;
+    private boolean isEnabled;
 
     @Override
     public void onEnable() {
@@ -50,7 +51,7 @@ public class DiscordChatBridgeBungee extends Plugin implements DiscordChatBridge
             chatSystem = new BungeeChatSystem();
         }
 
-        enable();
+        isEnabled = enable();
     }
 
     @Override
@@ -119,6 +120,11 @@ public class DiscordChatBridgeBungee extends Plugin implements DiscordChatBridge
     @Override
     public void unregisterListeners() {
         getProxy().getPluginManager().unregisterListeners(this);
+    }
+
+    @Override
+    public boolean enabled() {
+        return isEnabled;
     }
 
     private boolean isLunaChatEnabled() {
