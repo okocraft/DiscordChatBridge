@@ -21,7 +21,7 @@ package net.okocraft.discordchatbridge.platform.bukkit;
 
 final class PaperChecker {
 
-    static boolean IS_PAPER = checkPaper();
+    static final boolean IS_PAPER = checkPaper();
 
     private static boolean checkPaper() {
         try {
