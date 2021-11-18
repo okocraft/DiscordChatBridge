@@ -22,6 +22,8 @@ package net.okocraft.discordchatbridge.platform.bukkit;
 import net.okocraft.discordchatbridge.DiscordChatBridgePlugin;
 import net.okocraft.discordchatbridge.constant.Constants;
 import net.okocraft.discordchatbridge.listener.chat.VanillaChatListener;
+import net.okocraft.discordchatbridge.util.VanillaChatFormatter;
+import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -34,7 +36,8 @@ public class BukkitChatListener extends VanillaChatListener implements Listener 
         super(plugin);
     }
 
-    @EventHandler(priority = EventPriority.MONITOR)
+    @SuppressWarnings("deprecation")
+    @EventHandler(priority = EventPriority.HIGHEST)
     public void onChat(@NotNull AsyncPlayerChatEvent e) {
         if (e.isCancelled()) {
             return;
@@ -43,5 +46,7 @@ public class BukkitChatListener extends VanillaChatListener implements Listener 
         var sender = e.getPlayer();
 
         processChat(Constants.GLOBAL_CHANNEL_NAME, sender.getName(), sender.getDisplayName(), e.getMessage());
+        Bukkit.broadcastMessage(VanillaChatFormatter.format(sender.getName(), e.getMessage()));
+        e.setCancelled(true);
     }
 }

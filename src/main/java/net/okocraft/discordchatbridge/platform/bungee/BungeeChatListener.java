@@ -19,6 +19,9 @@
 
 package net.okocraft.discordchatbridge.platform.bungee;
 
+import net.md_5.bungee.api.ChatColor;
+import net.md_5.bungee.api.ProxyServer;
+import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.event.ChatEvent;
 import net.md_5.bungee.api.plugin.Listener;
@@ -27,6 +30,7 @@ import net.md_5.bungee.event.EventPriority;
 import net.okocraft.discordchatbridge.DiscordChatBridgePlugin;
 import net.okocraft.discordchatbridge.constant.Constants;
 import net.okocraft.discordchatbridge.listener.chat.VanillaChatListener;
+import net.okocraft.discordchatbridge.util.VanillaChatFormatter;
 import org.jetbrains.annotations.NotNull;
 
 public class BungeeChatListener extends VanillaChatListener implements Listener {
@@ -48,5 +52,9 @@ public class BungeeChatListener extends VanillaChatListener implements Listener 
         var sender = (ProxiedPlayer) e.getSender();
 
         processChat(Constants.GLOBAL_CHANNEL_NAME, sender.getName(), sender.getDisplayName(), e.getMessage());
+
+        var toPlayers = ChatColor.translateAlternateColorCodes('&', VanillaChatFormatter.format(sender.getName(), e.getMessage()));
+        ProxyServer.getInstance().broadcast(TextComponent.fromLegacyText(toPlayers));
+        e.setCancelled(true);
     }
 }
