@@ -24,6 +24,7 @@ import net.okocraft.discordchatbridge.constant.Constants;
 import net.okocraft.discordchatbridge.listener.chat.VanillaChatListener;
 import net.okocraft.discordchatbridge.util.VanillaChatFormatter;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -46,7 +47,7 @@ public class BukkitChatListener extends VanillaChatListener implements Listener 
         var sender = e.getPlayer();
 
         processChat(Constants.GLOBAL_CHANNEL_NAME, sender.getName(), sender.getDisplayName(), e.getMessage());
-        Bukkit.broadcastMessage(VanillaChatFormatter.format(sender.getName(), e.getMessage()));
+        Bukkit.broadcastMessage(ChatColor.translateAlternateColorCodes('&', VanillaChatFormatter.format(sender.getName(), e.getMessage())));
         e.setCancelled(true);
     }
 }
