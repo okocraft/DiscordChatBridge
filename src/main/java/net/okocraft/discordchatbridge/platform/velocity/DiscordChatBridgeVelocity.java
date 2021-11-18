@@ -41,7 +41,7 @@ import org.slf4j.Logger;
 import java.awt.Color;
 import java.nio.file.Path;
 
-@Plugin(id = "discordchatbridge", name = "DiscordChatBridge", version = "2.4",
+@Plugin(id = "discordchatbridge", name = "DiscordChatBridge", version = "2.5",
         description = "A Spigot/Bungeecord/Velocity plugin that connects Vanilla chat or LunaChat and Discord",
         authors = {"Siroshun09"})
 public class DiscordChatBridgeVelocity implements DiscordChatBridgePlugin {
