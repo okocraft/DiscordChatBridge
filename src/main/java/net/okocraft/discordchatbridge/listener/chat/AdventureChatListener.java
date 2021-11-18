@@ -44,15 +44,15 @@ public abstract class AdventureChatListener extends AbstractChatListener {
             if (systemChannelID != 0) {
                 sendChatToDiscord(
                         systemChannelID,
-                        platText(message),
+                        plainText(message),
                         name,
-                        platText(displayName)
+                        plainText(displayName)
                 );
             }
         }
     }
 
-    public @NotNull String platText(@NotNull Component component) {
+    public @NotNull String plainText(@NotNull Component component) {
         ComponentSerializer<Component, TextComponent, String> serializer;
 
         try {
