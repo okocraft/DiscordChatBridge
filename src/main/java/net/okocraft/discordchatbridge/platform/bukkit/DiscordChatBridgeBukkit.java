@@ -23,7 +23,6 @@ import com.github.siroshun09.configapi.yaml.YamlConfiguration;
 import net.okocraft.discordchatbridge.DiscordBot;
 import net.okocraft.discordchatbridge.DiscordChatBridgePlugin;
 import net.okocraft.discordchatbridge.chat.ChatSystem;
-import net.okocraft.discordchatbridge.chat.LunaChatSystem;
 import net.okocraft.discordchatbridge.command.ReloadCommand;
 import net.okocraft.discordchatbridge.platform.PlatformInfo;
 import net.okocraft.discordchatbridge.util.ColorSerializer;
@@ -53,7 +52,7 @@ public class DiscordChatBridgeBukkit extends JavaPlugin implements DiscordChatBr
         load();
 
         if (isLunaChatEnabled()) {
-            chatSystem = new LunaChatSystem();
+            chatSystem = new BukkitLunaChatSystem();
         } else {
             chatSystem = PaperChecker.IS_PAPER ? new PaperChatSystem() : new BukkitChatSystem();
         }

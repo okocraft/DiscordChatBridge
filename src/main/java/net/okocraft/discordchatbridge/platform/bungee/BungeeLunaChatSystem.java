@@ -17,24 +17,19 @@
  *     along with DiscordChatBridge. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.okocraft.discordchatbridge.chat;
+package net.okocraft.discordchatbridge.platform.bungee;
 
+import com.github.ucchyocean.lc3.LunaChatBungee;
 import com.github.ucchyocean.lc3.channel.Channel;
-import net.okocraft.discordchatbridge.constant.Constants;
+import net.okocraft.discordchatbridge.chat.LunaChatSystem;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public abstract class LunaChatSystem implements ChatSystem {
+public class BungeeLunaChatSystem extends LunaChatSystem {
 
     @Override
-    public void sendChat(@NotNull String channelName, @NotNull String sender,
-                         @NotNull String source, @NotNull String message) {
-        var channel = getChannel(channelName);
-
-        if (channel != null) {
-            channel.chatFromOtherSource(sender, source, message);
-        }
+    protected @Nullable Channel getChannel(@NotNull String channelName) {
+        return LunaChatBungee.getInstance().getLunaChatAPI().getChannel(channelName);
     }
 
-    protected abstract @Nullable Channel getChannel(@NotNull String channelName);
 }

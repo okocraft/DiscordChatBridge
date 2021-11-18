@@ -48,7 +48,7 @@ public class DiscordChatBridgeBungee extends Plugin implements DiscordChatBridge
         load();
 
         if (isLunaChatEnabled()) {
-            chatSystem = new LunaChatSystem();
+            chatSystem = new BungeeLunaChatSystem();
         } else {
             chatSystem = new BungeeChatSystem();
         }
