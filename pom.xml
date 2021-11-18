@@ -94,6 +94,12 @@
             <artifactId>paper-api</artifactId>
             <version>1.16.5-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>net.kyori</groupId>
+                    <artifactId>adventure-text-serializer-plain</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <!-- BungeeCord https://github.com/SpigotMC/BungeeCord -->
         <dependency>
