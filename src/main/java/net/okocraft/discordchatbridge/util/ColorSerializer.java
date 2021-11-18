@@ -19,19 +19,18 @@
 
 package net.okocraft.discordchatbridge.util;
 
+import net.md_5.bungee.api.ChatColor;
 import org.jetbrains.annotations.NotNull;
 
-public final class VanillaChatFormatter {
+import java.awt.Color;
 
-    public static @NotNull String format(@NotNull String sender, @NotNull String source, @NotNull String message) {
-        return source.isEmpty() ? format(sender, message) : "<" + sender + "&r@" + source + "&r> " + message;
+public final class ColorSerializer {
+
+    public static @NotNull String bungeecord(@NotNull Color color) {
+        return ChatColor.of(color).toString();
     }
 
-    public static @NotNull String format(@NotNull String sender, @NotNull String message) {
-        return "<" + sender + "&r> " + message;
-    }
-
-    private VanillaChatFormatter() {
-        throw new UnsupportedOperationException();
+    public static @NotNull String adventure(@NotNull Color color) {
+        return "&#" + Integer.toHexString(color.getRGB()).substring(2);
     }
 }

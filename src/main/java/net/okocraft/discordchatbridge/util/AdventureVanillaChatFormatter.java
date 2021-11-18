@@ -19,19 +19,14 @@
 
 package net.okocraft.discordchatbridge.util;
 
+import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.NotNull;
 
-public final class VanillaChatFormatter {
+public final class AdventureVanillaChatFormatter {
 
-    public static @NotNull String format(@NotNull String sender, @NotNull String source, @NotNull String message) {
-        return source.isEmpty() ? format(sender, message) : "<" + sender + "&r@" + source + "&r> " + message;
-    }
-
-    public static @NotNull String format(@NotNull String sender, @NotNull String message) {
-        return "<" + sender + "&r> " + message;
-    }
-
-    private VanillaChatFormatter() {
-        throw new UnsupportedOperationException();
+    public static @NotNull Component format(@NotNull String sender, @NotNull Component message) {
+        return Component.text()
+                .append(Component.text('<')).append(Component.text(sender)).append(Component.text('>'))
+                .append(Component.space()).append(message).build();
     }
 }

@@ -19,6 +19,7 @@
 
 package net.okocraft.discordchatbridge.platform.bungee;
 
+import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.okocraft.discordchatbridge.chat.ChatSystem;
@@ -32,7 +33,7 @@ public class BungeeChatSystem implements ChatSystem {
     public void sendChat(@NotNull String channelName, @NotNull String sender, @NotNull String source, @NotNull String message) {
         if (channelName.equals(Constants.GLOBAL_CHANNEL_NAME)) {
             var chat = VanillaChatFormatter.format(sender, source, message);
-            var component = TextComponent.fromLegacyText(chat);
+            var component = TextComponent.fromLegacyText(ChatColor.translateAlternateColorCodes('&', chat));
             ProxyServer.getInstance().broadcast(component);
         }
     }

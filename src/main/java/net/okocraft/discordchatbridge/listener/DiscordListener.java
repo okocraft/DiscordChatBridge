@@ -19,7 +19,9 @@
 
 package net.okocraft.discordchatbridge.listener;
 
+import com.github.siroshun09.configapi.api.Configuration;
 import net.dv8tion.jda.api.MessageBuilder;
+import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
@@ -30,8 +32,10 @@ import net.okocraft.discordchatbridge.constant.Constants;
 import net.okocraft.discordchatbridge.constant.Placeholders;
 import org.jetbrains.annotations.NotNull;
 
+import java.awt.Color;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
@@ -39,6 +43,9 @@ public class DiscordListener extends ListenerAdapter {
 
     private final DiscordChatBridgePlugin plugin;
     private final Map<Long, String> linkedChannels = new HashMap<>();
+
+    private final Configuration rolePrefixes;
+    private final String defaultRoleColorCode;
 
     private final AtomicLong lastPlayerListUsed = new AtomicLong(0);
 
@@ -53,6 +60,9 @@ public class DiscordListener extends ListenerAdapter {
                 linkedChannels.put(id, key);
             }
         }
+
+        this.rolePrefixes = plugin.getGeneralConfig().get(GeneralSettings.ROLE_PREFIX);
+        this.defaultRoleColorCode = plugin.serializeColor(new Color(Role.DEFAULT_COLOR_RAW));
     }
 
     @Override
@@ -94,7 +104,25 @@ public class DiscordListener extends ListenerAdapter {
         }
 
         var name = member.getNickname() != null ? member.getNickname() : member.getEffectiveName();
-        var senderName = plugin.getBot().getRolePrefix(member) + name;
+        var role = plugin.getBot().getFirstRole(member);
+        String prefix;
+
+        if (role != null) {
+            var roleColorCode = Optional.ofNullable(role.getColor()).map(plugin::serializeColor).orElse(defaultRoleColorCode);
+            var rolePrefix = rolePrefixes.getString(Long.toString(role.getIdLong()));
+
+            if (rolePrefix.isEmpty()) {
+                prefix = plugin.getGeneralConfig()
+                        .get(GeneralSettings.DEFAULT_ROLE_PREFIX)
+                        .replace(Placeholders.ROLE_COLOR, roleColorCode);
+            } else {
+                prefix = rolePrefix.replace(Placeholders.ROLE_COLOR, roleColorCode);
+            }
+        } else {
+            prefix = "";
+        }
+
+        var senderName = prefix + name;
         var sourceName = config.get(GeneralSettings.DISCORD_SOURCE_NAME);
 
         for (var line : lines) {

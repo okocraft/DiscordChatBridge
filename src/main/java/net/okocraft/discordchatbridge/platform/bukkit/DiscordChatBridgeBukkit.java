@@ -26,12 +26,14 @@ import net.okocraft.discordchatbridge.chat.ChatSystem;
 import net.okocraft.discordchatbridge.chat.LunaChatSystem;
 import net.okocraft.discordchatbridge.command.ReloadCommand;
 import net.okocraft.discordchatbridge.platform.PlatformInfo;
+import net.okocraft.discordchatbridge.util.ColorSerializer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 
+import java.awt.Color;
 import java.nio.file.Path;
 import java.util.logging.Logger;
 
@@ -53,7 +55,7 @@ public class DiscordChatBridgeBukkit extends JavaPlugin implements DiscordChatBr
         if (isLunaChatEnabled()) {
             chatSystem = new LunaChatSystem();
         } else {
-            chatSystem = new BukkitChatSystem();
+            chatSystem = PaperChecker.IS_PAPER ? new PaperChatSystem() : new BukkitChatSystem();
         }
 
         isEnabled = enable();
@@ -117,7 +119,10 @@ public class DiscordChatBridgeBukkit extends JavaPlugin implements DiscordChatBr
 
     @Override
     public void registerListeners() {
-        getServer().getPluginManager().registerEvents(new BukkitServerListener(this), this);
+        getServer().getPluginManager().registerEvents(
+                PaperChecker.IS_PAPER ? new PaperChatListener(this) : new BukkitServerListener(this),
+                this
+        );
 
         if (isLunaChatEnabled()) {
             getServer().getPluginManager().registerEvents(new BukkitLunaChatListener(this), this);
@@ -134,6 +139,11 @@ public class DiscordChatBridgeBukkit extends JavaPlugin implements DiscordChatBr
     @Override
     public boolean enabled() {
         return isEnabled;
+    }
+
+    @Override
+    public @NotNull String serializeColor(@NotNull Color color) {
+        return PaperChecker.IS_PAPER ? ColorSerializer.adventure(color) : ColorSerializer.bungeecord(color);
     }
 
     private boolean isLunaChatEnabled() {

@@ -17,21 +17,18 @@
  *     along with DiscordChatBridge. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.okocraft.discordchatbridge.util;
+package net.okocraft.discordchatbridge.platform.bukkit;
 
-import org.jetbrains.annotations.NotNull;
+final class PaperChecker {
 
-public final class VanillaChatFormatter {
+    static boolean IS_PAPER = checkPaper();
 
-    public static @NotNull String format(@NotNull String sender, @NotNull String source, @NotNull String message) {
-        return source.isEmpty() ? format(sender, message) : "<" + sender + "&r@" + source + "&r> " + message;
-    }
-
-    public static @NotNull String format(@NotNull String sender, @NotNull String message) {
-        return "<" + sender + "&r> " + message;
-    }
-
-    private VanillaChatFormatter() {
-        throw new UnsupportedOperationException();
+    private static boolean checkPaper() {
+        try {
+            Class.forName("io.papermc.paper.text.PaperComponents");
+            return true;
+        } catch (Throwable ignored) {
+            return false;
+        }
     }
 }

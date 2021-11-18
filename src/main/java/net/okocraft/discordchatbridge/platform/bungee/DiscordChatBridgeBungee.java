@@ -26,8 +26,10 @@ import net.okocraft.discordchatbridge.DiscordChatBridgePlugin;
 import net.okocraft.discordchatbridge.chat.ChatSystem;
 import net.okocraft.discordchatbridge.chat.LunaChatSystem;
 import net.okocraft.discordchatbridge.platform.PlatformInfo;
+import net.okocraft.discordchatbridge.util.ColorSerializer;
 import org.jetbrains.annotations.NotNull;
 
+import java.awt.Color;
 import java.nio.file.Path;
 import java.util.logging.Logger;
 
@@ -125,6 +127,11 @@ public class DiscordChatBridgeBungee extends Plugin implements DiscordChatBridge
     @Override
     public boolean enabled() {
         return isEnabled;
+    }
+
+    @Override
+    public @NotNull String serializeColor(@NotNull Color color) {
+        return ColorSerializer.bungeecord(color);
     }
 
     private boolean isLunaChatEnabled() {

@@ -19,6 +19,7 @@
 
 package net.okocraft.discordchatbridge.platform.bukkit;
 
+import net.md_5.bungee.api.ChatColor;
 import net.okocraft.discordchatbridge.chat.ChatSystem;
 import net.okocraft.discordchatbridge.constant.Constants;
 import net.okocraft.discordchatbridge.util.VanillaChatFormatter;
@@ -27,11 +28,12 @@ import org.jetbrains.annotations.NotNull;
 
 public class BukkitChatSystem implements ChatSystem {
 
+    @SuppressWarnings("deprecation")
     @Override
     public void sendChat(@NotNull String channelName, @NotNull String sender, @NotNull String source, @NotNull String message) {
         if (channelName.equals(Constants.GLOBAL_CHANNEL_NAME)) {
             var chat = VanillaChatFormatter.format(sender, source, message);
-            Bukkit.broadcastMessage(chat);
+            Bukkit.broadcastMessage(ChatColor.translateAlternateColorCodes('&', chat));
         }
     }
 }

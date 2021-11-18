@@ -25,6 +25,7 @@ import net.okocraft.discordchatbridge.chat.ChatSystem;
 import net.okocraft.discordchatbridge.platform.PlatformInfo;
 import org.jetbrains.annotations.NotNull;
 
+import java.awt.Color;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.logging.Level;
@@ -110,4 +111,6 @@ public interface DiscordChatBridgePlugin {
     void unregisterListeners();
 
     boolean enabled();
+
+    @NotNull String serializeColor(@NotNull Color color);
 }

@@ -19,7 +19,6 @@
 
 package net.okocraft.discordchatbridge;
 
-import com.github.siroshun09.configapi.api.Configuration;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -31,17 +30,15 @@ import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.TextChannel;
-import net.md_5.bungee.api.ChatColor;
 import net.okocraft.discordchatbridge.config.FormatSettings;
 import net.okocraft.discordchatbridge.config.GeneralSettings;
 import net.okocraft.discordchatbridge.constant.Placeholders;
 import net.okocraft.discordchatbridge.listener.DiscordListener;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import javax.security.auth.login.LoginException;
-import java.awt.Color;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Set;
@@ -69,13 +66,10 @@ public class DiscordBot {
 
     private static final String HERE_REPLACEMENT = "@.here";
 
-    private static final String DEFAULT_ROLE_COLOR_CODE = ChatColor.of(new Color(Role.DEFAULT_COLOR_RAW)).toString();
-
     private static final Comparator<Role> ROLE_COMPARATOR = Comparator.comparingInt(Role::getPosition);
 
     private final DiscordChatBridgePlugin plugin;
     private final JDA jda;
-    private final Configuration rolePrefixes;
     private final ScheduledExecutorService scheduler;
 
     private final LoadingCache<String, Pattern> mentionPatternCache =
@@ -93,7 +87,6 @@ public class DiscordBot {
     private DiscordBot(@NotNull DiscordChatBridgePlugin plugin, @NotNull JDA jda) {
         this.plugin = plugin;
         this.jda = jda;
-        this.rolePrefixes = plugin.getGeneralConfig().get(GeneralSettings.ROLE_PREFIX);
         this.scheduler = Executors.newSingleThreadScheduledExecutor(r -> new Thread(r, "DiscordChatBridge-Thread"));
     }
 
@@ -140,36 +133,13 @@ public class DiscordBot {
         scheduler.submit(() -> message.addReaction(unicode).queue());
     }
 
-    public @NotNull String getRolePrefix(@NotNull Member member) {
+    public @Nullable Role getFirstRole(@NotNull Member member) {
         var roles = member.getRoles();
 
         if (roles.isEmpty()) {
-            return plugin.getGeneralConfig()
-                    .get(GeneralSettings.DEFAULT_ROLE_PREFIX)
-                    .replace(Placeholders.ROLE_COLOR, DEFAULT_ROLE_COLOR_CODE);
-        }
-
-        roles = new ArrayList<>(roles);
-        roles.sort(ROLE_COMPARATOR);
-        var role = roles.get(0);
-        var roleColor = role.getColor();
-
-        String color;
-
-        if (roleColor != null) {
-            color = ChatColor.of(roleColor).toString();
+            return null;
         } else {
-            color = DEFAULT_ROLE_COLOR_CODE;
-        }
-
-        var prefix = rolePrefixes.getString(Long.toString(role.getIdLong()));
-
-        if (prefix.isEmpty()) {
-            return plugin.getGeneralConfig()
-                    .get(GeneralSettings.DEFAULT_ROLE_PREFIX)
-                    .replace(Placeholders.ROLE_COLOR, color);
-        } else {
-            return prefix.replace(Placeholders.ROLE_COLOR, color);
+            return roles.stream().min(ROLE_COMPARATOR).orElse(null);
         }
     }
 

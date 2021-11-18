@@ -17,21 +17,22 @@
  *     along with DiscordChatBridge. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.okocraft.discordchatbridge.util;
+package net.okocraft.discordchatbridge.platform.bukkit;
 
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
+import net.okocraft.discordchatbridge.chat.ChatSystem;
+import net.okocraft.discordchatbridge.constant.Constants;
+import net.okocraft.discordchatbridge.util.VanillaChatFormatter;
+import org.bukkit.Bukkit;
 import org.jetbrains.annotations.NotNull;
 
-public final class VanillaChatFormatter {
+public class PaperChatSystem implements ChatSystem {
 
-    public static @NotNull String format(@NotNull String sender, @NotNull String source, @NotNull String message) {
-        return source.isEmpty() ? format(sender, message) : "<" + sender + "&r@" + source + "&r> " + message;
-    }
-
-    public static @NotNull String format(@NotNull String sender, @NotNull String message) {
-        return "<" + sender + "&r> " + message;
-    }
-
-    private VanillaChatFormatter() {
-        throw new UnsupportedOperationException();
+    @Override
+    public void sendChat(@NotNull String channelName, @NotNull String sender, @NotNull String source, @NotNull String message) {
+        if (channelName.equals(Constants.GLOBAL_CHANNEL_NAME)) {
+            var chat = VanillaChatFormatter.format(sender, source, message);
+            Bukkit.broadcast(LegacyComponentSerializer.legacyAmpersand().deserialize(chat));
+        }
     }
 }
