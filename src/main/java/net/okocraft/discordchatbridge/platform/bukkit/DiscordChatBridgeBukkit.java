@@ -118,15 +118,15 @@ public class DiscordChatBridgeBukkit extends JavaPlugin implements DiscordChatBr
 
     @Override
     public void registerListeners() {
-        getServer().getPluginManager().registerEvents(
-                PaperChecker.IS_PAPER ? new PaperChatListener(this) : new BukkitServerListener(this),
-                this
-        );
+        getServer().getPluginManager().registerEvents(new BukkitServerListener(this), this);
 
         if (isLunaChatEnabled()) {
             getServer().getPluginManager().registerEvents(new BukkitLunaChatListener(this), this);
         } else {
-            getServer().getPluginManager().registerEvents(new BukkitChatListener(this), this);
+            getServer().getPluginManager().registerEvents(
+                    PaperChecker.IS_PAPER ? new PaperChatListener(this) : new BukkitChatListener(this),
+                    this
+            );
         }
     }
 
