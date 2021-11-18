@@ -52,6 +52,7 @@ public abstract class AdventureChatListener extends AbstractChatListener {
         }
     }
 
+    @SuppressWarnings("deprecation")
     public @NotNull String plainText(@NotNull Component component) {
         ComponentSerializer<Component, TextComponent, String> serializer;
 
@@ -59,7 +60,6 @@ public abstract class AdventureChatListener extends AbstractChatListener {
             serializer = net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer.plainText();
         } catch (Throwable throwable) {
             // use old plain serializer
-            // noinspection deprecation
             serializer = net.kyori.adventure.text.serializer.plain.PlainComponentSerializer.plain();
         }
 
