@@ -36,7 +36,7 @@ public class VelocityReloadCommand implements SimpleCommand {
     @Override
     public void execute(Invocation invocation) {
         reloadCommand.processCommand(
-                invocation.source().getPermissionChecker(),
+                permission -> invocation.source().hasPermission(permission),
                 str -> invocation.source().sendMessage(LegacyComponentSerializer.legacyAmpersand().deserialize(str))
         );
     }
