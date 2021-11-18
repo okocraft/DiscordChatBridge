@@ -30,7 +30,7 @@
 
     <name>DiscordChatBridge</name>
     <url>https://github.com/okocraft/DiscordChatBridge</url>
-    <description>A Spigot/Bungeecord plugin that connects LunaChat and Discord</description>
+    <description>A Spigot/Bungeecord/Velocity plugin that connects Vanilla chat or LunaChat and Discord</description>
 
     <licenses>
         <license>
@@ -73,6 +73,10 @@
             <url>https://oss.sonatype.org/content/repositories/snapshots</url>
         </repository>
         <repository>
+            <id>velocity-repo</id>
+            <url>https://nexus.velocitypowered.com/repository/maven-public/</url>
+        </repository>
+        <repository>
             <id>ucchy-github</id>
             <url>https://raw.github.com/ucchyocean/mvn-repo/master</url>
         </repository>
@@ -96,6 +100,13 @@
             <groupId>net.md-5</groupId>
             <artifactId>bungeecord-api</artifactId>
             <version>1.17-R0.1-SNAPSHOT</version>
+            <scope>provided</scope>
+        </dependency>
+        <!-- Velocity -->
+        <dependency>
+            <groupId>com.velocitypowered</groupId>
+            <artifactId>velocity-api</artifactId>
+            <version>3.0.1</version>
             <scope>provided</scope>
         </dependency>
         <!-- LunaChat https://github.com/ucchyocean/LunaChat -->
