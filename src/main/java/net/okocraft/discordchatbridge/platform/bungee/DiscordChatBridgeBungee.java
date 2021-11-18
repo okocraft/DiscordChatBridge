@@ -24,7 +24,6 @@ import net.md_5.bungee.api.plugin.Plugin;
 import net.okocraft.discordchatbridge.DiscordBot;
 import net.okocraft.discordchatbridge.DiscordChatBridgePlugin;
 import net.okocraft.discordchatbridge.chat.ChatSystem;
-import net.okocraft.discordchatbridge.chat.LunaChatSystem;
 import net.okocraft.discordchatbridge.platform.PlatformInfo;
 import net.okocraft.discordchatbridge.util.ColorSerializer;
 import org.jetbrains.annotations.NotNull;

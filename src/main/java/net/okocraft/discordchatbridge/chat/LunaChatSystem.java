@@ -20,7 +20,6 @@
 package net.okocraft.discordchatbridge.chat;
 
 import com.github.ucchyocean.lc3.channel.Channel;
-import net.okocraft.discordchatbridge.constant.Constants;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
