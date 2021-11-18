@@ -31,6 +31,8 @@ import com.velocitypowered.api.proxy.ProxyServer;
 import net.okocraft.discordchatbridge.DiscordBot;
 import net.okocraft.discordchatbridge.DiscordChatBridgePlugin;
 import net.okocraft.discordchatbridge.chat.ChatSystem;
+import net.okocraft.discordchatbridge.logger.LoggerWrapper;
+import net.okocraft.discordchatbridge.logger.Slf4jLogger;
 import net.okocraft.discordchatbridge.platform.PlatformInfo;
 import net.okocraft.discordchatbridge.util.ColorSerializer;
 import org.jetbrains.annotations.NotNull;
@@ -45,7 +47,7 @@ import java.nio.file.Path;
 public class DiscordChatBridgeVelocity implements DiscordChatBridgePlugin {
 
     private final ProxyServer server;
-    private final java.util.logging.Logger logger;
+    private final LoggerWrapper wrappedLogger;
     private final Path dataDirectory;
 
     private final YamlConfiguration generalConfig;
@@ -60,7 +62,7 @@ public class DiscordChatBridgeVelocity implements DiscordChatBridgePlugin {
     public DiscordChatBridgeVelocity(@NotNull ProxyServer server, @NotNull Logger logger,
                                      @DataDirectory Path dataDirectory) {
         this.server = server;
-        this.logger = java.util.logging.Logger.getLogger(logger.getName());
+        this.wrappedLogger = new Slf4jLogger(logger);
         this.dataDirectory = dataDirectory;
 
         this.generalConfig = YamlConfiguration.create(getDataDirectory().resolve("config.yml"));
@@ -83,8 +85,8 @@ public class DiscordChatBridgeVelocity implements DiscordChatBridgePlugin {
     }
 
     @Override
-    public @NotNull java.util.logging.Logger getJavaLogger() {
-        return logger;
+    public @NotNull LoggerWrapper getWrappedLogger() {
+        return wrappedLogger;
     }
 
     @Override

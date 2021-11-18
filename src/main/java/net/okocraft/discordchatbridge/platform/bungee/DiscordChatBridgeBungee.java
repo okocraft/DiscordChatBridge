@@ -24,16 +24,18 @@ import net.md_5.bungee.api.plugin.Plugin;
 import net.okocraft.discordchatbridge.DiscordBot;
 import net.okocraft.discordchatbridge.DiscordChatBridgePlugin;
 import net.okocraft.discordchatbridge.chat.ChatSystem;
+import net.okocraft.discordchatbridge.logger.JavaLogger;
+import net.okocraft.discordchatbridge.logger.LoggerWrapper;
 import net.okocraft.discordchatbridge.platform.PlatformInfo;
 import net.okocraft.discordchatbridge.util.ColorSerializer;
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.Color;
 import java.nio.file.Path;
-import java.util.logging.Logger;
 
 public class DiscordChatBridgeBungee extends Plugin implements DiscordChatBridgePlugin {
 
+    private final LoggerWrapper wrappedLogger = new JavaLogger(getLogger());
     private final BungeePlatform bungeePlatform = new BungeePlatform(this);
     private final YamlConfiguration generalConfig = YamlConfiguration.create(getDataDirectory().resolve("config.yml"));
     private final YamlConfiguration formatConfig = YamlConfiguration.create(getDataDirectory().resolve("format.yml"));
@@ -61,8 +63,8 @@ public class DiscordChatBridgeBungee extends Plugin implements DiscordChatBridge
     }
 
     @Override
-    public @NotNull Logger getJavaLogger() {
-        return getLogger();
+    public @NotNull LoggerWrapper getWrappedLogger() {
+        return wrappedLogger;
     }
 
     @Override

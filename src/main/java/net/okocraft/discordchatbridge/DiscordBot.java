@@ -171,7 +171,7 @@ public class DiscordBot {
         if (plain.length() < Message.MAX_CONTENT_LENGTH) {
             sendMessageToChannel(id, new MessageBuilder(plain).build());
         } else {
-            plugin.getJavaLogger().warning("The message is too long! :" + plain);
+            plugin.getWrappedLogger().warning("The message is too long! :" + plain);
         }
     }
 
@@ -212,7 +212,7 @@ public class DiscordBot {
                     .allowedMentions(ALLOWED_MENTION_TYPE)
                     .queue();
         } else {
-            plugin.getJavaLogger().warning(
+            plugin.getWrappedLogger().warning(
                     "Could not send message to channel. " +
                             "id: " + id + " content: " + message.getContentRaw()
             );

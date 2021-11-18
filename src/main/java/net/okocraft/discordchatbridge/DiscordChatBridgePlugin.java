@@ -22,18 +22,17 @@ package net.okocraft.discordchatbridge;
 import com.github.siroshun09.configapi.api.util.ResourceUtils;
 import com.github.siroshun09.configapi.yaml.YamlConfiguration;
 import net.okocraft.discordchatbridge.chat.ChatSystem;
+import net.okocraft.discordchatbridge.logger.LoggerWrapper;
 import net.okocraft.discordchatbridge.platform.PlatformInfo;
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.Color;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public interface DiscordChatBridgePlugin {
 
-    @NotNull Logger getJavaLogger();
+    @NotNull LoggerWrapper getWrappedLogger();
 
     @NotNull Path getDataDirectory();
 
@@ -57,7 +56,7 @@ public interface DiscordChatBridgePlugin {
 
             getGeneralConfig().load();
         } catch (IOException e) {
-            getJavaLogger().log(Level.SEVERE, "Could not load config.yml", e);
+            getWrappedLogger().error("Could not load config.yml", e);
             return false;
         }
 
@@ -70,7 +69,7 @@ public interface DiscordChatBridgePlugin {
 
             getFormatConfig().load();
         } catch (IOException e) {
-            getJavaLogger().log(Level.SEVERE, "Could not load format.yml", e);
+            getWrappedLogger().error("Could not load format.yml", e);
             return false;
         }
 
@@ -82,7 +81,7 @@ public interface DiscordChatBridgePlugin {
             loginToDiscord();
             getBot().updateGame();
         } catch (Exception e) {
-            getJavaLogger().log(Level.SEVERE, "Could not login to Discord", e);
+            getWrappedLogger().error("Could not login to Discord", e);
             return false;
         }
 

@@ -24,6 +24,8 @@ import net.okocraft.discordchatbridge.DiscordBot;
 import net.okocraft.discordchatbridge.DiscordChatBridgePlugin;
 import net.okocraft.discordchatbridge.chat.ChatSystem;
 import net.okocraft.discordchatbridge.command.ReloadCommand;
+import net.okocraft.discordchatbridge.logger.JavaLogger;
+import net.okocraft.discordchatbridge.logger.LoggerWrapper;
 import net.okocraft.discordchatbridge.platform.PlatformInfo;
 import net.okocraft.discordchatbridge.util.ColorSerializer;
 import org.bukkit.command.Command;
@@ -34,10 +36,10 @@ import org.jetbrains.annotations.NotNull;
 
 import java.awt.Color;
 import java.nio.file.Path;
-import java.util.logging.Logger;
 
 public class DiscordChatBridgeBukkit extends JavaPlugin implements DiscordChatBridgePlugin {
 
+    private final LoggerWrapper wrappedLogger = new JavaLogger(getLogger());
     private final BukkitPlatform bukkitPlatform = new BukkitPlatform(this);
     private final ReloadCommand reloadCommand = new ReloadCommand(this);
     private final YamlConfiguration generalConfig = YamlConfiguration.create(getDataDirectory().resolve("config.yml"));
@@ -72,8 +74,8 @@ public class DiscordChatBridgeBukkit extends JavaPlugin implements DiscordChatBr
     }
 
     @Override
-    public @NotNull Logger getJavaLogger() {
-        return getLogger();
+    public @NotNull LoggerWrapper getWrappedLogger() {
+        return wrappedLogger;
     }
 
     @Override
