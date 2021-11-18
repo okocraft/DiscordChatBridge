@@ -32,6 +32,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.stream.Collectors;
 
+@SuppressWarnings("deprecation")
 public class BukkitServerListener extends ServerListener implements Listener {
 
     public BukkitServerListener(@NotNull DiscordChatBridgePlugin plugin) {
