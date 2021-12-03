@@ -73,7 +73,7 @@ public class DiscordListener extends ListenerAdapter {
             return;
         }
 
-        var message = event.getMessage().getContentStripped();
+        var message = event.getMessage().getContentDisplay();
 
         if (message.startsWith("!playerlist")) {
             onPlayerListCommand(event.getTextChannel());
