@@ -45,9 +45,11 @@ public final class GeneralSettings {
             config -> {
                 try {
                     var value = config.getString("discord.activity.type");
-                    return Activity.ActivityType.valueOf(value);
+                    return value.equalsIgnoreCase("DEFAULT") ?
+                            Activity.ActivityType.PLAYING : // for compatibility
+                            Activity.ActivityType.valueOf(value);
                 } catch (IllegalArgumentException e) {
-                    return Activity.ActivityType.DEFAULT;
+                    return Activity.ActivityType.PLAYING;
                 }
             };
 
