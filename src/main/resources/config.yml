@@ -2,7 +2,7 @@ discord:
   token: ""
   status: "ONLINE"
   activity:
-    type: "DEFAULT"
+    type: "PLAYING"
     game: "%player_count% players in server"
     url: ""
 
