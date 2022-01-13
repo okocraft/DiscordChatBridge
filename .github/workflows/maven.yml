@@ -23,5 +23,5 @@ jobs:
           cp -r target staging
       - uses: actions/upload-artifact@v2.3.1
         with:
-          name: Package
+          name: Artifacts-Java-${{ matrix.java }}
           path: staging
