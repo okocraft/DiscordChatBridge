@@ -4,21 +4,24 @@ on: [push]
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        java: [ '11', '16', '17' ]
     steps:
       - uses: actions/checkout@v2.4.0
-      - name: Set up JDK 11
+      - name: Set up JDK ${{ matrix.java }}
         uses: actions/setup-java@v2.5.0
         with:
           distribution: 'temurin'
-          java-version: '11'
+          java-version: ${{ matrix.java }}
           cache: 'maven'
       - name: Build with Maven
-        run: mvn -B package --file pom.xml
+        run: mvn -B package --file pom.xml -Djava.version=${{ matrix.java }}
       - name: Move built jars
         run: |
           mkdir staging
           cp -r target staging
       - uses: actions/upload-artifact@v2.3.1
         with:
-          name: Package
+          name: Artifacts-Java-${{ matrix.java }}
           path: staging
