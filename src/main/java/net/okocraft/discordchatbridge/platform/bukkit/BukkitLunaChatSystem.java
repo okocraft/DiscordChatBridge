@@ -1,5 +1,5 @@
 /*
- *     Copyright (c) 2021 Okocraft
+ *     Copyright (c) 2022 Okocraft
  *
  *     This file is part of DiscordChatBridge.
  *
