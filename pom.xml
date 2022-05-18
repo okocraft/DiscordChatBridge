@@ -206,6 +206,7 @@
                         </filter>
                     </filters>
                     <minimizeJar>true</minimizeJar>
+                    <createDependencyReducedPom>false</createDependencyReducedPom>
                     <relocations>
                         <relocation>
                             <pattern>com.github.siroshun09.configapi</pattern>
