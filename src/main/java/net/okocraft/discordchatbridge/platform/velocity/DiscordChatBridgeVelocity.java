@@ -25,7 +25,7 @@ import com.velocitypowered.api.event.PostOrder;
 import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.proxy.ProxyInitializeEvent;
 import com.velocitypowered.api.event.proxy.ProxyShutdownEvent;
-import com.velocitypowered.api.plugin.Plugin;
+//import com.velocitypowered.api.plugin.Plugin;
 import com.velocitypowered.api.plugin.annotation.DataDirectory;
 import com.velocitypowered.api.proxy.ProxyServer;
 import net.okocraft.discordchatbridge.DiscordBot;
@@ -41,9 +41,9 @@ import org.slf4j.Logger;
 import java.awt.Color;
 import java.nio.file.Path;
 
-@Plugin(id = "discordchatbridge", name = "DiscordChatBridge", version = "2.5",
-        description = "A Spigot/Bungeecord/Velocity plugin that connects Vanilla chat or LunaChat and Discord",
-        authors = {"Siroshun09"})
+//@Plugin(id = "discordchatbridge", name = "DiscordChatBridge", version = "2.5",
+//        description = "A Spigot/Bungeecord/Velocity plugin that connects Vanilla chat or LunaChat and Discord",
+//        authors = {"Siroshun09"})
 public class DiscordChatBridgeVelocity implements DiscordChatBridgePlugin {
 
     private final ProxyServer server;
