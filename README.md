@@ -9,16 +9,14 @@ LunaChat と Discord をチャット連携するプラグイン。
 ## Requirements
 
 - Java 11+
-- Spigot or BungeeCord
+- Spigot / Paper / BungeeCord / Waterfall / Velocity
 - (Optional) [LunaChat 3.0.8+](https://github.com/ucchyocean/LunaChat/releases/tag/v3.0.8)
 
 ## Usage
 
-サーバーディレクトリの `/plugins/` に配置し、サーバーを再起動する。
-
-作成された `config.yml` にて各種設定する。
-
-再読み込みコマンド: `/dcbreload`
+1. `plugins` ディレクトリ内に配置し、サーバーを再起動する。
+2. 作成された `config.yml` にて各種設定する。
+3. 再読み込みコマンド: `/dcbreload`
 
 ## License
 
@@ -26,4 +24,4 @@ LunaChat と Discord をチャット連携するプラグイン。
 
 This project is under the GPL-3.0 license. Please see [LICENSE](LICENSE) for more info.
 
-Copyright © 2020-2021, Okocraft
+Copyright © 2020-2022, Okocraft
