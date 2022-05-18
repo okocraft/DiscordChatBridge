@@ -252,6 +252,10 @@
                             <pattern>org.jetbrains</pattern>
                             <shadedPattern>${project.groupId}.lib.jetbrains</shadedPattern>
                         </relocation>
+                        <relocation>
+                            <pattern>kotlin</pattern>
+                            <shadedPattern>${project.groupId}.lib.kotlin</shadedPattern>
+                        </relocation>
                     </relocations>
                 </configuration>
                 <executions>
