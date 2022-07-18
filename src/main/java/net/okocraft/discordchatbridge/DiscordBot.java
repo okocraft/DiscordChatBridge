@@ -30,6 +30,7 @@ import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.channel.unions.MessageChannelUnion;
+import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.utils.MemberCachePolicy;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
@@ -57,7 +58,7 @@ import java.util.regex.Pattern;
 public class DiscordBot {
 
     private static final Collection<Message.MentionType> ALLOWED_MENTION_TYPE =
-            Set.of(Message.MentionType.EMOTE, Message.MentionType.USER, Message.MentionType.CHANNEL);
+            Set.of(Message.MentionType.EMOJI, Message.MentionType.USER, Message.MentionType.CHANNEL);
 
     private static final String MENTION_MARK = "@";
 
@@ -128,7 +129,7 @@ public class DiscordBot {
     }
 
     public void addReaction(@NotNull Message message, @NotNull String unicode) {
-        scheduler.submit(() -> message.addReaction(unicode).queue());
+        scheduler.submit(() -> message.addReaction(Emoji.fromUnicode(unicode)).queue());
     }
 
     public @Nullable Role getFirstRole(@NotNull Member member) {
