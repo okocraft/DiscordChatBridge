@@ -19,17 +19,20 @@
 
 package net.okocraft.discordchatbridge;
 
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.MessageBuilder;
 import net.dv8tion.jda.api.entities.Activity;
+import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.GuildMessageChannel;
+import net.dv8tion.jda.api.entities.IMentionable;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.requests.GatewayIntent;
+import net.dv8tion.jda.api.utils.MemberCachePolicy;
+import net.dv8tion.jda.api.utils.cache.CacheFlag;
 import net.okocraft.discordchatbridge.config.FormatSettings;
 import net.okocraft.discordchatbridge.config.GeneralSettings;
 import net.okocraft.discordchatbridge.constant.Placeholders;
@@ -39,14 +42,16 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.security.auth.login.LoginException;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
+import java.util.regex.MatchResult;
 import java.util.regex.Pattern;
 
 public class DiscordBot {
@@ -58,36 +63,26 @@ public class DiscordBot {
 
     private static final String CHANNEL_MARK = "#";
 
-    private static final Pattern EVERYONE_PATTERN = Pattern.compile("@everyone");
+    private static final Pattern MENTION_PATTERN = createMentionPattern(MENTION_MARK);
 
-    private static final String EVERYONE_REPLACEMENT = "@.everyone";
-
-    private static final Pattern HERE_PATTERN = Pattern.compile("@here");
-
-    private static final String HERE_REPLACEMENT = "@.here";
+    private static final Pattern CHANNEL_PATTERN = createMentionPattern(CHANNEL_MARK);
 
     private static final Comparator<Role> ROLE_COMPARATOR = Comparator.comparingInt(Role::getPosition);
+
+    private static Pattern createMentionPattern(@NotNull String mark) {
+        return Pattern.compile(mark + "([^" + mark + "]*?)(?:\\s|$)");
+    }
 
     private final DiscordChatBridgePlugin plugin;
     private final JDA jda;
     private final ScheduledExecutorService scheduler;
 
-    private final LoadingCache<String, Pattern> mentionPatternCache =
-            createCache(name -> Pattern.compile(
-                    Pattern.quote("@" + name),
-                    Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE
-            ));
-
-    private final LoadingCache<String, Pattern> channelPatternCache =
-            createCache(channel -> Pattern.compile(
-                    Pattern.quote("#" + channel),
-                    Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE
-            ));
-
     private DiscordBot(@NotNull DiscordChatBridgePlugin plugin, @NotNull JDA jda) {
         this.plugin = plugin;
         this.jda = jda;
         this.scheduler = Executors.newSingleThreadScheduledExecutor(r -> new Thread(r, "DiscordChatBridge-Thread"));
+
+        loadMembers();
     }
 
     @Contract("_ -> new")
@@ -99,6 +94,9 @@ public class DiscordBot {
                             .addEventListeners(new DiscordListener(plugin))
                             .setAutoReconnect(true)
                             .setStatus(plugin.getGeneralConfig().get(GeneralSettings.DISCORD_STATUS))
+                            .enableIntents(GatewayIntent.GUILD_MEMBERS)
+                            .setMemberCachePolicy(MemberCachePolicy.ALL)
+                            .disableCache(Arrays.asList(CacheFlag.values()))
                             .build()
                             .awaitReady()
             );
@@ -151,21 +149,15 @@ public class DiscordBot {
                         .replace(Placeholders.DISPLAY_NAME, displayName)
                         .replace(Placeholders.MESSAGE, original);
 
-        plain = EVERYONE_PATTERN.matcher(plain).replaceAll(EVERYONE_REPLACEMENT);
-        plain = HERE_PATTERN.matcher(plain).replaceAll(HERE_REPLACEMENT);
+        plain = plain.replace("@everyone", "@.everyone");
+        plain = plain.replace("@here", "@.here");
 
         if (plain.contains(MENTION_MARK)) {
-            try {
-                plain = replaceMention(plain);
-            } catch (ExecutionException ignored) {
-            }
+            plain = replaceMention(plain);
         }
 
         if (plain.contains(CHANNEL_MARK)) {
-            try {
-                plain = replaceChannel(plain);
-            } catch (ExecutionException ignored) {
-            }
+            plain = replaceChannel(plain);
         }
 
         if (plain.length() < Message.MAX_CONTENT_LENGTH) {
@@ -191,19 +183,6 @@ public class DiscordBot {
         );
     }
 
-    private static LoadingCache<String, Pattern> createCache(@NotNull Function<String, Pattern> function) {
-        return CacheBuilder.newBuilder()
-                .expireAfterAccess(15, TimeUnit.MINUTES)
-                .build(
-                        new CacheLoader<>() {
-                            @Override
-                            public Pattern load(@NotNull String key) {
-                                return function.apply(key);
-                            }
-                        }
-                );
-    }
-
     private void sendMessageToChannel(long id, @NotNull Message message) {
         var channel = jda.getTextChannelById(id);
 
@@ -219,29 +198,79 @@ public class DiscordBot {
         }
     }
 
-    private @NotNull String replaceMention(@NotNull String original) throws ExecutionException {
-        var temp = original;
-
-        for (var guild : jda.getGuilds()) {
-            for (Member member : guild.getMembers()) {
-                var pattern = mentionPatternCache.get(member.getEffectiveName());
-                temp = pattern.matcher(temp).replaceAll(member.getAsMention());
-            }
-        }
-
-        return temp;
+    private @NotNull String replaceMention(@NotNull String original) {
+        return MENTION_PATTERN.matcher(original).replaceAll(result ->
+                Optional.of(result)
+                        .map(this::searchForUserOrRoleMention)
+                        .orElseGet(result::group)
+        );
     }
 
-    private @NotNull String replaceChannel(@NotNull String original) throws ExecutionException {
-        var temp = original;
+    private @Nullable String searchForUserOrRoleMention(@NotNull MatchResult result) {
+        var name = result.group(1);
+        var userMention = searchForUserMention(name);
 
-        for (var guild : jda.getGuilds()) {
-            for (var channel : guild.getTextChannels()) {
-                var pattern = channelPatternCache.get(channel.getName());
-                temp = pattern.matcher(temp).replaceAll(channel.getAsMention());
-            }
+        if (userMention != null) {
+            return userMention;
         }
 
-        return temp;
+        return searchForRoleMention(name);
+    }
+
+    private @Nullable String searchForUserMention(@NotNull String username) {
+        return getMentionableFromAllGuilds(guild -> searchForUser(guild, username));
+    }
+
+    private @NotNull Collection<Member> searchForUser(@NotNull Guild guild, @NotNull String username) {
+        return guild.getMembersByEffectiveName(username, true);
+    }
+
+    private @Nullable String searchForRoleMention(@NotNull String roleName) {
+        return getMentionableFromAllGuilds(guild -> guild.getRolesByName(roleName, true));
+    }
+
+    private @NotNull String replaceChannel(@NotNull String original) {
+        return CHANNEL_PATTERN.matcher(original).replaceAll(this::searchForChannelMention);
+    }
+
+    private @Nullable String searchForChannelMention(@NotNull MatchResult result) {
+        var channelName = result.group();
+        return getMentionableFromAllGuilds(guild -> searchForGuildMessageChannels(guild, channelName));
+    }
+
+    private @NotNull Collection<? extends GuildMessageChannel> searchForGuildMessageChannels(@NotNull Guild guild,
+                                                                                             @NotNull String channelName) {
+        var textChannels = guild.getTextChannelsByName(channelName, true);
+
+        if (!textChannels.isEmpty()) {
+            return textChannels;
+        }
+
+        var threadChannels = guild.getThreadChannelsByName(channelName, true);
+
+        if (!threadChannels.isEmpty()) {
+            return threadChannels;
+        }
+
+        return guild.getNewsChannelsByName(channelName, true);
+    }
+
+    private <M extends IMentionable> @Nullable String getMentionableFromAllGuilds(@NotNull Function<Guild, Collection<M>> mentionableFunction) {
+        return jda.getGuilds().stream()
+                .map(mentionableFunction)
+                .flatMap(Collection::stream)
+                .map(IMentionable::getAsMention)
+                .findFirst()
+                .orElse(null);
+    }
+
+    private void loadMembers() {
+        jda.getGuilds().stream()
+                .map(Guild::loadMembers)
+                .forEach(task -> task.onError(this::failedToLoadMembers));
+    }
+
+    private void failedToLoadMembers(@NotNull Throwable ex) {
+        plugin.getWrappedLogger().error("Failed to load members.", ex);
     }
 }
