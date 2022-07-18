@@ -22,7 +22,7 @@ package net.okocraft.discordchatbridge.listener;
 import com.github.siroshun09.configapi.api.Configuration;
 import net.dv8tion.jda.api.MessageBuilder;
 import net.dv8tion.jda.api.entities.Role;
-import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.entities.channel.unions.MessageChannelUnion;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.okocraft.discordchatbridge.DiscordChatBridgePlugin;
@@ -76,7 +76,7 @@ public class DiscordListener extends ListenerAdapter {
         var message = event.getMessage().getContentDisplay();
 
         if (message.startsWith("!playerlist")) {
-            onPlayerListCommand(event.getTextChannel());
+            onPlayerListCommand(event.getChannel());
             return;
         }
 
@@ -140,7 +140,7 @@ public class DiscordListener extends ListenerAdapter {
         }
     }
 
-    private void onPlayerListCommand(@NotNull TextChannel channel) {
+    private void onPlayerListCommand(@NotNull MessageChannelUnion channel) {
         if (System.currentTimeMillis() - lastPlayerListUsed.get() < 5000) {
             return;
         }

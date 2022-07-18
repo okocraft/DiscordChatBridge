@@ -29,7 +29,7 @@ import net.dv8tion.jda.api.entities.IMentionable;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.Role;
-import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.entities.channel.unions.MessageChannelUnion;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.utils.MemberCachePolicy;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
@@ -114,7 +114,7 @@ public class DiscordBot {
         scheduler.submit(() -> sendMessageToChannel(id, message));
     }
 
-    public void sendMessage(@NotNull TextChannel channel, @NotNull Message message) {
+    public void sendMessage(@NotNull MessageChannelUnion channel, @NotNull Message message) {
         scheduler.submit(() -> {
             if (channel.canTalk()) {
                 channel.sendMessage(message).queue();
