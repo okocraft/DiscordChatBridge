@@ -73,10 +73,6 @@
             <url>https://oss.sonatype.org/content/repositories/snapshots</url>
         </repository>
         <repository>
-            <id>velocity-repo</id>
-            <url>https://nexus.velocitypowered.com/repository/maven-public/</url>
-        </repository>
-        <repository>
             <id>ucchy-github</id>
             <url>https://raw.github.com/ucchyocean/mvn-repo/master</url>
         </repository>
