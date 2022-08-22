@@ -19,7 +19,6 @@
 
 package net.okocraft.discordchatbridge.listener;
 
-import net.dv8tion.jda.api.MessageBuilder;
 import net.okocraft.discordchatbridge.DiscordChatBridgePlugin;
 import net.okocraft.discordchatbridge.config.FormatSettings;
 import net.okocraft.discordchatbridge.config.GeneralSettings;
@@ -85,7 +84,7 @@ public abstract class ServerListener {
         long systemChannelID = plugin.getGeneralConfig().get(GeneralSettings.SYSTEM_CHANNEL);
 
         if (systemChannelID != 0) {
-            plugin.getBot().sendMessage(systemChannelID, new MessageBuilder(message).build());
+            plugin.getBot().sendMessage(systemChannelID, message);
         }
     }
 

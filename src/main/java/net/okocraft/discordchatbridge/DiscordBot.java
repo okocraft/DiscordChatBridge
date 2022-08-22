@@ -21,19 +21,20 @@ package net.okocraft.discordchatbridge;
 
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
-import net.dv8tion.jda.api.MessageBuilder;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.GuildMessageChannel;
 import net.dv8tion.jda.api.entities.IMentionable;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.entities.Role;
-import net.dv8tion.jda.api.entities.channel.unions.MessageChannelUnion;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.utils.MemberCachePolicy;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
+import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
+import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 import net.okocraft.discordchatbridge.config.FormatSettings;
 import net.okocraft.discordchatbridge.config.GeneralSettings;
 import net.okocraft.discordchatbridge.constant.Placeholders;
@@ -111,14 +112,33 @@ public class DiscordBot {
         scheduler.shutdown();
     }
 
-    public void sendMessage(long id, @NotNull Message message) {
-        scheduler.submit(() -> sendMessageToChannel(id, message));
+    public void sendMessage(long id, @NotNull String message) {
+        this.sendMessage(id, new MessageCreateBuilder().setContent(message).build());
     }
 
-    public void sendMessage(@NotNull MessageChannelUnion channel, @NotNull Message message) {
+    public void sendMessage(long id, @NotNull MessageCreateData message) {
+        var channel = jda.getTextChannelById(id);
+
+        if (channel != null) {
+            this.sendMessage(channel, message);
+        } else {
+            plugin.getWrappedLogger().warning("Could not find the channel with id " + id);
+        }
+    }
+
+    public void sendMessage(@NotNull MessageChannel channel, @NotNull String message) {
+        this.sendMessage(channel, new MessageCreateBuilder().setContent(message).build());
+    }
+
+    public void sendMessage(@NotNull MessageChannel channel, @NotNull MessageCreateData message) {
         scheduler.submit(() -> {
             if (channel.canTalk()) {
                 channel.sendMessage(message).queue();
+            } else {
+                plugin.getWrappedLogger().warning(
+                        "Could not send message to channel. " +
+                                "id: " + channel.getId() + " content: " + message.getContent()
+                );
             }
         });
     }
@@ -162,7 +182,7 @@ public class DiscordBot {
         }
 
         if (plain.length() < Message.MAX_CONTENT_LENGTH) {
-            sendMessageToChannel(id, new MessageBuilder(plain).build());
+            sendMessage(id, new MessageCreateBuilder().addContent(plain).setAllowedMentions(ALLOWED_MENTION_TYPE).build());
         } else {
             plugin.getWrappedLogger().warning("The message is too long! :" + plain);
         }
@@ -182,21 +202,6 @@ public class DiscordBot {
                     jda.getPresence().setActivity(Activity.of(type, game, url));
                 }, 1, TimeUnit.SECONDS
         );
-    }
-
-    private void sendMessageToChannel(long id, @NotNull Message message) {
-        var channel = jda.getTextChannelById(id);
-
-        if (channel != null && channel.canTalk()) {
-            channel.sendMessage(message)
-                    .allowedMentions(ALLOWED_MENTION_TYPE)
-                    .queue();
-        } else {
-            plugin.getWrappedLogger().warning(
-                    "Could not send message to channel. " +
-                            "id: " + id + " content: " + message.getContentRaw()
-            );
-        }
     }
 
     private @NotNull String replaceMention(@NotNull String original) {

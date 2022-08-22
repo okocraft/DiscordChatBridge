@@ -20,7 +20,6 @@
 package net.okocraft.discordchatbridge.listener;
 
 import com.github.siroshun09.configapi.api.Configuration;
-import net.dv8tion.jda.api.MessageBuilder;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.channel.unions.MessageChannelUnion;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
@@ -147,7 +146,7 @@ public class DiscordListener extends ListenerAdapter {
 
         plugin.getBot().updateGame();
 
-        var builder = new MessageBuilder();
+        var builder = new StringBuilder();
 
         var top =
                 plugin.getFormatConfig()
@@ -169,7 +168,7 @@ public class DiscordListener extends ListenerAdapter {
         builder.append(Constants.LINE_SEPARATOR).append("```");
 
         if (channel.canTalk()) {
-            plugin.getBot().sendMessage(channel, builder.build());
+            plugin.getBot().sendMessage(channel, builder.toString());
             lastPlayerListUsed.set(System.currentTimeMillis());
         }
     }
