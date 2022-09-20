@@ -236,7 +236,11 @@ public class DiscordBot {
     }
 
     private @NotNull String replaceChannel(@NotNull String original) {
-        return CHANNEL_PATTERN.matcher(original).replaceAll(this::searchForChannelMention);
+        return CHANNEL_PATTERN.matcher(original).replaceAll(result ->
+                Optional.of(result)
+                        .map(this::searchForChannelMention)
+                        .orElseGet(result::group)
+        );
     }
 
     private @Nullable String searchForChannelMention(@NotNull MatchResult result) {
