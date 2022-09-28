@@ -87,6 +87,7 @@ public interface DiscordChatBridgePlugin {
 
         registerCommands();
         registerListeners();
+        registerLuckPermsFirstJoinListener();
 
         return true;
     }
@@ -96,6 +97,7 @@ public interface DiscordChatBridgePlugin {
             getBot().shutdown();
             unregisterCommands();
             unregisterListeners();
+            unregisterLuckPermsFirstJoinListener();
         }
     }
 
@@ -110,6 +112,10 @@ public interface DiscordChatBridgePlugin {
     void unregisterListeners();
 
     boolean enabled();
+
+    void registerLuckPermsFirstJoinListener();
+
+    void unregisterLuckPermsFirstJoinListener();
 
     @NotNull String serializeColor(@NotNull Color color);
 }

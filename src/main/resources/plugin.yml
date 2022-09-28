@@ -5,7 +5,7 @@ api-version: "1.16"
 description: ${project.description}
 url: ${project.url}
 author: Siroshun09
-softdepend: [LunaChat]
+softdepend: [LunaChat, LuckPerms]
 commands:
   dcbreload:
     description: "Reload config.yml amd format.yml"

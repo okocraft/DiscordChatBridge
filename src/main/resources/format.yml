@@ -1,6 +1,7 @@
 server:
   chat: "%player_name%: %message%"
   join: ":heavy_plus_sign: **%player_name%** joined the server."
+  first-join: ":heavy_plus_sign: **%player_name%** joined the server for the first time."
   leave: ":heavy_minus_sign: **%player_name%** left the server."
   switch: ":heavy_plus_sign: **%player_name%** moved to **%server_name%**"
   player-list:

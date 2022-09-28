@@ -29,6 +29,9 @@ public final class FormatSettings {
     public static final ConfigValue<String> SERVER_JOIN =
             config -> config.getString("server.join", ":heavy_plus_sign: **%player_name%** joined the server.");
 
+    public static final ConfigValue<String> SERVER_FIRST_JOIN =
+            config -> config.getString("server.first-join", ":heavy_plus_sign: **%player_name%** joined the server for the first time! :tada:");
+
     public static final ConfigValue<String> SERVER_LEAVE =
             config -> config.getString("server.leave", ":heavy_plus_sign: **%player_name%** left the server.");
 

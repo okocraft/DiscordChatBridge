@@ -24,6 +24,7 @@ import net.okocraft.discordchatbridge.config.FormatSettings;
 import net.okocraft.discordchatbridge.config.GeneralSettings;
 import net.okocraft.discordchatbridge.constant.Placeholders;
 import net.okocraft.discordchatbridge.util.ColorStripper;
+import net.okocraft.discordchatbridge.util.FirstJoinPlayerHolder;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
@@ -41,6 +42,15 @@ public abstract class ServerListener {
     }
 
     protected void processJoin(@NotNull UUID uuid, @NotNull String name, @NotNull String displayName) {
+        if (FirstJoinPlayerHolder.remove(uuid)) {
+            var format = plugin.getFormatConfig().get(FormatSettings.SERVER_FIRST_JOIN);
+
+            if (!format.isEmpty()) {
+                sendMessage(replacePlayer(format, name, displayName));
+                return;
+            }
+        }
+
         var format = plugin.getFormatConfig().get(FormatSettings.SERVER_JOIN);
 
         if (!format.isEmpty()) {

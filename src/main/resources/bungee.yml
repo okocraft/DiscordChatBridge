@@ -4,4 +4,4 @@ version: ${project.version}
 description: ${project.description}
 url: ${project.url}
 author: Siroshun09
-softdepends: [LunaChat]
+softDepends: [LunaChat, LuckPerms]

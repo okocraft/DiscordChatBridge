@@ -24,6 +24,7 @@ import net.md_5.bungee.api.plugin.Plugin;
 import net.okocraft.discordchatbridge.DiscordBot;
 import net.okocraft.discordchatbridge.DiscordChatBridgePlugin;
 import net.okocraft.discordchatbridge.chat.ChatSystem;
+import net.okocraft.discordchatbridge.listener.luckperms.FirstJoinListener;
 import net.okocraft.discordchatbridge.logger.JavaLogger;
 import net.okocraft.discordchatbridge.logger.LoggerWrapper;
 import net.okocraft.discordchatbridge.platform.PlatformInfo;
@@ -42,6 +43,7 @@ public class DiscordChatBridgeBungee extends Plugin implements DiscordChatBridge
 
     private DiscordBot bot;
     private ChatSystem chatSystem;
+    private FirstJoinListener firstJoinListener;
     private boolean isEnabled;
 
     @Override
@@ -128,6 +130,20 @@ public class DiscordChatBridgeBungee extends Plugin implements DiscordChatBridge
     @Override
     public boolean enabled() {
         return isEnabled;
+    }
+
+    @Override
+    public void registerLuckPermsFirstJoinListener() {
+        if (getProxy().getPluginManager().getPlugin("LuckPerms") != null) {
+            firstJoinListener = new FirstJoinListener(this);
+        }
+    }
+
+    @Override
+    public void unregisterLuckPermsFirstJoinListener() {
+        if (firstJoinListener != null) {
+            firstJoinListener.unsubscribe();
+        }
     }
 
     @Override

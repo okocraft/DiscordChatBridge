@@ -31,6 +31,7 @@ import com.velocitypowered.api.proxy.ProxyServer;
 import net.okocraft.discordchatbridge.DiscordBot;
 import net.okocraft.discordchatbridge.DiscordChatBridgePlugin;
 import net.okocraft.discordchatbridge.chat.ChatSystem;
+import net.okocraft.discordchatbridge.listener.luckperms.FirstJoinListener;
 import net.okocraft.discordchatbridge.logger.LoggerWrapper;
 import net.okocraft.discordchatbridge.logger.Slf4jLogger;
 import net.okocraft.discordchatbridge.platform.PlatformInfo;
@@ -56,6 +57,7 @@ public class DiscordChatBridgeVelocity implements DiscordChatBridgePlugin {
 
     private DiscordBot bot;
     private ChatSystem chatSystem;
+    private FirstJoinListener firstJoinListener;
     private boolean isEnabled;
 
     @Inject
@@ -148,6 +150,20 @@ public class DiscordChatBridgeVelocity implements DiscordChatBridgePlugin {
     @Override
     public boolean enabled() {
         return isEnabled;
+    }
+
+    @Override
+    public void registerLuckPermsFirstJoinListener() {
+        if (server.getPluginManager().getPlugin("LuckPerms").isPresent()) {
+            firstJoinListener = new FirstJoinListener(this);
+        }
+    }
+
+    @Override
+    public void unregisterLuckPermsFirstJoinListener() {
+        if (firstJoinListener != null) {
+            firstJoinListener.unsubscribe();
+        }
     }
 
     @Override
