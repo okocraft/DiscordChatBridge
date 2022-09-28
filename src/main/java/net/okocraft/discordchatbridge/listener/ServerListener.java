@@ -90,11 +90,15 @@ public abstract class ServerListener {
 
     private static @NotNull String replacePlayer(@NotNull String original, @NotNull String name, @NotNull String displayName) {
         return original
-                .replace(Placeholders.PLAYER_NAME, name)
-                .replace(Placeholders.DISPLAY_NAME, ColorStripper.strip(displayName));
+                .replace(Placeholders.PLAYER_NAME, escapeUnderscore(name))
+                .replace(Placeholders.DISPLAY_NAME, escapeUnderscore(ColorStripper.strip(displayName)));
     }
 
     private static @NotNull String replaceServer(@NotNull String original, @NotNull String serverName) {
-        return original.replace(Placeholders.SERVER_NAME, serverName);
+        return original.replace(Placeholders.SERVER_NAME, escapeUnderscore(serverName));
+    }
+
+    private static @NotNull String escapeUnderscore(@NotNull String text) {
+        return text.replace("_", "\\_");
     }
 }

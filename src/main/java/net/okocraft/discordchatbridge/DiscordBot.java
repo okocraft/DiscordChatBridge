@@ -165,8 +165,8 @@ public class DiscordBot {
                              @NotNull String name, @NotNull String displayName) {
         var plain =
                 plugin.getFormatConfig().get(FormatSettings.DISCORD_CHAT)
-                        .replace(Placeholders.PLAYER_NAME, name)
-                        .replace(Placeholders.DISPLAY_NAME, displayName)
+                        .replace(Placeholders.PLAYER_NAME, escapeUnderscore(name))
+                        .replace(Placeholders.DISPLAY_NAME, escapeUnderscore(displayName))
                         .replace(Placeholders.MESSAGE, original);
 
         plain = plain.replace("@everyone", "@.everyone");
@@ -201,6 +201,10 @@ public class DiscordBot {
                     jda.getPresence().setActivity(Activity.of(type, game, url));
                 }, 1, TimeUnit.SECONDS
         );
+    }
+
+    public @NotNull String escapeUnderscore(@NotNull String text) {
+        return text.replace("_", "\\_");
     }
 
     private @NotNull String replaceMention(@NotNull String original) {
