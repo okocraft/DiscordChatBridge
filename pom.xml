@@ -66,24 +66,15 @@
     <repositories>
         <repository>
             <id>paper-repo</id>
-            <url>https://papermc.io/repo/repository/maven-public/</url>
+            <url>https://repo.papermc.io/repository/maven-public/</url>
         </repository>
         <repository>
             <id>bungeecord-repo</id>
             <url>https://oss.sonatype.org/content/repositories/snapshots</url>
         </repository>
         <repository>
-            <id>velocity-repo</id>
-            <url>https://nexus.velocitypowered.com/repository/maven-public/</url>
-        </repository>
-        <repository>
             <id>ucchy-github</id>
             <url>https://raw.github.com/ucchyocean/mvn-repo/master</url>
-        </repository>
-        <repository>
-            <id>dv8tion</id>
-            <name>m2-dv8tion</name>
-            <url>https://m2.dv8tion.net/releases</url>
         </repository>
     </repositories>
 
@@ -105,14 +96,14 @@
         <dependency>
             <groupId>net.md-5</groupId>
             <artifactId>bungeecord-api</artifactId>
-            <version>1.17-R0.1-SNAPSHOT</version>
+            <version>1.19-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
         <!-- Velocity -->
         <dependency>
             <groupId>com.velocitypowered</groupId>
             <artifactId>velocity-api</artifactId>
-            <version>3.1.1</version>
+            <version>3.1.2-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
         <!-- LunaChat https://github.com/ucchyocean/LunaChat -->
@@ -126,7 +117,7 @@
         <dependency>
             <groupId>net.dv8tion</groupId>
             <artifactId>JDA</artifactId>
-            <version>4.4.0_352</version>
+            <version>5.0.0-alpha.20</version>
             <scope>compile</scope>
             <exclusions>
                 <exclusion>
@@ -211,6 +202,7 @@
                         </filter>
                     </filters>
                     <minimizeJar>true</minimizeJar>
+                    <createDependencyReducedPom>false</createDependencyReducedPom>
                     <relocations>
                         <relocation>
                             <pattern>com.github.siroshun09.configapi</pattern>
@@ -255,6 +247,10 @@
                         <relocation>
                             <pattern>org.jetbrains</pattern>
                             <shadedPattern>${project.groupId}.lib.jetbrains</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>kotlin</pattern>
+                            <shadedPattern>${project.groupId}.lib.kotlin</shadedPattern>
                         </relocation>
                     </relocations>
                 </configuration>
