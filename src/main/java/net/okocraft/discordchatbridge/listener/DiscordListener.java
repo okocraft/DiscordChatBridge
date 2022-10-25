@@ -20,6 +20,7 @@
 package net.okocraft.discordchatbridge.listener;
 
 import com.github.siroshun09.configapi.api.Configuration;
+import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.channel.unions.MessageChannelUnion;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
@@ -29,6 +30,7 @@ import net.okocraft.discordchatbridge.config.FormatSettings;
 import net.okocraft.discordchatbridge.config.GeneralSettings;
 import net.okocraft.discordchatbridge.constant.Constants;
 import net.okocraft.discordchatbridge.constant.Placeholders;
+import net.okocraft.discordchatbridge.util.ColorStripper;
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.Color;
@@ -102,26 +104,7 @@ public class DiscordListener extends ListenerAdapter {
             return;
         }
 
-        var name = member.getNickname() != null ? member.getNickname() : member.getEffectiveName();
-        var role = plugin.getBot().getFirstRole(member);
-        String prefix;
-
-        if (role != null) {
-            var roleColorCode = Optional.ofNullable(role.getColor()).map(plugin::serializeColor).orElse(defaultRoleColorCode);
-            var rolePrefix = rolePrefixes.getString(Long.toString(role.getIdLong()));
-
-            if (rolePrefix.isEmpty()) {
-                prefix = plugin.getGeneralConfig()
-                        .get(GeneralSettings.DEFAULT_ROLE_PREFIX)
-                        .replace(Placeholders.ROLE_COLOR, roleColorCode);
-            } else {
-                prefix = rolePrefix.replace(Placeholders.ROLE_COLOR, roleColorCode);
-            }
-        } else {
-            prefix = "";
-        }
-
-        var senderName = prefix + name;
+        var senderName = createSenderName(member);
         var sourceName = config.get(GeneralSettings.DISCORD_SOURCE_NAME);
 
         for (var line : lines) {
@@ -171,5 +154,55 @@ public class DiscordListener extends ListenerAdapter {
             plugin.getBot().sendMessage(channel, builder.toString());
             lastPlayerListUsed.set(System.currentTimeMillis());
         }
+    }
+
+    private @NotNull String createSenderName(@NotNull Member member) {
+        var rolePrefix = getRolePrefix(member);
+        var originalName = member.getNickname() != null ? member.getNickname() : member.getEffectiveName();
+
+        // true / false / role name
+        var setting = plugin.getGeneralConfig().get(GeneralSettings.ALLOW_COLORS_IN_NAME);
+
+        boolean allowColorsInName = Boolean.parseBoolean(setting) || (!setting.equalsIgnoreCase("false") && hasRole(member, setting));
+
+        String senderName;
+
+        if (allowColorsInName) {
+            senderName = originalName;
+        } else {
+            senderName = ColorStripper.strip(originalName);
+        }
+
+        return rolePrefix + senderName;
+    }
+
+    private @NotNull String getRolePrefix(@NotNull Member member) {
+        if (!plugin.getGeneralConfig().get(GeneralSettings.ENABLE_ROLE_PREFIX)) {
+            return "";
+        }
+
+        var role = plugin.getBot().getFirstRole(member);
+        String prefix;
+
+        if (role != null) {
+            var roleColorCode = Optional.ofNullable(role.getColor()).map(plugin::serializeColor).orElse(defaultRoleColorCode);
+            var rolePrefix = rolePrefixes.getString(Long.toString(role.getIdLong()));
+
+            if (rolePrefix.isEmpty()) {
+                prefix = plugin.getGeneralConfig()
+                        .get(GeneralSettings.DEFAULT_ROLE_PREFIX)
+                        .replace(Placeholders.ROLE_COLOR, roleColorCode);
+            } else {
+                prefix = rolePrefix.replace(Placeholders.ROLE_COLOR, roleColorCode);
+            }
+        } else {
+            prefix = "";
+        }
+
+        return prefix;
+    }
+
+    private boolean hasRole(@NotNull Member member, @NotNull String roleName) {
+        return member.getRoles().stream().anyMatch(role -> role.getName().equals(roleName));
     }
 }

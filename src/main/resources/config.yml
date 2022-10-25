@@ -19,4 +19,7 @@ channels:
   global: 0
 
 role-prefix:
+  enable: true
   default: "%role_color%"
+
+allow-colors-in-name: true # specifying the role name to limit using colors to only people who have that role.

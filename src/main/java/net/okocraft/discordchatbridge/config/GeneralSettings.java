@@ -74,6 +74,8 @@ public final class GeneralSettings {
     public static final ConfigValue<Configuration> ROLE_PREFIX =
             config -> Objects.requireNonNullElseGet(config.getSection("role-prefix"), MappedConfiguration::create);
 
+    public static final ConfigValue<Boolean> ENABLE_ROLE_PREFIX = config ->config.getBoolean("role-prefix.enable", true);
+
     public static final ConfigValue<String> DEFAULT_ROLE_PREFIX =
             config -> config.getString("role-prefix.default", "&f*");
 
@@ -82,6 +84,8 @@ public final class GeneralSettings {
 
     public static final ConfigValue<Configuration> LINKED_CHANNELS =
             config -> Objects.requireNonNullElseGet(config.getSection("channels"), MappedConfiguration::create);
+
+    public static final ConfigValue<String> ALLOW_COLORS_IN_NAME = config -> config.getString("allow-colors-in-name", Boolean.TRUE.toString());
 
     private GeneralSettings() {
         throw new UnsupportedOperationException();

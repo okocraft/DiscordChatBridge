@@ -26,7 +26,7 @@ import java.util.regex.Pattern;
 public final class ColorStripper {
 
     private static final String EMPTY = "";
-    private static final Pattern COLOR_SECTION_PATTERN = Pattern.compile("(?i)§[0-9A-FK-ORX]");
+    private static final Pattern COLOR_SECTION_PATTERN = Pattern.compile("(?i)[&§][0-9A-FK-ORX]");
 
     public static @NotNull String strip(String str) {
         if (str == null || str.isEmpty()) {
