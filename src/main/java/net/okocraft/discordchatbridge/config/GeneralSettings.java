@@ -74,7 +74,7 @@ public final class GeneralSettings {
     public static final ConfigValue<Configuration> ROLE_PREFIX =
             config -> Objects.requireNonNullElseGet(config.getSection("role-prefix"), MappedConfiguration::create);
 
-    public static final ConfigValue<Boolean> ENABLE_ROLE_PREFIX = config ->config.getBoolean("role-prefix.enable", true);
+    public static final ConfigValue<Boolean> ENABLE_ROLE_PREFIX = config -> config.getBoolean("role-prefix.enable", true);
 
     public static final ConfigValue<String> DEFAULT_ROLE_PREFIX =
             config -> config.getString("role-prefix.default", "&f*");
