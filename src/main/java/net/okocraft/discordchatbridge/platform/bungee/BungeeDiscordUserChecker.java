@@ -19,27 +19,35 @@
 
 package net.okocraft.discordchatbridge.platform.bungee;
 
-import net.md_5.bungee.api.ChatColor;
-import net.md_5.bungee.api.ProxyServer;
-import net.md_5.bungee.api.chat.TextComponent;
-import net.okocraft.discordchatbridge.chat.ChatSystem;
-import net.okocraft.discordchatbridge.constant.Constants;
 import net.okocraft.discordchatbridge.database.LinkedUser;
-import net.okocraft.discordchatbridge.util.VanillaChatFormatter;
+import net.okocraft.discordchatbridge.external.AdvancedBanIntegration;
+import net.okocraft.discordchatbridge.platform.DiscordUserChecker;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
-public class BungeeChatSystem implements ChatSystem {
+public class BungeeDiscordUserChecker implements DiscordUserChecker {
+
+    private final DiscordChatBridgeBungee plugin;
+
+    public BungeeDiscordUserChecker(@NotNull DiscordChatBridgeBungee plugin) {
+        this.plugin = plugin;
+    }
 
     @Override
-    public @NotNull Result sendChat(@NotNull String channelName, @NotNull String sender, @NotNull String source,
-                                    @NotNull String message, @Nullable LinkedUser linkedUser) {
-        if (channelName.equals(Constants.GLOBAL_CHANNEL_NAME)) {
-            var chat = VanillaChatFormatter.format(sender, source, message);
-            var component = TextComponent.fromLegacyText(ChatColor.translateAlternateColorCodes('&', chat));
-            ProxyServer.getInstance().broadcast(component);
+    public @NotNull Result check(@NotNull LinkedUser user) {
+        if (isAdvancedBanEnabled()) {
+            if (AdvancedBanIntegration.isBanned(user.getUniqueId())) {
+                return Result.deny("banned");
+            }
+
+            if (AdvancedBanIntegration.isMuted(user.getUniqueId())) {
+                return Result.deny("muted");
+            }
         }
 
-        return Result.success();
+        return Result.allow();
+    }
+
+    private boolean isAdvancedBanEnabled() {
+        return plugin.getProxy().getPluginManager().getPlugin("AdvancedBan") != null;
     }
 }

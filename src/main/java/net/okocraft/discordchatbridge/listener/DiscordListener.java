@@ -20,6 +20,7 @@
 package net.okocraft.discordchatbridge.listener;
 
 import com.github.siroshun09.configapi.api.Configuration;
+import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.channel.unions.MessageChannelUnion;
@@ -34,6 +35,7 @@ import net.okocraft.discordchatbridge.util.ColorStripper;
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.Color;
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -74,6 +76,24 @@ public class DiscordListener extends ListenerAdapter {
             return;
         }
 
+        var linkedUser = plugin.getDatabaseManager().getLinkByDiscordUserId(member.getIdLong());
+
+        if (linkedUser.isPresent()) {
+            var result = plugin.getDiscordUserChecker().check(linkedUser.get());
+            if (!result.allowed()) {
+                event.getMessage()
+                        .reply(result.reasonMessage())
+                        .flatMap(message -> message.delete().delay(Duration.ofSeconds(10)))
+                        .queue();
+            }
+        } else if (plugin.getGeneralConfig().get(GeneralSettings.NEEDS_VERIFICATION)) {
+            event.getMessage()
+                    .reply("認証してください") //todo
+                    .flatMap(m -> m.delete().flatMap(m1 -> event.getMessage().delete()).delay(Duration.ofSeconds(10)))
+                    .queue();
+            return;
+        }
+
         var message = event.getMessage().getContentDisplay();
 
         if (message.startsWith("!playerlist")) {
@@ -97,6 +117,12 @@ public class DiscordListener extends ListenerAdapter {
         }
 
         var lines = message.lines().collect(Collectors.toList());
+        var attachments = event.getMessage().getAttachments();
+
+        if (!attachments.isEmpty()) {
+            attachments.stream().map(Message.Attachment::getUrl).forEach(lines::add);
+        }
+
         int maxLines = config.get(GeneralSettings.CHAT_MAX_LINES);
 
         if (0 < maxLines && maxLines < lines.size()) {
@@ -108,17 +134,24 @@ public class DiscordListener extends ListenerAdapter {
         var sourceName = config.get(GeneralSettings.DISCORD_SOURCE_NAME);
 
         for (var line : lines) {
-            if (!line.isEmpty()) {
-                plugin.getChatSystem().sendChat(channelName, senderName, sourceName, line);
-            }
-        }
+            var result = plugin.getChatSystem().sendChat(channelName, senderName, sourceName, line, linkedUser.orElse(null));
 
-        var attachments = event.getMessage().getAttachments();
-
-        if (!attachments.isEmpty()) {
-            for (var attachment : attachments) {
-                plugin.getChatSystem().sendChat(channelName, senderName, sourceName, attachment.getUrl());
+            if (result.succeed()) {
+                continue;
             }
+
+            if (result.shouldDeleteMessage()) {
+                event.getMessage()
+                        .reply(plugin.getFormatConfig().get(result.reasonMessageKey()))
+                        .flatMap(m -> m.delete().flatMap(m1 -> event.getMessage().delete()).delay(Duration.ofSeconds(10)))
+                        .queue();
+            } else {
+                event.getMessage()
+                        .reply(plugin.getFormatConfig().get(result.reasonMessageKey()))
+                        .queue();
+            }
+
+            break;
         }
     }
 

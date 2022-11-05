@@ -19,11 +19,54 @@
 
 package net.okocraft.discordchatbridge.chat;
 
+import com.github.siroshun09.configapi.api.value.ConfigValue;
+import net.okocraft.discordchatbridge.database.LinkedUser;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public interface ChatSystem {
 
-    void sendChat(@NotNull String channelName, @NotNull String sender,
-                  @NotNull String source, @NotNull String message);
+    @NotNull Result sendChat(@NotNull String channelName, @NotNull String sender,
+                             @NotNull String source, @NotNull String message, @Nullable LinkedUser linkedUser);
 
+    final class Result {
+
+        private static final Result SUCCESS = new Result(null, false);
+
+        public static @NotNull Result success() {
+            return SUCCESS;
+        }
+
+        public static @NotNull Result failure(@NotNull ConfigValue<String> reasonMessageKey) {
+            return new Result(reasonMessageKey, false);
+        }
+
+        public static @NotNull Result failureAndDeleteMessage(@NotNull ConfigValue<String> reasonMessageKey) {
+            return new Result(reasonMessageKey, true);
+        }
+
+        private final ConfigValue<String> reasonMessageKey;
+        private final boolean shouldDeleteMessage;
+
+        private Result(@Nullable ConfigValue<String> reasonMessageKey,  boolean shouldDeleteMessage) {
+            this.reasonMessageKey = reasonMessageKey;
+            this.shouldDeleteMessage = shouldDeleteMessage;
+        }
+
+        public boolean succeed() {
+            return reasonMessageKey == null;
+        }
+
+        public @NotNull ConfigValue<String> reasonMessageKey() {
+            if (reasonMessageKey == null) {
+                throw new IllegalArgumentException("There is no message when succeed.");
+            }
+
+            return reasonMessageKey;
+        }
+
+        public boolean shouldDeleteMessage() {
+            return shouldDeleteMessage;
+        }
+    }
 }
