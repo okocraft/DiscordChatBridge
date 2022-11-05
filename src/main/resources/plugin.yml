@@ -7,5 +7,6 @@ url: ${project.url}
 author: Siroshun09
 softdepend: [LunaChat, LuckPerms]
 commands:
-  dcbreload:
-    description: "Reload config.yml amd format.yml"
+  discordchatbridge:
+    aliases: [ "dcb" ]
+    description: "Main command containing Link command and Reload command"

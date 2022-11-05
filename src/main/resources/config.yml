@@ -6,6 +6,8 @@ discord:
     game: "%player_count% players in server"
     url: ""
 
+needs-verification: true
+
 server-name: "server"
 
 chat-max-length: 150 # 0 = unlimited

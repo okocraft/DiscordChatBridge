@@ -10,6 +10,11 @@ server:
 
 command:
   no-permission: "You have no permission: %permission%"
+  not-enough-arguments: "Not enough arguments."
+  player-only: "&c* This command is player only."
+  link:
+    linked: "Linked discord and minecraft account."
+    invalid-passcode: "Invalid passcode."
   reload:
     start: "Reloading DiscordChatBridge..."
     success: "The reload was successful."

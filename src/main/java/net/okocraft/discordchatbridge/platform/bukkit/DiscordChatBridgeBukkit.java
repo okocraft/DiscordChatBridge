@@ -20,35 +20,48 @@
 package net.okocraft.discordchatbridge.platform.bukkit;
 
 import com.github.siroshun09.configapi.yaml.YamlConfiguration;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import net.okocraft.discordchatbridge.DiscordBot;
 import net.okocraft.discordchatbridge.DiscordChatBridgePlugin;
 import net.okocraft.discordchatbridge.chat.ChatSystem;
+import net.okocraft.discordchatbridge.command.LinkCommand;
 import net.okocraft.discordchatbridge.command.ReloadCommand;
+import net.okocraft.discordchatbridge.config.FormatSettings;
+import net.okocraft.discordchatbridge.database.DatabaseManager;
 import net.okocraft.discordchatbridge.listener.luckperms.FirstJoinListener;
 import net.okocraft.discordchatbridge.logger.JavaLogger;
 import net.okocraft.discordchatbridge.logger.LoggerWrapper;
+import net.okocraft.discordchatbridge.platform.DiscordUserChecker;
 import net.okocraft.discordchatbridge.platform.PlatformInfo;
 import net.okocraft.discordchatbridge.util.ColorSerializer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.Color;
 import java.nio.file.Path;
+import org.jetbrains.annotations.Nullable;
 
 public class DiscordChatBridgeBukkit extends JavaPlugin implements DiscordChatBridgePlugin {
 
     private final LoggerWrapper wrappedLogger = new JavaLogger(getLogger());
     private final BukkitPlatform bukkitPlatform = new BukkitPlatform(this);
     private final ReloadCommand reloadCommand = new ReloadCommand(this);
+    private final LinkCommand linkCommand = new LinkCommand(this);
     private final YamlConfiguration generalConfig = YamlConfiguration.create(getDataDirectory().resolve("config.yml"));
     private final YamlConfiguration formatConfig = YamlConfiguration.create(getDataDirectory().resolve("format.yml"));
+    private final BukkitDiscordUserChecker discordUserChecker = new BukkitDiscordUserChecker(this);
 
     private DiscordBot bot;
     private ChatSystem chatSystem;
     private FirstJoinListener firstJoinListener;
+    private DatabaseManager databaseManager;
     private boolean isEnabled;
 
     @Override
@@ -71,8 +84,39 @@ public class DiscordChatBridgeBukkit extends JavaPlugin implements DiscordChatBr
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-        reloadCommand.processCommand(sender::hasPermission, sender::sendMessage);
+        if (args.length == 0) {
+            sender.sendMessage(getFormatConfig().get(FormatSettings.NOT_ENOUGH_ARGUMENTS));
+            return true;
+        }
+
+        if (args[0].equalsIgnoreCase("reload")) {
+            reloadCommand.processCommand(sender::hasPermission, sender::sendMessage);
+            return true;
+        } else if (args[0].equalsIgnoreCase("link")) {
+            if (!(sender instanceof Player)) {
+                sender.sendMessage(getFormatConfig().get(FormatSettings.PLAYER_ONLY));
+                return true;
+            }
+            linkCommand.processCommand(sender::hasPermission, sender::sendMessage, args, ((Player) sender).getUniqueId(), sender.getName());
+            return true;
+        }
         return true;
+    }
+
+    @Override
+    public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command,
+                                                @NotNull String alias, @NotNull String[] args) {
+        if (args.length == 1) {
+            return Stream.of("reload", "link")
+                    .filter(sub -> sub.startsWith(args[0]))
+                    .collect(Collectors.toList());
+        }
+        return Collections.emptyList();
+    }
+
+    @Override
+    public void initDatabase() {
+        databaseManager = new DatabaseManager(this);
     }
 
     @Override
@@ -105,6 +149,11 @@ public class DiscordChatBridgeBukkit extends JavaPlugin implements DiscordChatBr
     @Override
     public @NotNull PlatformInfo getPlatformInfo() {
         return bukkitPlatform;
+    }
+
+    @Override
+    public @NotNull DatabaseManager getDatabaseManager() {
+        return databaseManager;
     }
 
     @Override
@@ -165,5 +214,10 @@ public class DiscordChatBridgeBukkit extends JavaPlugin implements DiscordChatBr
 
     private boolean isLunaChatEnabled() {
         return getServer().getPluginManager().getPlugin("LunaChat") != null;
+    }
+
+    @Override
+    public @NotNull DiscordUserChecker getDiscordUserChecker() {
+        return discordUserChecker;
     }
 }

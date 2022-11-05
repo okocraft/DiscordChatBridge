@@ -21,10 +21,14 @@ package net.okocraft.discordchatbridge;
 
 import com.github.siroshun09.configapi.api.util.ResourceUtils;
 import com.github.siroshun09.configapi.yaml.YamlConfiguration;
+import java.util.UUID;
 import net.okocraft.discordchatbridge.chat.ChatSystem;
+import net.okocraft.discordchatbridge.database.DatabaseManager;
 import net.okocraft.discordchatbridge.config.GeneralSettings;
 import net.okocraft.discordchatbridge.logger.LoggerWrapper;
+import net.okocraft.discordchatbridge.platform.DiscordUserChecker;
 import net.okocraft.discordchatbridge.platform.PlatformInfo;
+import net.okocraft.discordchatbridge.session.DiscordIdContainer;
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.Color;
@@ -46,6 +50,10 @@ public interface DiscordChatBridgePlugin {
     @NotNull ChatSystem getChatSystem();
 
     @NotNull PlatformInfo getPlatformInfo();
+
+    @NotNull DatabaseManager getDatabaseManager();
+
+    void initDatabase();
 
     default boolean load() {
         try {
@@ -73,6 +81,8 @@ public interface DiscordChatBridgePlugin {
             getWrappedLogger().error("Could not load format.yml", e);
             return false;
         }
+
+        initDatabase();
 
         return true;
     }
@@ -102,7 +112,16 @@ public interface DiscordChatBridgePlugin {
             unregisterCommands();
             unregisterListeners();
             unregisterLuckPermsFirstJoinListener();
+            getDatabaseManager().shutdown();
         }
+    }
+
+    default boolean linkWithPasscode(String passcode, UUID uuid, String name) {
+        long discordUserId = DiscordIdContainer.pop(passcode);
+        if (discordUserId != -1L) {
+            return getDatabaseManager().link(uuid, name, discordUserId) != null;
+        }
+        return false;
     }
 
     void loginToDiscord();
@@ -122,4 +141,8 @@ public interface DiscordChatBridgePlugin {
     void unregisterLuckPermsFirstJoinListener();
 
     @NotNull String serializeColor(@NotNull Color color);
+
+    default @NotNull DiscordUserChecker getDiscordUserChecker() {
+        return member -> DiscordUserChecker.Result.allow(); // temporally implementation
+    }
 }
