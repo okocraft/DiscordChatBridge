@@ -57,11 +57,11 @@ public class DiscordChatBridgeBukkit extends JavaPlugin implements DiscordChatBr
     private final YamlConfiguration generalConfig = YamlConfiguration.create(getDataDirectory().resolve("config.yml"));
     private final YamlConfiguration formatConfig = YamlConfiguration.create(getDataDirectory().resolve("format.yml"));
     private final BukkitDiscordUserChecker discordUserChecker = new BukkitDiscordUserChecker(this);
+    private final DatabaseManager databaseManager = new DatabaseManager(this);
 
     private DiscordBot bot;
     private ChatSystem chatSystem;
     private FirstJoinListener firstJoinListener;
-    private DatabaseManager databaseManager;
     private boolean isEnabled;
 
     @Override
@@ -112,11 +112,6 @@ public class DiscordChatBridgeBukkit extends JavaPlugin implements DiscordChatBr
                     .collect(Collectors.toList());
         }
         return Collections.emptyList();
-    }
-
-    @Override
-    public void initDatabase() {
-        databaseManager = new DatabaseManager(this);
     }
 
     @Override
