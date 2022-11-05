@@ -48,16 +48,16 @@ public final class FormatSettings {
             config -> config.getString("server.player-list.list", "%server%: %player_list%");
 
     public static final ConfigValue<String> COMMAND_NO_PERMISSION =
-            config -> config.getString("command.no-permission", "&c* You have no permission: %permission%");
+            config -> config.getString("command.no-permission", "* You have no permission: %permission%");
 
     public static final ConfigValue<String> COMMAND_RELOAD_START =
-            config -> config.getString("command.reload.start", "&7* Reloading DiscordChatBridge...");
+            config -> config.getString("command.reload.start", "* Reloading DiscordChatBridge...");
 
     public static final ConfigValue<String> COMMAND_RELOAD_SUCCESS =
-            config -> config.getString("command.reload.success", "&7* The reload was successful.");
+            config -> config.getString("command.reload.success", "* The reload was successful.");
 
     public static final ConfigValue<String> COMMAND_RELOAD_FAILURE =
-            config -> config.getString("command.reload.failure", "&c* Failed to reload. Please check the console.");
+            config -> config.getString("command.reload.failure", "* Failed to reload. Please check the console.");
 
     private FormatSettings() {
         throw new UnsupportedOperationException();
