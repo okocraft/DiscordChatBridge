@@ -46,6 +46,10 @@ public class DatabaseManager {
         }
     }
 
+    public void init() throws Exception {
+        // todo: move from constructor
+    }
+
     public Optional<Connection> createSQLiteConnection(Path path) {
         try {
             Class.forName("org.sqlite.JDBC");

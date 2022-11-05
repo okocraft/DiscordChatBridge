@@ -21,7 +21,6 @@ package net.okocraft.discordchatbridge;
 
 import com.github.siroshun09.configapi.api.util.ResourceUtils;
 import com.github.siroshun09.configapi.yaml.YamlConfiguration;
-import java.util.UUID;
 import net.okocraft.discordchatbridge.chat.ChatSystem;
 import net.okocraft.discordchatbridge.database.DatabaseManager;
 import net.okocraft.discordchatbridge.logger.LoggerWrapper;
@@ -33,6 +32,7 @@ import org.jetbrains.annotations.NotNull;
 import java.awt.Color;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.UUID;
 
 public interface DiscordChatBridgePlugin {
 
@@ -51,11 +51,6 @@ public interface DiscordChatBridgePlugin {
     @NotNull PlatformInfo getPlatformInfo();
 
     @NotNull DatabaseManager getDatabaseManager();
-
-
-
-
-    void initDatabase();
 
     default boolean load() {
         try {
@@ -84,7 +79,12 @@ public interface DiscordChatBridgePlugin {
             return false;
         }
 
-        initDatabase();
+        try {
+            getDatabaseManager().init();
+        } catch (Exception e) {
+            getWrappedLogger().error("Could not initialize database.", e);
+            return false;
+        }
 
         return true;
     }

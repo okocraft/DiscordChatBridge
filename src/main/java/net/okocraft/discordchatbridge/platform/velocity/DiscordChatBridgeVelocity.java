@@ -55,11 +55,11 @@ public class DiscordChatBridgeVelocity implements DiscordChatBridgePlugin {
     private final YamlConfiguration generalConfig;
     private final YamlConfiguration formatConfig;
     private final VelocityPlatform velocityPlatform;
+    private final DatabaseManager databaseManager = new DatabaseManager(this);
 
     private DiscordBot bot;
     private ChatSystem chatSystem;
     private FirstJoinListener firstJoinListener;
-    private DatabaseManager databaseManager;
     private boolean isEnabled;
 
     @Inject
@@ -86,11 +86,6 @@ public class DiscordChatBridgeVelocity implements DiscordChatBridgePlugin {
     @Subscribe(order = PostOrder.LAST)
     public void onDisable(ProxyShutdownEvent e) {
         disable();
-    }
-
-    @Override
-    public void initDatabase() {
-        databaseManager = new DatabaseManager(this);
     }
 
     @Override
