@@ -17,29 +17,21 @@
  *     along with DiscordChatBridge. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.okocraft.discordchatbridge.platform.bungee;
+package net.okocraft.discordchatbridge.external;
 
-import net.md_5.bungee.api.CommandSender;
-import net.md_5.bungee.api.chat.TextComponent;
-import net.md_5.bungee.api.plugin.Command;
-import net.okocraft.discordchatbridge.DiscordChatBridgePlugin;
-import net.okocraft.discordchatbridge.command.ReloadCommand;
+import me.leoko.advancedban.manager.PunishmentManager;
+import me.leoko.advancedban.utils.PunishmentType;
 import org.jetbrains.annotations.NotNull;
 
-public class BungeeReloadCommand extends Command {
+import java.util.UUID;
 
-    private final ReloadCommand reloadCommand;
+public final class AdvancedBanIntegration {
 
-    public BungeeReloadCommand(@NotNull DiscordChatBridgePlugin plugin) {
-        super("dcbreload");
-        this.reloadCommand = new ReloadCommand(plugin);
+    public static boolean isMuted(@NotNull UUID uuid) {
+        return !PunishmentManager.get().getPunishments(uuid.toString(), PunishmentType.MUTE, true).isEmpty();
     }
 
-    @Override
-    public void execute(CommandSender commandSender, String[] strings) {
-        reloadCommand.processCommand(
-                commandSender::hasPermission,
-                str -> commandSender.sendMessage(TextComponent.fromLegacyText(str))
-        );
+    public static boolean isBanned(@NotNull UUID uuid) {
+        return !PunishmentManager.get().getPunishments(uuid.toString(), PunishmentType.BAN, true).isEmpty();
     }
 }

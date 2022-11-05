@@ -23,8 +23,10 @@ import com.velocitypowered.api.proxy.ProxyServer;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.okocraft.discordchatbridge.chat.ChatSystem;
 import net.okocraft.discordchatbridge.constant.Constants;
+import net.okocraft.discordchatbridge.database.LinkedUser;
 import net.okocraft.discordchatbridge.util.VanillaChatFormatter;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 class VelocityChatSystem implements ChatSystem {
 
@@ -35,11 +37,14 @@ class VelocityChatSystem implements ChatSystem {
     }
 
     @Override
-    public void sendChat(@NotNull String channelName, @NotNull String sender, @NotNull String source, @NotNull String message) {
+    public @NotNull Result sendChat(@NotNull String channelName, @NotNull String sender, @NotNull String source,
+                                    @NotNull String message, @Nullable LinkedUser linkedUser) {
         if (channelName.equals(Constants.GLOBAL_CHANNEL_NAME)) {
             var chat = VanillaChatFormatter.format(sender, source, message);
             var component = LegacyComponentSerializer.legacyAmpersand().deserialize(chat);
             server.getAllPlayers().forEach(player -> player.sendMessage(component));
         }
+
+        return Result.success();
     }
 }

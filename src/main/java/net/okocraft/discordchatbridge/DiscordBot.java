@@ -95,7 +95,13 @@ public class DiscordBot {
                             .addEventListeners(new DiscordListener(plugin))
                             .setAutoReconnect(true)
                             .setStatus(plugin.getGeneralConfig().get(GeneralSettings.DISCORD_STATUS))
-                            .enableIntents(GatewayIntent.GUILD_MEMBERS, GatewayIntent.MESSAGE_CONTENT)
+                            .enableIntents(
+                                    GatewayIntent.GUILD_MEMBERS,
+                                    GatewayIntent.MESSAGE_CONTENT,
+                                    GatewayIntent.DIRECT_MESSAGES,
+                                    GatewayIntent.DIRECT_MESSAGE_TYPING,
+                                    GatewayIntent.DIRECT_MESSAGE_REACTIONS
+                            )
                             .setMemberCachePolicy(MemberCachePolicy.ALL)
                             .disableCache(Arrays.asList(CacheFlag.values()))
                             .build()

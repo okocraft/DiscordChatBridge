@@ -22,17 +22,22 @@ package net.okocraft.discordchatbridge.platform.bukkit;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.okocraft.discordchatbridge.chat.ChatSystem;
 import net.okocraft.discordchatbridge.constant.Constants;
+import net.okocraft.discordchatbridge.database.LinkedUser;
 import net.okocraft.discordchatbridge.util.VanillaChatFormatter;
 import org.bukkit.Bukkit;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public class PaperChatSystem implements ChatSystem {
 
     @Override
-    public void sendChat(@NotNull String channelName, @NotNull String sender, @NotNull String source, @NotNull String message) {
+    public Result sendChat(@NotNull String channelName, @NotNull String sender, @NotNull String source,
+                         @NotNull String message, @Nullable LinkedUser linkedUser) {
         if (channelName.equals(Constants.GLOBAL_CHANNEL_NAME)) {
             var chat = VanillaChatFormatter.format(sender, source, message);
             Bukkit.broadcast(LegacyComponentSerializer.legacyAmpersand().deserialize(chat));
         }
+
+        return Result.success();
     }
 }

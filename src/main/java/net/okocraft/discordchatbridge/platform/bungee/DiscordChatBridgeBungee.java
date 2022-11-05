@@ -24,9 +24,11 @@ import net.md_5.bungee.api.plugin.Plugin;
 import net.okocraft.discordchatbridge.DiscordBot;
 import net.okocraft.discordchatbridge.DiscordChatBridgePlugin;
 import net.okocraft.discordchatbridge.chat.ChatSystem;
+import net.okocraft.discordchatbridge.database.DatabaseManager;
 import net.okocraft.discordchatbridge.listener.luckperms.FirstJoinListener;
 import net.okocraft.discordchatbridge.logger.JavaLogger;
 import net.okocraft.discordchatbridge.logger.LoggerWrapper;
+import net.okocraft.discordchatbridge.platform.DiscordUserChecker;
 import net.okocraft.discordchatbridge.platform.PlatformInfo;
 import net.okocraft.discordchatbridge.util.ColorSerializer;
 import org.jetbrains.annotations.NotNull;
@@ -40,10 +42,12 @@ public class DiscordChatBridgeBungee extends Plugin implements DiscordChatBridge
     private final BungeePlatform bungeePlatform = new BungeePlatform(this);
     private final YamlConfiguration generalConfig = YamlConfiguration.create(getDataDirectory().resolve("config.yml"));
     private final YamlConfiguration formatConfig = YamlConfiguration.create(getDataDirectory().resolve("format.yml"));
+    private final BungeeDiscordUserChecker discordUserChecker = new BungeeDiscordUserChecker(this);
 
     private DiscordBot bot;
     private ChatSystem chatSystem;
     private FirstJoinListener firstJoinListener;
+    private DatabaseManager databaseManager;
     private boolean isEnabled;
 
     @Override
@@ -62,6 +66,11 @@ public class DiscordChatBridgeBungee extends Plugin implements DiscordChatBridge
     @Override
     public void onDisable() {
         disable();
+    }
+
+    @Override
+    public void initDatabase() {
+        databaseManager = new DatabaseManager(this);
     }
 
     @Override
@@ -97,13 +106,18 @@ public class DiscordChatBridgeBungee extends Plugin implements DiscordChatBridge
     }
 
     @Override
+    public @NotNull DatabaseManager getDatabaseManager() {
+        return databaseManager;
+    }
+
+    @Override
     public void loginToDiscord() {
         bot = DiscordBot.login(this);
     }
 
     @Override
     public void registerCommands() {
-        getProxy().getPluginManager().registerCommand(this, new BungeeReloadCommand(this));
+        getProxy().getPluginManager().registerCommand(this, new BungeeCommand(this));
     }
 
     @Override
@@ -153,5 +167,10 @@ public class DiscordChatBridgeBungee extends Plugin implements DiscordChatBridge
 
     private boolean isLunaChatEnabled() {
         return getProxy().getPluginManager().getPlugin("LunaChat") != null;
+    }
+
+    @Override
+    public @NotNull DiscordUserChecker getDiscordUserChecker() {
+        return discordUserChecker;
     }
 }

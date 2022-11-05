@@ -20,19 +20,47 @@
 package net.okocraft.discordchatbridge.chat;
 
 import com.github.ucchyocean.lc3.channel.Channel;
+import com.github.ucchyocean.lc3.member.ChannelMember;
+import net.okocraft.discordchatbridge.config.FormatSettings;
+import net.okocraft.discordchatbridge.database.LinkedUser;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public abstract class LunaChatSystem implements ChatSystem {
 
     @Override
-    public void sendChat(@NotNull String channelName, @NotNull String sender,
-                         @NotNull String source, @NotNull String message) {
+    public Result sendChat(@NotNull String channelName, @NotNull String sender,
+                           @NotNull String source, @NotNull String message, @Nullable LinkedUser linkedUser) {
         var channel = getChannel(channelName);
 
-        if (channel != null) {
-            channel.chatFromOtherSource(sender, source, message);
+        if (channel == null) {
+            return Result.failure(FormatSettings.DISCORD_CHAT); // todo
         }
+
+        if (linkedUser != null) {
+            var checkResult = canSpeak(channel, ChannelMemberDiscord.getChannelMember(linkedUser));
+
+            if (checkResult.succeed()) {
+                channel.chatFromOtherSource(sender, source, message);
+            }
+
+            return checkResult;
+        } else {
+            // when null, config allows non verified discord user chat.
+            channel.chatFromOtherSource(sender, source, message);
+            return Result.success();
+        }
+    }
+
+    public @NotNull Result canSpeak(@NotNull Channel channel, @NotNull ChannelMember player) {
+        if (!channel.isBroadcastChannel() && !channel.getMembers().contains(player))
+            return Result.failure(FormatSettings.DISCORD_CHAT); // todo
+        if (channel.getBanned().contains(player)) return Result.failure(FormatSettings.DISCORD_CHAT); // todo
+        if (channel.getMuted().contains(player)) return Result.failure(FormatSettings.DISCORD_CHAT); // todo
+        if (!player.hasPermission("lunachat.speak." + channel.getName()))
+            return Result.failure(FormatSettings.DISCORD_CHAT); // todo
+
+        return Result.success();
     }
 
     protected abstract @Nullable Channel getChannel(@NotNull String channelName);

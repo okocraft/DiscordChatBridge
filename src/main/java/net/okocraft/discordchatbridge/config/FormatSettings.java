@@ -50,6 +50,18 @@ public final class FormatSettings {
     public static final ConfigValue<String> COMMAND_NO_PERMISSION =
             config -> config.getString("command.no-permission", "* You have no permission: %permission%");
 
+    public static final ConfigValue<String> NOT_ENOUGH_ARGUMENTS =
+            config -> config.getString("command.not-enough-arguments", "&c Not enough arguments.");
+
+    public static final ConfigValue<String> PLAYER_ONLY =
+            config -> config.getString("command.player-only", "&c* This command is player only.");
+
+    public static final ConfigValue<String> LINK_SUCCESS =
+            config -> config.getString("command.link.success", "&7* Linked discord and minecraft account.");
+
+    public static final ConfigValue<String> LINK_INVALID_PASSCODE =
+            config -> config.getString("command.link.invalid-passcode", "&c* Invalid passcode.");
+
     public static final ConfigValue<String> COMMAND_RELOAD_START =
             config -> config.getString("command.reload.start", "* Reloading DiscordChatBridge...");
 
@@ -58,6 +70,7 @@ public final class FormatSettings {
 
     public static final ConfigValue<String> COMMAND_RELOAD_FAILURE =
             config -> config.getString("command.reload.failure", "* Failed to reload. Please check the console.");
+
 
     private FormatSettings() {
         throw new UnsupportedOperationException();

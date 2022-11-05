@@ -85,6 +85,9 @@ public final class GeneralSettings {
     public static final ConfigValue<Configuration> LINKED_CHANNELS =
             config -> Objects.requireNonNullElseGet(config.getSection("channels"), MappedConfiguration::create);
 
+    public static final ConfigValue<Boolean> NEEDS_VERIFICATION =
+            config -> config.getBoolean("needs-verification", true);
+
     public static final ConfigValue<String> ALLOW_COLORS_IN_NAME = config -> config.getString("allow-colors-in-name", Boolean.TRUE.toString());
 
     private GeneralSettings() {

@@ -31,6 +31,7 @@ import com.velocitypowered.api.proxy.ProxyServer;
 import net.okocraft.discordchatbridge.DiscordBot;
 import net.okocraft.discordchatbridge.DiscordChatBridgePlugin;
 import net.okocraft.discordchatbridge.chat.ChatSystem;
+import net.okocraft.discordchatbridge.database.DatabaseManager;
 import net.okocraft.discordchatbridge.listener.luckperms.FirstJoinListener;
 import net.okocraft.discordchatbridge.logger.LoggerWrapper;
 import net.okocraft.discordchatbridge.logger.Slf4jLogger;
@@ -58,6 +59,7 @@ public class DiscordChatBridgeVelocity implements DiscordChatBridgePlugin {
     private DiscordBot bot;
     private ChatSystem chatSystem;
     private FirstJoinListener firstJoinListener;
+    private DatabaseManager databaseManager;
     private boolean isEnabled;
 
     @Inject
@@ -84,6 +86,11 @@ public class DiscordChatBridgeVelocity implements DiscordChatBridgePlugin {
     @Subscribe(order = PostOrder.LAST)
     public void onDisable(ProxyShutdownEvent e) {
         disable();
+    }
+
+    @Override
+    public void initDatabase() {
+        databaseManager = new DatabaseManager(this);
     }
 
     @Override
@@ -119,6 +126,11 @@ public class DiscordChatBridgeVelocity implements DiscordChatBridgePlugin {
     }
 
     @Override
+    public @NotNull DatabaseManager getDatabaseManager() {
+        return databaseManager;
+    }
+
+    @Override
     public void loginToDiscord() {
         bot = DiscordBot.login(this);
     }
@@ -127,7 +139,7 @@ public class DiscordChatBridgeVelocity implements DiscordChatBridgePlugin {
     public void registerCommands() {
         server.getCommandManager().register(
                 server.getCommandManager().metaBuilder("dcbreload").build(),
-                new VelocityReloadCommand(this)
+                new VelocityCommand(this)
         );
     }
 
