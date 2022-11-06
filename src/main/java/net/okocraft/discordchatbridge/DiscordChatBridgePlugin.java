@@ -22,8 +22,11 @@ package net.okocraft.discordchatbridge;
 import com.github.siroshun09.configapi.api.util.ResourceUtils;
 import com.github.siroshun09.configapi.yaml.YamlConfiguration;
 import net.okocraft.discordchatbridge.chat.ChatSystem;
-import net.okocraft.discordchatbridge.database.DatabaseManager;
 import net.okocraft.discordchatbridge.config.GeneralSettings;
+import net.okocraft.discordchatbridge.database.DatabaseLinkManager;
+import net.okocraft.discordchatbridge.database.FlatFileLinkManager;
+import net.okocraft.discordchatbridge.database.LinkManager;
+import net.okocraft.discordchatbridge.database.Query;
 import net.okocraft.discordchatbridge.logger.LoggerWrapper;
 import net.okocraft.discordchatbridge.platform.DiscordUserChecker;
 import net.okocraft.discordchatbridge.platform.PlatformInfo;
@@ -49,7 +52,9 @@ public interface DiscordChatBridgePlugin {
 
     @NotNull PlatformInfo getPlatformInfo();
 
-    @NotNull DatabaseManager getDatabaseManager();
+    @NotNull LinkManager getLinkManager();
+
+    void setLinkManager(LinkManager linkManager);
 
     default boolean load() {
         try {
@@ -79,9 +84,16 @@ public interface DiscordChatBridgePlugin {
         }
 
         try {
-            getDatabaseManager().init();
+            String dataStoreType = getGeneralConfig().get(GeneralSettings.DATA_STORE_TYPE);
+            if (dataStoreType.equalsIgnoreCase("sqlite")) {
+                setLinkManager(new DatabaseLinkManager(this, Query.Type.SQLITE));
+            } else {
+                setLinkManager(new FlatFileLinkManager(this));
+            }
+
+            getLinkManager().init();
         } catch (Exception e) {
-            getWrappedLogger().error("Could not initialize database.", e);
+            getWrappedLogger().error("Could not initialize link manager.", e);
             return false;
         }
 
@@ -113,7 +125,7 @@ public interface DiscordChatBridgePlugin {
             unregisterCommands();
             unregisterListeners();
             unregisterLuckPermsFirstJoinListener();
-            getDatabaseManager().shutdown();
+            getLinkManager().shutdown();
         }
     }
 

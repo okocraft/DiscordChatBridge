@@ -98,6 +98,8 @@ public final class GeneralSettings {
 
     public static final ConfigValue<Boolean> SEND_FIRST_JOIN_MESSAGE = c -> c.getBoolean("message-sending-setting.first-join", true);
 
+    public static final ConfigValue<String> DATA_STORE_TYPE =
+            config -> config.getString("data-store-type", "yml");
 
     private GeneralSettings() {
         throw new UnsupportedOperationException();

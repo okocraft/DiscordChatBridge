@@ -8,6 +8,8 @@ discord:
 
 needs-verification: true
 
+data-store-type: "yml"
+
 server-name: "server"
 
 chat-max-length: 150 # 0 = unlimited

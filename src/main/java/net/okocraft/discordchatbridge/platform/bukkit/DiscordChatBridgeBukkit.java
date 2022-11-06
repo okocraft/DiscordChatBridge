@@ -30,7 +30,7 @@ import net.okocraft.discordchatbridge.chat.ChatSystem;
 import net.okocraft.discordchatbridge.command.LinkCommand;
 import net.okocraft.discordchatbridge.command.ReloadCommand;
 import net.okocraft.discordchatbridge.config.FormatSettings;
-import net.okocraft.discordchatbridge.database.DatabaseManager;
+import net.okocraft.discordchatbridge.database.LinkManager;
 import net.okocraft.discordchatbridge.listener.luckperms.FirstJoinListener;
 import net.okocraft.discordchatbridge.logger.JavaLogger;
 import net.okocraft.discordchatbridge.logger.LoggerWrapper;
@@ -57,11 +57,11 @@ public class DiscordChatBridgeBukkit extends JavaPlugin implements DiscordChatBr
     private final YamlConfiguration generalConfig = YamlConfiguration.create(getDataDirectory().resolve("config.yml"));
     private final YamlConfiguration formatConfig = YamlConfiguration.create(getDataDirectory().resolve("format.yml"));
     private final BukkitDiscordUserChecker discordUserChecker = new BukkitDiscordUserChecker(this);
-    private final DatabaseManager databaseManager = new DatabaseManager(this);
 
     private DiscordBot bot;
     private ChatSystem chatSystem;
     private FirstJoinListener firstJoinListener;
+    private LinkManager linkManager;
     private boolean isEnabled;
 
     @Override
@@ -147,8 +147,13 @@ public class DiscordChatBridgeBukkit extends JavaPlugin implements DiscordChatBr
     }
 
     @Override
-    public @NotNull DatabaseManager getDatabaseManager() {
-        return databaseManager;
+    public @NotNull LinkManager getLinkManager() {
+        return linkManager;
+    }
+
+    @Override
+    public void setLinkManager(LinkManager linkManager) {
+        this.linkManager = linkManager;
     }
 
     @Override
