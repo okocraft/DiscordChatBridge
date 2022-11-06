@@ -28,10 +28,14 @@ import java.util.UUID;
 public final class AdvancedBanIntegration {
 
     public static boolean isMuted(@NotNull UUID uuid) {
-        return !PunishmentManager.get().getPunishments(uuid.toString(), PunishmentType.MUTE, true).isEmpty();
+        return hasPunishment(uuid, PunishmentType.MUTE);
     }
 
     public static boolean isBanned(@NotNull UUID uuid) {
-        return !PunishmentManager.get().getPunishments(uuid.toString(), PunishmentType.BAN, true).isEmpty();
+        return hasPunishment(uuid, PunishmentType.BAN);
+    }
+
+    private static boolean hasPunishment(@NotNull UUID uuid, @NotNull PunishmentType type) {
+        return !PunishmentManager.get().getPunishments(uuid.toString().replace("-", ""), type, true).isEmpty();
     }
 }
