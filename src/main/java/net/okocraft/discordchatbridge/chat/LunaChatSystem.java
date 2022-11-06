@@ -19,8 +19,10 @@
 
 package net.okocraft.discordchatbridge.chat;
 
+import com.github.ucchyocean.lc3.LunaChat;
 import com.github.ucchyocean.lc3.channel.Channel;
 import com.github.ucchyocean.lc3.member.ChannelMember;
+import com.github.ucchyocean.lc3.member.ChannelMemberOther;
 import net.okocraft.discordchatbridge.config.FormatSettings;
 import net.okocraft.discordchatbridge.database.LinkedUser;
 import org.jetbrains.annotations.NotNull;
@@ -29,8 +31,8 @@ import org.jetbrains.annotations.Nullable;
 public abstract class LunaChatSystem implements ChatSystem {
 
     @Override
-    public Result sendChat(@NotNull String channelName, @NotNull String sender,
-                           @NotNull String source, @NotNull String message, @Nullable LinkedUser linkedUser) {
+    public @NotNull Result sendChat(@NotNull String channelName, @NotNull String sender,
+                                    @NotNull String source, @NotNull String message, @Nullable LinkedUser linkedUser) {
         var channel = getChannel(channelName);
 
         if (channel == null) {
@@ -41,7 +43,25 @@ public abstract class LunaChatSystem implements ChatSystem {
             var checkResult = canSpeak(channel, ChannelMemberDiscord.getChannelMember(linkedUser));
 
             if (checkResult.succeed()) {
+                ChannelMemberOther discordSender = new ChannelMemberOther(!source.isEmpty() ? sender + "@" + source : sender);
+                ChannelMemberOther hiddenCheck = new ChannelMemberOther(
+                        linkedUser.getName(),
+                        linkedUser.getName(),
+                        "",
+                        "",
+                        null,
+                        "$" + linkedUser.getUniqueId().toString()
+                );
+
+                var lcApi = LunaChat.getAPI();
+
+                channel.getMembers().stream()
+                        .filter(mem -> lcApi.getHidelist(mem).contains(hiddenCheck))
+                        .forEach(mem -> lcApi.addHidelist(mem, discordSender));
+
                 channel.chatFromOtherSource(sender, source, message);
+
+                channel.getMembers().forEach(mem -> lcApi.removeHidelist(mem, discordSender));
             }
 
             return checkResult;
