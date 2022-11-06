@@ -28,8 +28,13 @@ public class ChannelMemberDiscord extends ChannelMemberOther {
     private final LinkedUser user;
 
     ChannelMemberDiscord(@NotNull LinkedUser user, @NotNull String displayName) {
-        super(user.getName(), displayName);
+        super(displayName);
         this.user = user;
+    }
+
+    @Override
+    public String toString() {
+        return "$" + user.getUniqueId();
     }
 
     public @NotNull LinkedUser getUser() {
