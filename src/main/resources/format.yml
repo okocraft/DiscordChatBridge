@@ -12,9 +12,9 @@ server:
   you-are-banned-in-lunachat: "You are banned in this lunachat channel."
   you-are-muted: "You are muted."
   no-lunachat-speak-permission: "You do not have in-game permission to speak here."
-  please-verify: "Please verify your discord account. Use command \"/dcb link\" in game."
+  please-verify: "Please verify your discord account. Use command `/dcb link` in game."
   not-enough-arguments: "Not enough argument."
-  linked: "Linked discord and minecraft account. You can now chat here."
+  linked: "%player_name% linked discord and minecraft account. You can now chat here."
   invalid-passcode: "Invalid passcode."
 
 
@@ -22,7 +22,7 @@ command:
   no-permission: "You have no permission: %permission%"
   not-enough-arguments: "Not enough arguments."
   player-only: "&c* This command is player only."
-  then-use-command-in-discord: "Accepted link request. Then use command `!link %passcode%` in discord."
+  then-use-command-in-discord: "Accepted link request. Then use command \"!link %passcode%\" in discord."
   reload:
     start: "Reloading DiscordChatBridge..."
     success: "The reload was successful."
