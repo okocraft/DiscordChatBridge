@@ -17,19 +17,37 @@
  *     along with DiscordChatBridge. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.okocraft.discordchatbridge.chat;
+package net.okocraft.discordchatbridge.chat.lunachat;
 
 import com.github.ucchyocean.lc3.LunaChat;
 import com.github.ucchyocean.lc3.channel.Channel;
 import com.github.ucchyocean.lc3.member.ChannelMember;
 import com.github.ucchyocean.lc3.member.ChannelMemberOther;
+import com.github.ucchyocean.lc3.util.ClickableFormat;
+import com.github.ucchyocean.lc3.util.Utility;
+import net.okocraft.discordchatbridge.chat.ChatSystem;
 import net.okocraft.discordchatbridge.config.FormatSettings;
 import net.okocraft.discordchatbridge.database.LinkedUser;
 import net.okocraft.discordchatbridge.external.LuckPermsIntegration;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.lang.reflect.Method;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 public abstract class LunaChatSystem implements ChatSystem {
+
+    private static final Method SEND_MESSAGE_METHOD;
+
+    static {
+        try {
+            SEND_MESSAGE_METHOD = Channel.class.getDeclaredMethod("sendMessage", ChannelMember.class, String.class, ClickableFormat.class, boolean.class);
+            SEND_MESSAGE_METHOD.setAccessible(true);
+        } catch (Exception e) {
+            throw new ExceptionInInitializerError(e);
+        }
+    }
 
     @Override
     public @NotNull Result sendChat(@NotNull String channelName, @NotNull String sender,
@@ -44,27 +62,34 @@ public abstract class LunaChatSystem implements ChatSystem {
             var checkResult = canSpeak(channel, linkedUser);
 
             if (checkResult.succeed()) {
-                ChannelMemberOther discordSender = new ChannelMemberOther(!source.isEmpty() ? sender + "@" + source : sender);
-                ChannelMemberOther hiddenCheck = new ChannelMemberOther(
-                        linkedUser.getName(),
-                        linkedUser.getName(),
-                        "",
-                        "",
-                        null,
-                        linkedUser.getUniqueId().toString()
-                );
+                var discord = new ChannelMemberDiscord(linkedUser, sender + "@" + source);
 
-                var lcApi = LunaChat.getAPI();
+                // LunaChat Channel#chatFromOtherSource start
+                // NGワード発言のマスク
+                var maskedMessage = message;
 
-                lcApi.getHidelist(hiddenCheck).stream()
-                        .filter(channel.getMembers()::contains)
-                        .forEach(hiding -> lcApi.addHidelist(hiding, discordSender));
+                for (Pattern pattern : LunaChat.getConfig().getNgwordCompiled()) {
+                    Matcher matcher = pattern.matcher(maskedMessage);
+                    if (matcher.find()) {
+                        maskedMessage = matcher.replaceAll(Utility.getAstariskString(matcher.group(0).length()));
+                    }
+                }
 
-                channel.chatFromOtherSource(sender, source, message);
+                // キーワード置き換え
+                var msgFormat = ClickableFormat.makeFormat(channel.getFormat(), new ChannelMemberOther(discord.getName()), channel, false);
 
-                lcApi.getHidelist(discordSender).stream()
-                        .filter(channel.getMembers()::contains)
-                        .forEach(hiding -> lcApi.removeHidelist(hiding, discordSender));
+                // カラーコード置き換え チャンネルで許可されている場合に置き換える。
+                if (channel.isAllowCC()) {
+                    maskedMessage = Utility.replaceColorCode(maskedMessage);
+                }
+                // Channel#chatFromOtherSource end
+
+                try {
+                    SEND_MESSAGE_METHOD.invoke(channel, discord, maskedMessage, msgFormat, false);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    return Result.failure(config -> "error occurred.");
+                }
             }
 
             return checkResult;
@@ -75,7 +100,7 @@ public abstract class LunaChatSystem implements ChatSystem {
         }
     }
 
-    public @NotNull Result canSpeak(@NotNull Channel channel, @NotNull LinkedUser user) {
+    private @NotNull Result canSpeak(@NotNull Channel channel, @NotNull LinkedUser user) {
         ChannelMember player = ChannelMember.getChannelMember("$" + user.getUniqueId().toString());
 
         if (!channel.isBroadcastChannel() && !channel.getMembers().contains(player)) {

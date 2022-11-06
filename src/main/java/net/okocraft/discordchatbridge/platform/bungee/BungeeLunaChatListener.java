@@ -23,6 +23,7 @@ import com.github.ucchyocean.lc3.bungee.event.LunaChatBungeeChannelMessageEvent;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.event.EventHandler;
 import net.okocraft.discordchatbridge.DiscordChatBridgePlugin;
+import net.okocraft.discordchatbridge.chat.lunachat.ChannelMemberDiscord;
 import net.okocraft.discordchatbridge.listener.chat.LunaChatListener;
 import org.jetbrains.annotations.NotNull;
 
@@ -34,6 +35,11 @@ public class BungeeLunaChatListener extends LunaChatListener implements Listener
 
     @EventHandler
     public void onChat(@NotNull LunaChatBungeeChannelMessageEvent e) {
-        processChat(e.getChannelName(), e.getDisplayName(), e.getMember(), e.getOriginalMessage());
+        if (e.getMember() instanceof ChannelMemberDiscord) {
+            var discordMember = (ChannelMemberDiscord) e.getMember();
+            processHiding(discordMember, e.getRecipients());
+        } else {
+            processChat(e.getChannelName(), e.getMember(), e.getOriginalMessage());
+        }
     }
 }
