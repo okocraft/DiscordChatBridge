@@ -104,7 +104,7 @@ public class DiscordListener extends ListenerAdapter {
             var result = plugin.getDiscordUserChecker().check(linkedUser.get());
             if (!result.allowed()) {
                 event.getMessage()
-                        .reply(result.reasonMessage())
+                        .reply(plugin.getFormatConfig().get(result.reasonMessageKey()))
                         .delay(Duration.ofSeconds(10))
                         .flatMap(Message::delete)
                         .queue();

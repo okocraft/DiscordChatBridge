@@ -19,8 +19,7 @@
 
 package net.okocraft.discordchatbridge.platform;
 
-import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.User;
+import com.github.siroshun09.configapi.api.value.ConfigValue;
 import net.okocraft.discordchatbridge.database.LinkedUser;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -37,26 +36,26 @@ public interface DiscordUserChecker {
             return ALLOW;
         }
 
-        public static @NotNull Result deny(@NotNull String reasonMessage) {
-            return new Result(reasonMessage);
+        public static @NotNull Result deny(@NotNull ConfigValue<String> reasonMessageKey) {
+            return new Result(reasonMessageKey);
         }
 
-        private final String reasonMessage;
+        private final ConfigValue<String> reasonMessageKey;
 
-        private Result(@Nullable String reasonMessage) {
-            this.reasonMessage = reasonMessage;
+        private Result(@Nullable ConfigValue<String> reasonMessageKey) {
+            this.reasonMessageKey = reasonMessageKey;
         }
 
         public boolean allowed() {
-            return reasonMessage == null;
+            return reasonMessageKey == null;
         }
 
-        public @NotNull String reasonMessage() {
-            if (reasonMessage == null) {
+        public @NotNull ConfigValue<String> reasonMessageKey() {
+            if (reasonMessageKey == null) {
                 throw new IllegalArgumentException("There is no message when allowed.");
             }
 
-            return reasonMessage;
+            return reasonMessageKey;
         }
     }
 }

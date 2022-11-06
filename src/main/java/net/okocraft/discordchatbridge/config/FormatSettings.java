@@ -56,6 +56,9 @@ public final class FormatSettings {
     public static final ConfigValue<String> LUNACHAT_YOU_ARE_BANNED =
             config -> config.getString("server.you-are-banned-in-lunachat", "You are banned in this lunachat channel.");
 
+    public static final ConfigValue<String> YOU_ARE_BANNED =
+            config -> config.getString("server.you-are-banned", "You are banned in this server.");
+
     public static final ConfigValue<String> YOU_ARE_MUTED =
             config -> config.getString("server.you-are-muted", "You are muted.");
 
