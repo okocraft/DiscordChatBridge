@@ -88,7 +88,7 @@ public class DiscordListener extends ListenerAdapter {
             }
         } else if (plugin.getGeneralConfig().get(GeneralSettings.NEEDS_VERIFICATION)) {
             event.getMessage()
-                    .reply("認証してください") //todo
+                    .reply(plugin.getFormatConfig().get(FormatSettings.VERIFY_PLEASE))
                     .flatMap(m -> m.delete().flatMap(m1 -> event.getMessage().delete()).delay(Duration.ofSeconds(10)))
                     .queue();
             return;
