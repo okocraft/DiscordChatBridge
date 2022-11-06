@@ -21,7 +21,7 @@ package net.okocraft.discordchatbridge.platform.bungee;
 
 import com.github.ucchyocean.lc3.LunaChatBungee;
 import com.github.ucchyocean.lc3.channel.Channel;
-import net.okocraft.discordchatbridge.chat.LunaChatSystem;
+import net.okocraft.discordchatbridge.chat.lunachat.LunaChatSystem;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

@@ -19,24 +19,23 @@
 
 package net.okocraft.discordchatbridge.listener.chat;
 
+import com.github.ucchyocean.lc3.LunaChat;
 import com.github.ucchyocean.lc3.member.ChannelMember;
 import net.okocraft.discordchatbridge.DiscordChatBridgePlugin;
+import net.okocraft.discordchatbridge.chat.lunachat.ChannelMemberDiscord;
 import net.okocraft.discordchatbridge.config.GeneralSettings;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public abstract class LunaChatListener extends AbstractChatListener {
 
-    private final DiscordChatBridgePlugin plugin;
     private final Map<String, Long> linkedChannels = new HashMap<>();
 
     public LunaChatListener(@NotNull DiscordChatBridgePlugin plugin) {
         super(plugin);
-
-        this.plugin = plugin;
-
         var channelSection = plugin.getGeneralConfig().get(GeneralSettings.LINKED_CHANNELS);
 
         for (var key : channelSection.getKeyList()) {
@@ -47,14 +46,8 @@ public abstract class LunaChatListener extends AbstractChatListener {
         }
     }
 
-    protected void processChat(@NotNull String channelName, @NotNull String displayName,
+    protected void processChat(@NotNull String channelName,
                                @NotNull ChannelMember member, @NotNull String message) {
-        var sourceName = plugin.getGeneralConfig().get(GeneralSettings.DISCORD_SOURCE_NAME);
-
-        if (displayName.endsWith(sourceName)) {
-            return;
-        }
-
         var id = linkedChannels.get(channelName);
 
         if (id == null) {
@@ -62,5 +55,15 @@ public abstract class LunaChatListener extends AbstractChatListener {
         }
 
         sendChatToDiscord(id, message, member.getName(), member.getDisplayName());
+    }
+
+    protected void processHiding(@NotNull ChannelMemberDiscord sender, @NotNull List<ChannelMember> recipients) {
+        var hidelist = LunaChat.getAPI().getHidelist(sender);
+
+        if (hidelist.isEmpty()) {
+            return;
+        }
+
+        hidelist.forEach(recipients::remove);
     }
 }

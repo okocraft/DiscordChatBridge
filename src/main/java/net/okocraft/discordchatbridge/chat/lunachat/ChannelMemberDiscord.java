@@ -17,19 +17,22 @@
  *     along with DiscordChatBridge. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.okocraft.discordchatbridge.platform.bukkit;
+package net.okocraft.discordchatbridge.chat.lunachat;
 
-import com.github.ucchyocean.lc3.LunaChatBukkit;
-import com.github.ucchyocean.lc3.channel.Channel;
-import net.okocraft.discordchatbridge.chat.lunachat.LunaChatSystem;
+import com.github.ucchyocean.lc3.member.ChannelMemberOther;
+import net.okocraft.discordchatbridge.database.LinkedUser;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
-public class BukkitLunaChatSystem extends LunaChatSystem {
+public class ChannelMemberDiscord extends ChannelMemberOther {
 
-    @Override
-    protected @Nullable Channel getChannel(@NotNull String channelName) {
-        return LunaChatBukkit.getInstance().getLunaChatAPI().getChannel(channelName);
+    private final LinkedUser user;
+
+    ChannelMemberDiscord(@NotNull LinkedUser user, @NotNull String displayName) {
+        super(user.getName(), displayName);
+        this.user = user;
     }
 
+    public @NotNull LinkedUser getUser() {
+        return user;
+    }
 }

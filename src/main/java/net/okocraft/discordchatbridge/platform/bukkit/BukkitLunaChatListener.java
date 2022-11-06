@@ -21,6 +21,7 @@ package net.okocraft.discordchatbridge.platform.bukkit;
 
 import com.github.ucchyocean.lc3.bukkit.event.LunaChatBukkitChannelMessageEvent;
 import net.okocraft.discordchatbridge.DiscordChatBridgePlugin;
+import net.okocraft.discordchatbridge.chat.lunachat.ChannelMemberDiscord;
 import net.okocraft.discordchatbridge.listener.chat.LunaChatListener;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -34,6 +35,11 @@ public class BukkitLunaChatListener extends LunaChatListener implements Listener
 
     @EventHandler
     public void onChat(@NotNull LunaChatBukkitChannelMessageEvent e) {
-        processChat(e.getChannelName(), e.getDisplayName(), e.getMember(), e.getOriginalMessage());
+        if (e.getMember() instanceof ChannelMemberDiscord) {
+            var discordMember = (ChannelMemberDiscord) e.getMember();
+            processHiding(discordMember, e.getRecipients());
+        } else {
+            processChat(e.getChannelName(), e.getMember(), e.getOriginalMessage());
+        }
     }
 }
