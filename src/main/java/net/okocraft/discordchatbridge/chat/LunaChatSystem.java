@@ -36,7 +36,7 @@ public abstract class LunaChatSystem implements ChatSystem {
         var channel = getChannel(channelName);
 
         if (channel == null) {
-            return Result.failure(FormatSettings.DISCORD_CHAT); // todo
+            return Result.failure(FormatSettings.CHANNEL_NOT_FOUND);
         }
 
         if (linkedUser != null) {
@@ -74,11 +74,11 @@ public abstract class LunaChatSystem implements ChatSystem {
 
     public @NotNull Result canSpeak(@NotNull Channel channel, @NotNull ChannelMember player) {
         if (!channel.isBroadcastChannel() && !channel.getMembers().contains(player))
-            return Result.failure(FormatSettings.DISCORD_CHAT); // todo
-        if (channel.getBanned().contains(player)) return Result.failure(FormatSettings.DISCORD_CHAT); // todo
-        if (channel.getMuted().contains(player)) return Result.failure(FormatSettings.DISCORD_CHAT); // todo
+            return Result.failure(FormatSettings.NOT_CHANNEL_MEMBER);
+        if (channel.getBanned().contains(player)) return Result.failure(FormatSettings.YOU_ARE_BANNED);
+        if (channel.getMuted().contains(player)) return Result.failure(FormatSettings.YOU_ARE_MUTED);
         if (!player.hasPermission("lunachat.speak." + channel.getName()))
-            return Result.failure(FormatSettings.DISCORD_CHAT); // todo
+            return Result.failure(FormatSettings.NO_SPEAK_PERMISSION);
 
         return Result.success();
     }

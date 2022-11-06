@@ -1,6 +1,5 @@
 package net.okocraft.discordchatbridge.database;
 
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.Connection;
@@ -17,47 +16,36 @@ import org.jetbrains.annotations.Nullable;
 
 public class DatabaseManager {
 
+    private final DiscordChatBridgePlugin plugin;
+
     private final Map<UUID, LinkedUser> linkCacheByUUID = new HashMap<>();
     private final Map<String, LinkedUser> linkCacheByName = new HashMap<>();
     private final Map<Long, LinkedUser> linkCacheByDiscordUserId = new HashMap<>();
 
     private final Query.Type databaseType;
 
-    private final Connection connection;
+    private Connection connection;
 
     public DatabaseManager(DiscordChatBridgePlugin plugin) {
+        this.plugin = plugin;
         this.databaseType = Query.Type.SQLITE;
+    }
+
+    public void init() throws Exception {
         Path dbFilePath = plugin.getDataDirectory().resolve("data.db");
-        try {
             if (Files.notExists(dbFilePath)) {
                 Files.createDirectories(dbFilePath.getParent());
                 Files.createFile(dbFilePath);
             }
-        } catch (IOException e) {
-            throw new IllegalStateException(e);
-        }
-        this.connection = createSQLiteConnection(dbFilePath)
-                .orElseThrow(() -> new IllegalStateException("Cannot create sqlite database connection."));
-
+        this.connection = createSQLiteConnection(dbFilePath);
         try (PreparedStatement statement = connection.prepareStatement(Query.CREATE_TABLE.getQuery(databaseType))) {
             statement.executeUpdate();
-        } catch (SQLException e) {
-            throw new IllegalStateException(e);
         }
     }
 
-    public void init() throws Exception {
-        // todo: move from constructor
-    }
-
-    public Optional<Connection> createSQLiteConnection(Path path) {
-        try {
-            Class.forName("org.sqlite.JDBC");
-            return Optional.of(DriverManager.getConnection("jdbc:sqlite:" + path.toString()));
-        } catch (SQLException | ClassNotFoundException e) {
-            e.printStackTrace();
-            return Optional.empty();
-        }
+    private Connection createSQLiteConnection(Path path) throws SQLException, ClassNotFoundException {
+        Class.forName("org.sqlite.JDBC");
+        return DriverManager.getConnection("jdbc:sqlite:" + path.toString());
     }
 
     public void shutdown() {

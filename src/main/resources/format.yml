@@ -19,3 +19,11 @@ command:
     start: "Reloading DiscordChatBridge..."
     success: "The reload was successful."
     failure: "Failed to reload. Please check the console."
+
+chat:
+  please-verify: "Please verify your discord account. Use command `/dcb link` in game."
+  channel-not-found: "This channel is configured incorrectly. Please report to administrator."
+  not-channel-member: "You are not a channel member."
+  you-are-banned-in-this-channel: "You are banned in this channel."
+  you-are-muted: "You are muted."
+  no-speak-permission: "You do not have in-game permission to speak here."

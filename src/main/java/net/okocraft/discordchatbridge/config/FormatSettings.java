@@ -71,6 +71,23 @@ public final class FormatSettings {
     public static final ConfigValue<String> COMMAND_RELOAD_FAILURE =
             config -> config.getString("command.reload.failure", "* Failed to reload. Please check the console.");
 
+    public static final ConfigValue<String> CHANNEL_NOT_FOUND =
+            config -> config.getString("chat.channel-not-found", "This channel is configured incorrectly. Please report to administrator.");
+
+    public static final ConfigValue<String> NOT_CHANNEL_MEMBER =
+            config -> config.getString("chat.not-channel-member", "You are not a channel member.");
+
+    public static final ConfigValue<String> YOU_ARE_BANNED =
+            config -> config.getString("chat.you-are-banned-in-this-channel", "You are banned in this channel.");
+
+    public static final ConfigValue<String> YOU_ARE_MUTED =
+            config -> config.getString("chat.you-are-muted", "You are muted.");
+
+    public static final ConfigValue<String> NO_SPEAK_PERMISSION =
+            config -> config.getString("chat.no-speak-permission", "You do not have in-game permission to speak here.");
+
+    public static final ConfigValue<String> VERIFY_PLEASE =
+            config -> config.getString("chat.verify-please", "Please verify your discord account. Use command `/dcb link` in game.");
 
     private FormatSettings() {
         throw new UnsupportedOperationException();
