@@ -25,6 +25,7 @@ import com.github.ucchyocean.lc3.member.ChannelMember;
 import com.github.ucchyocean.lc3.member.ChannelMemberOther;
 import net.okocraft.discordchatbridge.config.FormatSettings;
 import net.okocraft.discordchatbridge.database.LinkedUser;
+import net.okocraft.discordchatbridge.external.LuckPermsIntegration;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -40,7 +41,7 @@ public abstract class LunaChatSystem implements ChatSystem {
         }
 
         if (linkedUser != null) {
-            var checkResult = canSpeak(channel, ChannelMemberDiscord.getChannelMember(linkedUser));
+            var checkResult = canSpeak(channel, linkedUser);
 
             if (checkResult.succeed()) {
                 ChannelMemberOther discordSender = new ChannelMemberOther(!source.isEmpty() ? sender + "@" + source : sender);
@@ -50,18 +51,20 @@ public abstract class LunaChatSystem implements ChatSystem {
                         "",
                         "",
                         null,
-                        "$" + linkedUser.getUniqueId().toString()
+                        linkedUser.getUniqueId().toString()
                 );
 
                 var lcApi = LunaChat.getAPI();
 
-                channel.getMembers().stream()
-                        .filter(mem -> lcApi.getHidelist(mem).contains(hiddenCheck))
-                        .forEach(mem -> lcApi.addHidelist(mem, discordSender));
+                lcApi.getHidelist(hiddenCheck).stream()
+                        .filter(channel.getMembers()::contains)
+                        .forEach(hiding -> lcApi.addHidelist(hiding, discordSender));
 
                 channel.chatFromOtherSource(sender, source, message);
 
-                channel.getMembers().forEach(mem -> lcApi.removeHidelist(mem, discordSender));
+                lcApi.getHidelist(discordSender).stream()
+                        .filter(channel.getMembers()::contains)
+                        .forEach(hiding -> lcApi.removeHidelist(hiding, discordSender));
             }
 
             return checkResult;
@@ -72,14 +75,32 @@ public abstract class LunaChatSystem implements ChatSystem {
         }
     }
 
-    public @NotNull Result canSpeak(@NotNull Channel channel, @NotNull ChannelMember player) {
-        if (!channel.isBroadcastChannel() && !channel.getMembers().contains(player))
+    public @NotNull Result canSpeak(@NotNull Channel channel, @NotNull LinkedUser user) {
+        ChannelMember player = ChannelMember.getChannelMember("$" + user.getUniqueId().toString());
+
+        if (!channel.isBroadcastChannel() && !channel.getMembers().contains(player)) {
             return Result.failureAndDeleteMessage(FormatSettings.NOT_LUNACHAT_CHANNEL_MEMBER);
-        if (channel.getBanned().contains(player)) return Result.failureAndDeleteMessage(FormatSettings.LUNACHAT_YOU_ARE_BANNED);
-        if (channel.getMuted().contains(player)) return Result.failureAndDeleteMessage(FormatSettings.YOU_ARE_MUTED);
-        if (player.isPermissionSet("lunachat.speak." + channel.getName())
-                && !player.hasPermission("lunachat.speak." + channel.getName()))
-            return Result.failureAndDeleteMessage(FormatSettings.NO_LUNACHAT_SPEAK_PERMISSION);
+        }
+
+        if (channel.getBanned().contains(player)) {
+            return Result.failureAndDeleteMessage(FormatSettings.LUNACHAT_YOU_ARE_BANNED);
+        }
+
+        if (channel.getMuted().contains(player)) {
+            return Result.failureAndDeleteMessage(FormatSettings.YOU_ARE_MUTED);
+        }
+
+        String permissionNode = "lunachat.speak." + channel.getName();
+        if (player.isOnline()) {
+            if (player.isPermissionSet(permissionNode)
+                    && !player.hasPermission(permissionNode)) {
+                return Result.failureAndDeleteMessage(FormatSettings.NO_LUNACHAT_SPEAK_PERMISSION);
+            }
+        } else {
+            if (LuckPermsIntegration.hasPermission(user.getUniqueId(), permissionNode)) {
+                return Result.failureAndDeleteMessage(FormatSettings.NO_LUNACHAT_SPEAK_PERMISSION);
+            }
+        }
 
         return Result.success();
     }
