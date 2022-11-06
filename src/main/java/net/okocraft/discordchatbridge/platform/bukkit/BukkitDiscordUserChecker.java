@@ -19,6 +19,7 @@
 
 package net.okocraft.discordchatbridge.platform.bukkit;
 
+import net.okocraft.discordchatbridge.config.FormatSettings;
 import net.okocraft.discordchatbridge.database.LinkedUser;
 import net.okocraft.discordchatbridge.external.AdvancedBanIntegration;
 import net.okocraft.discordchatbridge.platform.DiscordUserChecker;
@@ -36,18 +37,18 @@ public class BukkitDiscordUserChecker implements DiscordUserChecker {
     public @NotNull Result check(@NotNull LinkedUser user) {
         if (isAdvancedBanEnabled()) {
             if (AdvancedBanIntegration.isBanned(user.getUniqueId())) {
-                return Result.deny("banned");
+                return Result.deny(FormatSettings.YOU_ARE_BANNED);
             }
 
             if (AdvancedBanIntegration.isMuted(user.getUniqueId())) {
-                return Result.deny("muted");
+                return Result.deny(FormatSettings.YOU_ARE_MUTED);
             }
         }
 
         var offlinePlayer = plugin.getServer().getOfflinePlayer(user.getUniqueId());
 
         if (offlinePlayer.isBanned()) {
-            return Result.deny("banned");
+            return Result.deny(FormatSettings.YOU_ARE_BANNED);
         }
 
         return Result.allow();

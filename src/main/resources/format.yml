@@ -10,6 +10,7 @@ server:
   channel-not-found: "This channel is configured incorrectly. Please report to administrator."
   not-lunachat-channel-member: "You are not a channel member."
   you-are-banned-in-lunachat: "You are banned in this lunachat channel."
+  you-are-banned: "You are banned in this server."
   you-are-muted: "You are muted."
   no-lunachat-speak-permission: "You do not have in-game permission to speak here."
   please-verify: "Please verify your discord account. Use command `/dcb link` in game."
