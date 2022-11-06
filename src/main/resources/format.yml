@@ -7,23 +7,23 @@ server:
   player-list:
     top: "**===== Player List (%player_count%) =====**"
     list: "%server_name%: %player_list%"
+  channel-not-found: "This channel is configured incorrectly. Please report to administrator."
+  not-lunachat-channel-member: "You are not a channel member."
+  you-are-banned-in-lunachat: "You are banned in this lunachat channel."
+  you-are-muted: "You are muted."
+  no-lunachat-speak-permission: "You do not have in-game permission to speak here."
+  please-verify: "Please verify your discord account. Use command \"/dcb link\" in game."
+  not-enough-arguments: "Not enough argument."
+  linked: "Linked discord and minecraft account. You can now chat here."
+  invalid-passcode: "Invalid passcode."
+
 
 command:
   no-permission: "You have no permission: %permission%"
   not-enough-arguments: "Not enough arguments."
   player-only: "&c* This command is player only."
-  link:
-    linked: "Linked discord and minecraft account."
-    invalid-passcode: "Invalid passcode."
+  then-use-command-in-discord: "Accepted link request. Then use command `!link %passcode%` in discord."
   reload:
     start: "Reloading DiscordChatBridge..."
     success: "The reload was successful."
     failure: "Failed to reload. Please check the console."
-
-chat:
-  please-verify: "Please verify your discord account. Use command `/dcb link` in game."
-  channel-not-found: "This channel is configured incorrectly. Please report to administrator."
-  not-channel-member: "You are not a channel member."
-  you-are-banned-in-this-channel: "You are banned in this channel."
-  you-are-muted: "You are muted."
-  no-speak-permission: "You do not have in-game permission to speak here."

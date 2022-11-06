@@ -85,7 +85,7 @@ public class DiscordChatBridgeBukkit extends JavaPlugin implements DiscordChatBr
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         if (args.length == 0) {
-            sender.sendMessage(getFormatConfig().get(FormatSettings.NOT_ENOUGH_ARGUMENTS));
+            sender.sendMessage(getFormatConfig().get(FormatSettings.COMMAND_NOT_ENOUGH_ARGUMENTS));
             return true;
         }
 
@@ -94,7 +94,7 @@ public class DiscordChatBridgeBukkit extends JavaPlugin implements DiscordChatBr
             return true;
         } else if (args[0].equalsIgnoreCase("link")) {
             if (!(sender instanceof Player)) {
-                sender.sendMessage(getFormatConfig().get(FormatSettings.PLAYER_ONLY));
+                sender.sendMessage(getFormatConfig().get(FormatSettings.COMMAND_PLAYER_ONLY));
                 return true;
             }
             linkCommand.processCommand(sender::hasPermission, sender::sendMessage, args, ((Player) sender).getUniqueId(), sender.getName());
