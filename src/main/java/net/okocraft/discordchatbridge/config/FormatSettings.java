@@ -69,7 +69,7 @@ public final class FormatSettings {
             config -> config.getString("server.not-enough-arguments", "&c Not enough arguments.");
 
     public static final ConfigValue<String> LINKED =
-            config -> config.getString("server.linked", "&7* Linked discord and minecraft account.");
+            config -> config.getString("server.linked", "%player_name% linked discord and minecraft account.");
 
     public static final ConfigValue<String> INVALID_PASSCODE =
             config -> config.getString("server.invalid-passcode", "&c* Invalid passcode.");

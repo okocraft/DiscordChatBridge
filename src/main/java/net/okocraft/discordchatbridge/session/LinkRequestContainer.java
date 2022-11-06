@@ -6,7 +6,7 @@ import java.util.UUID;
 
 public final class LinkRequestContainer {
 
-    private static final long EXPIRE_DIFF = 1000 * 60 * 10;
+    public static final long EXPIRE_DIFF = 1000 * 60 * 10;
 
     private static final Map<String, LinkRequestEntry> PASSCODE_TO_MINECRAFT_ACCOUNT = new HashMap<>();
     private static final Map<String, Long> PASSCODE_CREATED_TIMES = new HashMap<>();
