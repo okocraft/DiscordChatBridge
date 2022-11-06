@@ -83,13 +83,15 @@ public class DiscordListener extends ListenerAdapter {
             if (!result.allowed()) {
                 event.getMessage()
                         .reply(result.reasonMessage())
-                        .flatMap(message -> message.delete().delay(Duration.ofSeconds(10)))
+                        .delay(Duration.ofSeconds(10))
+                        .flatMap(Message::delete)
                         .queue();
             }
         } else if (plugin.getGeneralConfig().get(GeneralSettings.NEEDS_VERIFICATION)) {
             event.getMessage()
                     .reply(plugin.getFormatConfig().get(FormatSettings.VERIFY_PLEASE))
-                    .flatMap(m -> m.delete().flatMap(m1 -> event.getMessage().delete()).delay(Duration.ofSeconds(10)))
+                    .delay(Duration.ofSeconds(10))
+                    .flatMap(m -> m.delete().flatMap(m1 -> event.getMessage().delete()))
                     .queue();
             return;
         }
@@ -143,7 +145,8 @@ public class DiscordListener extends ListenerAdapter {
             if (result.shouldDeleteMessage()) {
                 event.getMessage()
                         .reply(plugin.getFormatConfig().get(result.reasonMessageKey()))
-                        .flatMap(m -> m.delete().flatMap(m1 -> event.getMessage().delete()).delay(Duration.ofSeconds(10)))
+                        .delay(Duration.ofSeconds(10))
+                        .flatMap(m -> m.delete().flatMap(m1 -> event.getMessage().delete()))
                         .queue();
             } else {
                 event.getMessage()
