@@ -90,6 +90,9 @@ public final class GeneralSettings {
 
     public static final ConfigValue<String> ALLOW_COLORS_IN_NAME = config -> config.getString("allow-colors-in-name", Boolean.TRUE.toString());
 
+    public static final ConfigValue<String> DATA_STORE_TYPE =
+            config -> config.getString("data-store-type", "yml");
+
     private GeneralSettings() {
         throw new UnsupportedOperationException();
     }
