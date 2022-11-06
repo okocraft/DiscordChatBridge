@@ -24,7 +24,7 @@ import net.md_5.bungee.api.plugin.Plugin;
 import net.okocraft.discordchatbridge.DiscordBot;
 import net.okocraft.discordchatbridge.DiscordChatBridgePlugin;
 import net.okocraft.discordchatbridge.chat.ChatSystem;
-import net.okocraft.discordchatbridge.database.DatabaseManager;
+import net.okocraft.discordchatbridge.database.LinkManager;
 import net.okocraft.discordchatbridge.listener.luckperms.FirstJoinListener;
 import net.okocraft.discordchatbridge.logger.JavaLogger;
 import net.okocraft.discordchatbridge.logger.LoggerWrapper;
@@ -43,10 +43,10 @@ public class DiscordChatBridgeBungee extends Plugin implements DiscordChatBridge
     private final YamlConfiguration generalConfig = YamlConfiguration.create(getDataDirectory().resolve("config.yml"));
     private final YamlConfiguration formatConfig = YamlConfiguration.create(getDataDirectory().resolve("format.yml"));
     private final BungeeDiscordUserChecker discordUserChecker = new BungeeDiscordUserChecker(this);
-    private final DatabaseManager databaseManager = new DatabaseManager(this);
 
     private DiscordBot bot;
     private ChatSystem chatSystem;
+    private LinkManager linkManager;
     private FirstJoinListener firstJoinListener;
     private boolean isEnabled;
 
@@ -101,8 +101,13 @@ public class DiscordChatBridgeBungee extends Plugin implements DiscordChatBridge
     }
 
     @Override
-    public @NotNull DatabaseManager getDatabaseManager() {
-        return databaseManager;
+    public @NotNull LinkManager getLinkManager() {
+        return linkManager;
+    }
+
+    @Override
+    public void setLinkManager(LinkManager linkManager) {
+        this.linkManager = linkManager;
     }
 
     @Override

@@ -98,7 +98,7 @@ public class DiscordListener extends ListenerAdapter {
             return;
         }
 
-        var linkedUser = plugin.getDatabaseManager().getLinkByDiscordUserId(member.getIdLong());
+        var linkedUser = plugin.getLinkManager().getLinkByDiscordUserId(member.getIdLong());
 
         if (linkedUser.isPresent()) {
             var result = plugin.getDiscordUserChecker().check(linkedUser.get());
@@ -108,6 +108,7 @@ public class DiscordListener extends ListenerAdapter {
                         .delay(Duration.ofSeconds(10))
                         .flatMap(Message::delete)
                         .queue();
+                return;
             }
         } else if (plugin.getGeneralConfig().get(GeneralSettings.NEEDS_VERIFICATION)) {
             Long linkRequestTime = previousLinkRequestTime.get(member.getIdLong());
@@ -198,7 +199,7 @@ public class DiscordListener extends ListenerAdapter {
             return ChatSystem.Result.failureAndDeleteMessage(FormatSettings.INVALID_PASSCODE);
         }
 
-        plugin.getDatabaseManager().link(linkRequest.getMinecraftUuid(), linkRequest.getMinecraftName(), discordUserId);
+        plugin.getLinkManager().link(linkRequest.getMinecraftUuid(), linkRequest.getMinecraftName(), discordUserId);
         return ChatSystem.Result.success();
     }
 
