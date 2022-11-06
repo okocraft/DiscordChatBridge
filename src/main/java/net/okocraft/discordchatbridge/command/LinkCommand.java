@@ -19,11 +19,12 @@
 
 package net.okocraft.discordchatbridge.command;
 
+import java.util.Random;
 import java.util.UUID;
 import net.okocraft.discordchatbridge.DiscordChatBridgePlugin;
 import net.okocraft.discordchatbridge.config.FormatSettings;
 import net.okocraft.discordchatbridge.constant.Placeholders;
-import net.okocraft.discordchatbridge.session.DiscordIdContainer;
+import net.okocraft.discordchatbridge.session.LinkRequestContainer;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.function.Consumer;
@@ -50,20 +51,10 @@ public class LinkCommand {
             return;
         }
 
-        if (args.length < 2) {
-            messageSender.accept(plugin.getFormatConfig().get(FormatSettings.NOT_ENOUGH_ARGUMENTS));
-            return;
-        }
+        String passcode = String.valueOf(new Random().nextInt(10000));
+        LinkRequestContainer.add(passcode, playerUuid, name);
 
-        String passcode = args[1];
-        long discordUserId = DiscordIdContainer.pop(passcode);
-
-        if (discordUserId == -1) {
-            messageSender.accept(plugin.getFormatConfig().get(FormatSettings.LINK_INVALID_PASSCODE));
-            return;
-        }
-
-        plugin.getDatabaseManager().link(playerUuid, name, discordUserId);
-        messageSender.accept(plugin.getFormatConfig().get(FormatSettings.LINK_SUCCESS));
+        messageSender.accept(plugin.getFormatConfig().get(FormatSettings.COMMAND_THEN_USE_COMMAND_IN_DISCORD)
+                .replaceAll("%passcode%", passcode));
     }
 }

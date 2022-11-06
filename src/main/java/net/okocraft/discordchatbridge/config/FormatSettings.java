@@ -47,20 +47,44 @@ public final class FormatSettings {
     public static final ConfigValue<String> PLAYER_LIST_FORMAT =
             config -> config.getString("server.player-list.list", "%server%: %player_list%");
 
+    public static final ConfigValue<String> CHANNEL_NOT_FOUND =
+            config -> config.getString("server.channel-not-found", "This channel is configured incorrectly. Please report to administrator.");
+
+    public static final ConfigValue<String> NOT_LUNACHAT_CHANNEL_MEMBER =
+            config -> config.getString("server.not-lunachat-channel-member", "You are not a channel member.");
+
+    public static final ConfigValue<String> LUNACHAT_YOU_ARE_BANNED =
+            config -> config.getString("server.you-are-banned-in-lunachat", "You are banned in this lunachat channel.");
+
+    public static final ConfigValue<String> YOU_ARE_MUTED =
+            config -> config.getString("server.you-are-muted", "You are muted.");
+
+    public static final ConfigValue<String> NO_LUNACHAT_SPEAK_PERMISSION =
+            config -> config.getString("server.no-lunachat-speak-permission", "You do not have in-game permission to speak here.");
+
+    public static final ConfigValue<String> PLEASE_VERIFY =
+            config -> config.getString("server.please-verify", "Please verify your discord account. Use command \"/dcb link\" in game.");
+
+    public static final ConfigValue<String> SERVER_NOT_ENOUGH_ARGUMENTS =
+            config -> config.getString("server.not-enough-arguments", "&c Not enough arguments.");
+
+    public static final ConfigValue<String> LINKED =
+            config -> config.getString("server.linked", "&7* Linked discord and minecraft account.");
+
+    public static final ConfigValue<String> INVALID_PASSCODE =
+            config -> config.getString("server.invalid-passcode", "&c* Invalid passcode.");
+
     public static final ConfigValue<String> COMMAND_NO_PERMISSION =
             config -> config.getString("command.no-permission", "* You have no permission: %permission%");
 
-    public static final ConfigValue<String> NOT_ENOUGH_ARGUMENTS =
+    public static final ConfigValue<String> COMMAND_NOT_ENOUGH_ARGUMENTS =
             config -> config.getString("command.not-enough-arguments", "&c Not enough arguments.");
 
-    public static final ConfigValue<String> PLAYER_ONLY =
+    public static final ConfigValue<String> COMMAND_PLAYER_ONLY =
             config -> config.getString("command.player-only", "&c* This command is player only.");
 
-    public static final ConfigValue<String> LINK_SUCCESS =
-            config -> config.getString("command.link.success", "&7* Linked discord and minecraft account.");
-
-    public static final ConfigValue<String> LINK_INVALID_PASSCODE =
-            config -> config.getString("command.link.invalid-passcode", "&c* Invalid passcode.");
+    public static final ConfigValue<String> COMMAND_THEN_USE_COMMAND_IN_DISCORD =
+            config -> config.getString("command.then-use-command-in-discord", "Accepted link request. Then use command `!link %passcode%` in discord.");
 
     public static final ConfigValue<String> COMMAND_RELOAD_START =
             config -> config.getString("command.reload.start", "* Reloading DiscordChatBridge...");
@@ -70,24 +94,6 @@ public final class FormatSettings {
 
     public static final ConfigValue<String> COMMAND_RELOAD_FAILURE =
             config -> config.getString("command.reload.failure", "* Failed to reload. Please check the console.");
-
-    public static final ConfigValue<String> CHANNEL_NOT_FOUND =
-            config -> config.getString("chat.channel-not-found", "This channel is configured incorrectly. Please report to administrator.");
-
-    public static final ConfigValue<String> NOT_CHANNEL_MEMBER =
-            config -> config.getString("chat.not-channel-member", "You are not a channel member.");
-
-    public static final ConfigValue<String> YOU_ARE_BANNED =
-            config -> config.getString("chat.you-are-banned-in-this-channel", "You are banned in this channel.");
-
-    public static final ConfigValue<String> YOU_ARE_MUTED =
-            config -> config.getString("chat.you-are-muted", "You are muted.");
-
-    public static final ConfigValue<String> NO_SPEAK_PERMISSION =
-            config -> config.getString("chat.no-speak-permission", "You do not have in-game permission to speak here.");
-
-    public static final ConfigValue<String> VERIFY_PLEASE =
-            config -> config.getString("chat.verify-please", "Please verify your discord account. Use command `/dcb link` in game.");
 
     private FormatSettings() {
         throw new UnsupportedOperationException();

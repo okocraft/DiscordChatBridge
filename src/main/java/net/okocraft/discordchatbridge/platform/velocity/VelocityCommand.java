@@ -48,7 +48,7 @@ public class VelocityCommand implements SimpleCommand {
         String[] args = invocation.arguments();
 
         if (invocation.arguments().length == 0) {
-            sender.sendMessage(Component.text(plugin.getFormatConfig().get(FormatSettings.NOT_ENOUGH_ARGUMENTS)));
+            sender.sendMessage(Component.text(plugin.getFormatConfig().get(FormatSettings.COMMAND_NOT_ENOUGH_ARGUMENTS)));
             return;
         }
 
@@ -60,7 +60,7 @@ public class VelocityCommand implements SimpleCommand {
         } else if (args[0].equalsIgnoreCase("link")) {
             if (!(sender instanceof Player)) {
                 sender.sendMessage(LegacyComponentSerializer.legacyAmpersand()
-                        .deserialize(plugin.getFormatConfig().get(FormatSettings.PLAYER_ONLY)));
+                        .deserialize(plugin.getFormatConfig().get(FormatSettings.COMMAND_PLAYER_ONLY)));
                 return;
             }
             linkCommand.processCommand(

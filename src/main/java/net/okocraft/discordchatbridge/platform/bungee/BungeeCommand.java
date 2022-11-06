@@ -51,7 +51,7 @@ public class BungeeCommand extends Command implements TabExecutor {
     @Override
     public void execute(CommandSender sender, String[] args) {
         if (args.length == 0) {
-            sender.sendMessage(plugin.getFormatConfig().get(FormatSettings.NOT_ENOUGH_ARGUMENTS));
+            sender.sendMessage(plugin.getFormatConfig().get(FormatSettings.COMMAND_NOT_ENOUGH_ARGUMENTS));
             return;
         }
 
@@ -62,7 +62,7 @@ public class BungeeCommand extends Command implements TabExecutor {
             );
         } else if (args[0].equalsIgnoreCase("link")) {
             if (!(sender instanceof ProxiedPlayer)) {
-                sender.sendMessage(TextComponent.fromLegacyText(plugin.getFormatConfig().get(FormatSettings.PLAYER_ONLY)));
+                sender.sendMessage(TextComponent.fromLegacyText(plugin.getFormatConfig().get(FormatSettings.COMMAND_PLAYER_ONLY)));
                 return;
             }
             linkCommand.processCommand(

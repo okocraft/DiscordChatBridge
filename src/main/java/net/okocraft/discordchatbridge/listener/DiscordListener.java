@@ -31,6 +31,8 @@ import net.okocraft.discordchatbridge.config.FormatSettings;
 import net.okocraft.discordchatbridge.config.GeneralSettings;
 import net.okocraft.discordchatbridge.constant.Constants;
 import net.okocraft.discordchatbridge.constant.Placeholders;
+import net.okocraft.discordchatbridge.session.LinkRequestContainer;
+import net.okocraft.discordchatbridge.session.LinkRequestEntry;
 import net.okocraft.discordchatbridge.util.ColorStripper;
 import org.jetbrains.annotations.NotNull;
 
@@ -76,6 +78,13 @@ public class DiscordListener extends ListenerAdapter {
             return;
         }
 
+        var message = event.getMessage().getContentDisplay();
+
+        if (message.startsWith("!link")) {
+            onLinkCommand(member.getIdLong(), message, event.getChannel());
+            return;
+        }
+
         var linkedUser = plugin.getDatabaseManager().getLinkByDiscordUserId(member.getIdLong());
 
         if (linkedUser.isPresent()) {
@@ -89,14 +98,12 @@ public class DiscordListener extends ListenerAdapter {
             }
         } else if (plugin.getGeneralConfig().get(GeneralSettings.NEEDS_VERIFICATION)) {
             event.getMessage()
-                    .reply(plugin.getFormatConfig().get(FormatSettings.VERIFY_PLEASE))
+                    .reply(plugin.getFormatConfig().get(FormatSettings.PLEASE_VERIFY))
                     .delay(Duration.ofSeconds(10))
                     .flatMap(m -> m.delete().flatMap(m1 -> event.getMessage().delete()))
                     .queue();
             return;
         }
-
-        var message = event.getMessage().getContentDisplay();
 
         if (message.startsWith("!playerlist")) {
             onPlayerListCommand(event.getChannel());
@@ -156,6 +163,26 @@ public class DiscordListener extends ListenerAdapter {
 
             break;
         }
+    }
+
+    private void onLinkCommand(long discordUserId, String commandContext, @NotNull MessageChannelUnion channel) {
+        String[] commandSplit = commandContext.split(" ", -1);
+
+        if (commandSplit.length < 2) {
+            channel.sendMessage(plugin.getFormatConfig().get(FormatSettings.SERVER_NOT_ENOUGH_ARGUMENTS));
+            return;
+        }
+
+        String passcode = commandSplit[1];
+        LinkRequestEntry linkRequest = LinkRequestContainer.pop(passcode);
+
+        if (linkRequest == null) {
+            channel.sendMessage(plugin.getFormatConfig().get(FormatSettings.INVALID_PASSCODE));
+            return;
+        }
+
+        plugin.getDatabaseManager().link(linkRequest.getMinecraftUuid(), linkRequest.getMinecraftName(), discordUserId);
+        channel.sendMessage(plugin.getFormatConfig().get(FormatSettings.LINKED));
     }
 
     private void onPlayerListCommand(@NotNull MessageChannelUnion channel) {

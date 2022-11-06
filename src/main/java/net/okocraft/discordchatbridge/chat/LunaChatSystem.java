@@ -74,11 +74,12 @@ public abstract class LunaChatSystem implements ChatSystem {
 
     public @NotNull Result canSpeak(@NotNull Channel channel, @NotNull ChannelMember player) {
         if (!channel.isBroadcastChannel() && !channel.getMembers().contains(player))
-            return Result.failure(FormatSettings.NOT_CHANNEL_MEMBER);
-        if (channel.getBanned().contains(player)) return Result.failure(FormatSettings.YOU_ARE_BANNED);
-        if (channel.getMuted().contains(player)) return Result.failure(FormatSettings.YOU_ARE_MUTED);
-        if (!player.hasPermission("lunachat.speak." + channel.getName()))
-            return Result.failure(FormatSettings.NO_SPEAK_PERMISSION);
+            return Result.failureAndDeleteMessage(FormatSettings.NOT_LUNACHAT_CHANNEL_MEMBER);
+        if (channel.getBanned().contains(player)) return Result.failureAndDeleteMessage(FormatSettings.LUNACHAT_YOU_ARE_BANNED);
+        if (channel.getMuted().contains(player)) return Result.failureAndDeleteMessage(FormatSettings.YOU_ARE_MUTED);
+        if (player.isPermissionSet("lunachat.speak." + channel.getName())
+                && !player.hasPermission("lunachat.speak." + channel.getName()))
+            return Result.failureAndDeleteMessage(FormatSettings.NO_LUNACHAT_SPEAK_PERMISSION);
 
         return Result.success();
     }
