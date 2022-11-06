@@ -26,13 +26,11 @@ import net.okocraft.discordchatbridge.database.DatabaseManager;
 import net.okocraft.discordchatbridge.logger.LoggerWrapper;
 import net.okocraft.discordchatbridge.platform.DiscordUserChecker;
 import net.okocraft.discordchatbridge.platform.PlatformInfo;
-import net.okocraft.discordchatbridge.session.DiscordIdContainer;
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.Color;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.UUID;
 
 public interface DiscordChatBridgePlugin {
 
@@ -113,14 +111,6 @@ public interface DiscordChatBridgePlugin {
             unregisterLuckPermsFirstJoinListener();
             getDatabaseManager().shutdown();
         }
-    }
-
-    default boolean linkWithPasscode(String passcode, UUID uuid, String name) {
-        long discordUserId = DiscordIdContainer.pop(passcode);
-        if (discordUserId != -1L) {
-            return getDatabaseManager().link(uuid, name, discordUserId) != null;
-        }
-        return false;
     }
 
     void loginToDiscord();
