@@ -27,6 +27,7 @@ import net.dv8tion.jda.api.entities.channel.unions.MessageChannelUnion;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.okocraft.discordchatbridge.DiscordChatBridgePlugin;
+import net.okocraft.discordchatbridge.chat.ChatSystem;
 import net.okocraft.discordchatbridge.config.FormatSettings;
 import net.okocraft.discordchatbridge.config.GeneralSettings;
 import net.okocraft.discordchatbridge.constant.Constants;
@@ -53,6 +54,8 @@ public class DiscordListener extends ListenerAdapter {
     private final String defaultRoleColorCode;
 
     private final AtomicLong lastPlayerListUsed = new AtomicLong(0);
+
+    private final Map<Long, Long> previousLinkRequestTime = new HashMap<>();
 
     public DiscordListener(@NotNull DiscordChatBridgePlugin plugin) {
         this.plugin = plugin;
@@ -81,7 +84,17 @@ public class DiscordListener extends ListenerAdapter {
         var message = event.getMessage().getContentDisplay();
 
         if (message.startsWith("!link")) {
-            onLinkCommand(member.getIdLong(), message, event.getChannel());
+            ChatSystem.Result commandResult = onLinkCommand(member.getIdLong(), message);
+            if (commandResult != ChatSystem.Result.success()) {
+                event.getMessage().reply(plugin.getFormatConfig().get(commandResult.reasonMessageKey()))
+                        .delay(Duration.ofSeconds(10))
+                        .flatMap(m -> m.delete().flatMap(m1 -> event.getMessage().delete()))
+                        .queue();
+            } else {
+                event.getMessage().delete().queue();
+                event.getChannel().sendMessage(plugin.getFormatConfig().get(FormatSettings.LINKED)
+                        .replaceAll("%player_name%", member.getAsMention())).queue();
+            }
             return;
         }
 
@@ -97,11 +110,17 @@ public class DiscordListener extends ListenerAdapter {
                         .queue();
             }
         } else if (plugin.getGeneralConfig().get(GeneralSettings.NEEDS_VERIFICATION)) {
-            event.getMessage()
-                    .reply(plugin.getFormatConfig().get(FormatSettings.PLEASE_VERIFY))
-                    .delay(Duration.ofSeconds(10))
-                    .flatMap(m -> m.delete().flatMap(m1 -> event.getMessage().delete()))
-                    .queue();
+            Long linkRequestTime = previousLinkRequestTime.get(member.getIdLong());
+            if (linkRequestTime == null || linkRequestTime + LinkRequestContainer.EXPIRE_DIFF < System.currentTimeMillis()) {
+                event.getMessage()
+                        .reply(plugin.getFormatConfig().get(FormatSettings.PLEASE_VERIFY))
+                        .delay(Duration.ofSeconds(LinkRequestContainer.EXPIRE_DIFF / 1000))
+                        .flatMap(m -> m.delete().flatMap(m1 -> event.getMessage().delete()))
+                        .queue();
+                previousLinkRequestTime.put(member.getIdLong(), System.currentTimeMillis());
+            } else {
+                event.getMessage().delete().queue();
+            }
             return;
         }
 
@@ -165,24 +184,22 @@ public class DiscordListener extends ListenerAdapter {
         }
     }
 
-    private void onLinkCommand(long discordUserId, String commandContext, @NotNull MessageChannelUnion channel) {
+    private ChatSystem.Result onLinkCommand(long discordUserId, String commandContext) {
         String[] commandSplit = commandContext.split(" ", -1);
 
         if (commandSplit.length < 2) {
-            channel.sendMessage(plugin.getFormatConfig().get(FormatSettings.SERVER_NOT_ENOUGH_ARGUMENTS));
-            return;
+            return ChatSystem.Result.failureAndDeleteMessage(FormatSettings.SERVER_NOT_ENOUGH_ARGUMENTS);
         }
 
         String passcode = commandSplit[1];
         LinkRequestEntry linkRequest = LinkRequestContainer.pop(passcode);
 
         if (linkRequest == null) {
-            channel.sendMessage(plugin.getFormatConfig().get(FormatSettings.INVALID_PASSCODE));
-            return;
+            return ChatSystem.Result.failureAndDeleteMessage(FormatSettings.INVALID_PASSCODE);
         }
 
         plugin.getDatabaseManager().link(linkRequest.getMinecraftUuid(), linkRequest.getMinecraftName(), discordUserId);
-        channel.sendMessage(plugin.getFormatConfig().get(FormatSettings.LINKED));
+        return ChatSystem.Result.success();
     }
 
     private void onPlayerListCommand(@NotNull MessageChannelUnion channel) {
