@@ -69,22 +69,23 @@ public final class FormatSettings {
             config -> config.getString("server.please-verify", "Please verify your discord account. Use command \"/dcb link\" in game.");
 
     public static final ConfigValue<String> SERVER_NOT_ENOUGH_ARGUMENTS =
-            config -> config.getString("server.not-enough-arguments", "&c Not enough arguments.");
+            config -> config.getString("server.not-enough-arguments", "Not enough arguments.");
 
     public static final ConfigValue<String> LINKED =
             config -> config.getString("server.linked", "%player_name% linked discord and minecraft account.");
 
     public static final ConfigValue<String> INVALID_PASSCODE =
-            config -> config.getString("server.invalid-passcode", "&c* Invalid passcode.");
+            config -> config.getString("server.invalid-passcode", "Invalid passcode.");
 
     public static final ConfigValue<String> COMMAND_NO_PERMISSION =
             config -> config.getString("command.no-permission", "* You have no permission: %permission%");
 
-    public static final ConfigValue<String> COMMAND_NOT_ENOUGH_ARGUMENTS =
-            config -> config.getString("command.not-enough-arguments", "&c Not enough arguments.");
+    public static final ConfigValue<String> COMMAND_INVALID_ARGUMENT = config -> config.getString("command.invalid-argument", "* Invalid argument.");
+
+    public static final ConfigValue<String> COMMAND_NOT_ENOUGH_ARGUMENTS = config -> config.getString("command.not-enough-arguments", "Not enough arguments.");
 
     public static final ConfigValue<String> COMMAND_PLAYER_ONLY =
-            config -> config.getString("command.player-only", "&c* This command is player only.");
+            config -> config.getString("command.player-only", "* This command is player only.");
 
     public static final ConfigValue<String> COMMAND_THEN_USE_COMMAND_IN_DISCORD =
             config -> config.getString("command.then-use-command-in-discord", "Accepted link request. Then use command `!link %passcode%` in discord.");
@@ -97,6 +98,12 @@ public final class FormatSettings {
 
     public static final ConfigValue<String> COMMAND_RELOAD_FAILURE =
             config -> config.getString("command.reload.failure", "* Failed to reload. Please check the console.");
+
+    public static final ConfigValue<String> COMMAND_RECORD_HELP =
+            config -> config.getString("command.reload.help", "/dcb reload - Reloads config.yml and format.yml");
+
+    public static final ConfigValue<String> COMMAND_LINK_HELP =
+            config -> config.getString("command.link.help", "/dcb link - Requests Discord-Minecraft account link.");
 
     private FormatSettings() {
         throw new UnsupportedOperationException();
