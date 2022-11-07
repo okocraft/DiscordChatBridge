@@ -19,31 +19,22 @@
 
 package net.okocraft.discordchatbridge.command;
 
-import java.util.Random;
-import java.util.UUID;
 import net.okocraft.discordchatbridge.DiscordChatBridgePlugin;
+import net.okocraft.discordchatbridge.command.model.Sender;
 import net.okocraft.discordchatbridge.config.FormatSettings;
 import net.okocraft.discordchatbridge.constant.Placeholders;
 import net.okocraft.discordchatbridge.session.LinkRequestContainer;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.function.Consumer;
-import java.util.function.Predicate;
+import java.util.Random;
 
-public class LinkCommand {
+final class LinkCommand {
 
-    private final static String PERMISSION = "discordchatbridge.link";
+    final static String PERMISSION = "discordchatbridge.link";
 
-    private final DiscordChatBridgePlugin plugin;
-
-    public LinkCommand(@NotNull DiscordChatBridgePlugin plugin) {
-        this.plugin = plugin;
-    }
-
-    public void processCommand(@NotNull Predicate<String> permissionChecker,
-                               @NotNull Consumer<String> messageSender, String[] args, UUID playerUuid, String name) {
-        if (!permissionChecker.test(PERMISSION)) {
-            messageSender.accept(
+    static void processCommand(@NotNull DiscordChatBridgePlugin plugin, @NotNull Sender sender) {
+        if (!sender.hasPermission(PERMISSION)) {
+            sender.sendMessage(
                     plugin.getFormatConfig()
                             .get(FormatSettings.COMMAND_NO_PERMISSION)
                             .replace(Placeholders.PERMISSION, PERMISSION)
@@ -51,10 +42,18 @@ public class LinkCommand {
             return;
         }
 
-        String passcode = String.valueOf(new Random().nextInt(10000));
-        LinkRequestContainer.add(passcode, playerUuid, name);
+        if (!sender.isPlayer()) {
+            sender.sendMessage(plugin.getFormatConfig().get(FormatSettings.COMMAND_PLAYER_ONLY));
+            return;
+        }
 
-        messageSender.accept(plugin.getFormatConfig().get(FormatSettings.COMMAND_THEN_USE_COMMAND_IN_DISCORD)
-                .replaceAll("%passcode%", passcode));
+        String passcode = String.valueOf(new Random().nextInt(10000));
+        LinkRequestContainer.add(passcode, sender.uuid(), sender.name());
+
+        sender.sendMessage(
+                plugin.getFormatConfig()
+                        .get(FormatSettings.COMMAND_THEN_USE_COMMAND_IN_DISCORD)
+                        .replace(Placeholders.PASSCODE, passcode)
+        );
     }
 }

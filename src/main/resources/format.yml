@@ -21,6 +21,7 @@ server:
 
 command:
   no-permission: "You have no permission: %permission%"
+  invalid-argument: "Invalid argument."
   not-enough-arguments: "Not enough arguments."
   player-only: "&c* This command is player only."
   then-use-command-in-discord: "Accepted link request. Then use command \"!link %passcode%\" in discord."
@@ -28,3 +29,6 @@ command:
     start: "Reloading DiscordChatBridge..."
     success: "The reload was successful."
     failure: "Failed to reload. Please check the console."
+    help: "/dcb reload - Reloads config.yml and format.yml"
+  link:
+    help: "/dcb link - Requests Discord-Minecraft account link."

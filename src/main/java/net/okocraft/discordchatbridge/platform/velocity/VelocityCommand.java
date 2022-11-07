@@ -19,57 +19,28 @@
 
 package net.okocraft.discordchatbridge.platform.velocity;
 
-import com.velocitypowered.api.command.CommandSource;
 import com.velocitypowered.api.command.SimpleCommand;
-import com.velocitypowered.api.proxy.Player;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.okocraft.discordchatbridge.DiscordChatBridgePlugin;
-import net.okocraft.discordchatbridge.command.LinkCommand;
-import net.okocraft.discordchatbridge.command.ReloadCommand;
-import net.okocraft.discordchatbridge.config.FormatSettings;
+import net.okocraft.discordchatbridge.command.DiscordChatBridgeCommand;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.List;
 
 public class VelocityCommand implements SimpleCommand {
 
-    private final ReloadCommand reloadCommand;
-    private final LinkCommand linkCommand;
     private final DiscordChatBridgePlugin plugin;
 
     public VelocityCommand(@NotNull DiscordChatBridgePlugin plugin) {
-        reloadCommand = new ReloadCommand(plugin);
-        linkCommand = new LinkCommand(plugin);
         this.plugin = plugin;
     }
 
     @Override
     public void execute(Invocation invocation) {
-        CommandSource sender = invocation.source();
-        String[] args = invocation.arguments();
+        DiscordChatBridgeCommand.onCommand(plugin, new VelocityCommandSender(invocation.source()), invocation.arguments());
+    }
 
-        if (invocation.arguments().length == 0) {
-            sender.sendMessage(Component.text(plugin.getFormatConfig().get(FormatSettings.COMMAND_NOT_ENOUGH_ARGUMENTS)));
-            return;
-        }
-
-        if (invocation.arguments()[0].equalsIgnoreCase("reload")) {
-            reloadCommand.processCommand(
-                    sender::hasPermission,
-                    str -> sender.sendMessage(LegacyComponentSerializer.legacyAmpersand().deserialize(str))
-            );
-        } else if (args[0].equalsIgnoreCase("link")) {
-            if (!(sender instanceof Player)) {
-                sender.sendMessage(LegacyComponentSerializer.legacyAmpersand()
-                        .deserialize(plugin.getFormatConfig().get(FormatSettings.COMMAND_PLAYER_ONLY)));
-                return;
-            }
-            linkCommand.processCommand(
-                    sender::hasPermission,
-                    str -> sender.sendMessage(LegacyComponentSerializer.legacyAmpersand().deserialize(str)),
-                    args,
-                    ((Player) sender).getUniqueId(),
-                    ((Player) sender).getUsername()
-            );
-        }
+    @Override
+    public List<String> suggest(Invocation invocation) {
+        return DiscordChatBridgeCommand.onTabComplete(new VelocityCommandSender(invocation.source()), invocation.arguments());
     }
 }

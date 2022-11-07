@@ -20,41 +20,32 @@
 package net.okocraft.discordchatbridge.command;
 
 import net.okocraft.discordchatbridge.DiscordChatBridgePlugin;
+import net.okocraft.discordchatbridge.command.model.Sender;
 import net.okocraft.discordchatbridge.config.FormatSettings;
 import net.okocraft.discordchatbridge.constant.Placeholders;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.function.Consumer;
-import java.util.function.Predicate;
+final class ReloadCommand {
 
-public class ReloadCommand {
+    final static String PERMISSION = "discordchatbridge.reload";
 
-    private final static String PERMISSION = "discordchatbridge.reload";
-
-    private final DiscordChatBridgePlugin plugin;
-
-    public ReloadCommand(@NotNull DiscordChatBridgePlugin plugin) {
-        this.plugin = plugin;
-    }
-
-    public void processCommand(@NotNull Predicate<String> permissionChecker,
-                                  @NotNull Consumer<String> messageSender) {
-        if (!permissionChecker.test(PERMISSION)) {
-            messageSender.accept(
+    static void processCommand(@NotNull DiscordChatBridgePlugin plugin, @NotNull Sender sender) {
+        if (!sender.hasPermission(PERMISSION)) {
+            sender.sendMessage(
                     plugin.getFormatConfig()
                             .get(FormatSettings.COMMAND_NO_PERMISSION)
                             .replace(Placeholders.PERMISSION, PERMISSION)
             );
         }
 
-        messageSender.accept(plugin.getFormatConfig().get(FormatSettings.COMMAND_RELOAD_START));
+        sender.sendMessage(plugin.getFormatConfig().get(FormatSettings.COMMAND_RELOAD_START));
 
         plugin.disable();
 
         if (plugin.load() && plugin.enable()) {
-            messageSender.accept(plugin.getFormatConfig().get(FormatSettings.COMMAND_RELOAD_SUCCESS));
+            sender.sendMessage(plugin.getFormatConfig().get(FormatSettings.COMMAND_RELOAD_SUCCESS));
         } else {
-            messageSender.accept(plugin.getFormatConfig().get(FormatSettings.COMMAND_RELOAD_FAILURE));
+            sender.sendMessage(plugin.getFormatConfig().get(FormatSettings.COMMAND_RELOAD_FAILURE));
         }
     }
 }
