@@ -81,6 +81,12 @@ public class DiscordListener extends ListenerAdapter {
             return;
         }
 
+        var channelName = linkedChannels.get(event.getChannel().getIdLong());
+
+        if (channelName == null) {
+            return;
+        }
+
         var message = event.getMessage().getContentDisplay();
 
         if (message.startsWith("!link")) {
@@ -127,12 +133,6 @@ public class DiscordListener extends ListenerAdapter {
 
         if (message.startsWith("!playerlist")) {
             onPlayerListCommand(event.getChannel());
-            return;
-        }
-
-        var channelName = linkedChannels.get(event.getChannel().getIdLong());
-
-        if (channelName == null) {
             return;
         }
 
