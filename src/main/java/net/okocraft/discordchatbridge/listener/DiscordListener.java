@@ -20,12 +20,15 @@
 package net.okocraft.discordchatbridge.listener;
 
 import com.github.siroshun09.configapi.api.Configuration;
-import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.channel.unions.MessageChannelUnion;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
+import net.dv8tion.jda.api.exceptions.ErrorResponseException;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import net.dv8tion.jda.api.requests.ErrorResponse;
+import net.dv8tion.jda.api.requests.RestAction;
 import net.okocraft.discordchatbridge.DiscordChatBridgePlugin;
 import net.okocraft.discordchatbridge.chat.ChatSystem;
 import net.okocraft.discordchatbridge.config.FormatSettings;
@@ -43,9 +46,19 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class DiscordListener extends ListenerAdapter {
+
+    private static final Consumer<? super Throwable> IGNORE_UNKNOWN_MESSAGE_ERROR =
+            exception -> {
+                if (!(exception instanceof ErrorResponseException) ||
+                        ((ErrorResponseException) exception).getErrorResponse() != ErrorResponse.UNKNOWN_MESSAGE) {
+                    RestAction.getDefaultFailure().accept(exception);
+                }
+                // ignore UNKNOWN_MESSAGE error
+            };
 
     private final DiscordChatBridgePlugin plugin;
     private final Map<Long, String> linkedChannels = new HashMap<>();
@@ -95,9 +108,9 @@ public class DiscordListener extends ListenerAdapter {
                 event.getMessage().reply(plugin.getFormatConfig().get(commandResult.reasonMessageKey()))
                         .delay(Duration.ofSeconds(10))
                         .flatMap(m -> m.delete().flatMap(m1 -> event.getMessage().delete()))
-                        .queue();
+                        .queue(null, IGNORE_UNKNOWN_MESSAGE_ERROR);
             } else {
-                event.getMessage().delete().queue();
+                event.getMessage().delete().queue(null, IGNORE_UNKNOWN_MESSAGE_ERROR);
                 event.getChannel().sendMessage(plugin.getFormatConfig().get(FormatSettings.LINKED)
                         .replaceAll("%player_name%", member.getAsMention())).queue();
             }
@@ -113,7 +126,7 @@ public class DiscordListener extends ListenerAdapter {
                         .reply(plugin.getFormatConfig().get(result.reasonMessageKey()))
                         .delay(Duration.ofSeconds(10))
                         .flatMap(Message::delete)
-                        .queue();
+                        .queue(null, IGNORE_UNKNOWN_MESSAGE_ERROR);
                 return;
             }
         } else if (plugin.getGeneralConfig().get(GeneralSettings.NEEDS_VERIFICATION)) {
@@ -123,10 +136,10 @@ public class DiscordListener extends ListenerAdapter {
                         .reply(plugin.getFormatConfig().get(FormatSettings.PLEASE_VERIFY))
                         .delay(Duration.ofSeconds(LinkRequestContainer.EXPIRE_DIFF / 1000))
                         .flatMap(m -> m.delete().flatMap(m1 -> event.getMessage().delete()))
-                        .queue();
+                        .queue(null, IGNORE_UNKNOWN_MESSAGE_ERROR);
                 previousLinkRequestTime.put(member.getIdLong(), System.currentTimeMillis());
             } else {
-                event.getMessage().delete().queue();
+                event.getMessage().delete().queue(null, IGNORE_UNKNOWN_MESSAGE_ERROR);
             }
             return;
         }
