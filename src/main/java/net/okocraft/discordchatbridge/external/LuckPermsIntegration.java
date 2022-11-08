@@ -1,17 +1,33 @@
 package net.okocraft.discordchatbridge.external;
 
-import java.util.UUID;
 import net.luckperms.api.LuckPermsProvider;
-import net.luckperms.api.model.user.UserManager;
+import net.luckperms.api.util.Tristate;
+
+import java.util.UUID;
 
 public final class LuckPermsIntegration {
 
-    public static boolean hasPermission(UUID uuid, String node) {
+    private static final boolean LUCKPERMS_EXISTS;
+
+    static {
+        LUCKPERMS_EXISTS = checkLuckPerms();
+    }
+
+    private static boolean checkLuckPerms() {
         try {
-            final UserManager userManager = LuckPermsProvider.get().getUserManager();
-            return userManager.loadUser(uuid).join().getCachedData().getPermissionData().checkPermission(node).asBoolean();
-        } catch (NoClassDefFoundError e) {
+            Class.forName("net.luckperms.api.LuckPermsProvider");
+            return true;
+        } catch (ClassNotFoundException e) {
             return false;
+        }
+    }
+
+    public static boolean hasPermission(UUID uuid, String node, boolean def) {
+        if (LUCKPERMS_EXISTS) {
+            var result = LuckPermsProvider.get().getUserManager().loadUser(uuid).join().getCachedData().getPermissionData().checkPermission(node);
+            return result != Tristate.UNDEFINED ? result.asBoolean() : def;
+        } else {
+            return def;
         }
     }
 }
