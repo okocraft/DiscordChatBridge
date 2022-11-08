@@ -33,9 +33,11 @@ import java.util.Map;
 public abstract class LunaChatListener extends AbstractChatListener {
 
     private final Map<String, Long> linkedChannels = new HashMap<>();
+    private final DiscordChatBridgePlugin plugin;
 
     public LunaChatListener(@NotNull DiscordChatBridgePlugin plugin) {
         super(plugin);
+        this.plugin = plugin;
         var channelSection = plugin.getGeneralConfig().get(GeneralSettings.LINKED_CHANNELS);
 
         for (var key : channelSection.getKeyList()) {
@@ -48,6 +50,10 @@ public abstract class LunaChatListener extends AbstractChatListener {
 
     protected void processChat(@NotNull String channelName,
                                @NotNull ChannelMember member, @NotNull String message) {
+        if (member.getName().endsWith(plugin.getGeneralConfig().get(GeneralSettings.DISCORD_SOURCE_NAME))) {
+            return;
+        }
+
         var id = linkedChannels.get(channelName);
 
         if (id == null) {
