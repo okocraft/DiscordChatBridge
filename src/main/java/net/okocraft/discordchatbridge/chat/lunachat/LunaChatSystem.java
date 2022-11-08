@@ -122,7 +122,7 @@ public abstract class LunaChatSystem implements ChatSystem {
                 return Result.failureAndDeleteMessage(FormatSettings.NO_LUNACHAT_SPEAK_PERMISSION);
             }
         } else {
-            if (LuckPermsIntegration.hasPermission(user.getUniqueId(), permissionNode, true)) {
+            if (!LuckPermsIntegration.hasPermission(user.getUniqueId(), permissionNode, true)) {
                 return Result.failureAndDeleteMessage(FormatSettings.NO_LUNACHAT_SPEAK_PERMISSION);
             }
         }
