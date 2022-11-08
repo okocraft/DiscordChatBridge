@@ -107,7 +107,7 @@ public abstract class LunaChatSystem implements ChatSystem {
             return Result.failureAndDeleteMessage(FormatSettings.LUNACHAT_YOU_ARE_BANNED);
         }
 
-        if (!channel.isBroadcastChannel() && !channel.getMembers().contains(player)) {
+        if ((!channel.isForceJoinChannel() || !channel.isBroadcastChannel()) && !channel.getMembers().contains(player)) {
             return Result.failureAndDeleteMessage(FormatSettings.NOT_LUNACHAT_CHANNEL_MEMBER);
         }
 
