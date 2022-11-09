@@ -20,6 +20,7 @@
 package net.okocraft.discordchatbridge.listener;
 
 import com.github.siroshun09.configapi.api.Configuration;
+import com.github.siroshun09.configapi.api.value.ConfigValue;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.Role;
@@ -30,15 +31,16 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.requests.ErrorResponse;
 import net.dv8tion.jda.api.requests.RestAction;
 import net.okocraft.discordchatbridge.DiscordChatBridgePlugin;
-import net.okocraft.discordchatbridge.chat.ChatSystem;
 import net.okocraft.discordchatbridge.config.FormatSettings;
 import net.okocraft.discordchatbridge.config.GeneralSettings;
 import net.okocraft.discordchatbridge.constant.Constants;
 import net.okocraft.discordchatbridge.constant.Placeholders;
+import net.okocraft.discordchatbridge.database.LinkedUser;
 import net.okocraft.discordchatbridge.session.LinkRequestContainer;
 import net.okocraft.discordchatbridge.session.LinkRequestEntry;
 import net.okocraft.discordchatbridge.util.ColorStripper;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.awt.Color;
 import java.time.Duration;
@@ -103,17 +105,7 @@ public class DiscordListener extends ListenerAdapter {
         var message = event.getMessage().getContentDisplay();
 
         if (message.startsWith("!link")) {
-            ChatSystem.Result commandResult = onLinkCommand(member.getIdLong(), message);
-            if (commandResult != ChatSystem.Result.success()) {
-                event.getMessage().reply(plugin.getFormatConfig().get(commandResult.reasonMessageKey()))
-                        .delay(Duration.ofSeconds(10))
-                        .flatMap(m -> m.delete().flatMap(m1 -> event.getMessage().delete()))
-                        .queue(null, IGNORE_UNKNOWN_MESSAGE_ERROR);
-            } else {
-                event.getMessage().delete().queue(null, IGNORE_UNKNOWN_MESSAGE_ERROR);
-                event.getChannel().sendMessage(plugin.getFormatConfig().get(FormatSettings.LINKED)
-                        .replaceAll("%player_name%", member.getAsMention())).queue();
-            }
+            onLinkCommand(event.getChannel(), member, event.getMessage(), message);
             return;
         }
 
@@ -121,26 +113,13 @@ public class DiscordListener extends ListenerAdapter {
 
         if (linkedUser.isPresent()) {
             var result = plugin.getDiscordUserChecker().check(linkedUser.get());
+
             if (!result.allowed()) {
-                event.getMessage()
-                        .reply(plugin.getFormatConfig().get(result.reasonMessageKey()))
-                        .delay(Duration.ofSeconds(10))
-                        .flatMap(Message::delete)
-                        .queue(null, IGNORE_UNKNOWN_MESSAGE_ERROR);
+                replyAndScheduleDeletingMessage(event.getMessage(), result.reasonMessageKey(), Duration.ofSeconds(10));
                 return;
             }
         } else if (plugin.getGeneralConfig().get(GeneralSettings.NEEDS_VERIFICATION)) {
-            Long linkRequestTime = previousLinkRequestTime.get(member.getIdLong());
-            if (linkRequestTime == null || linkRequestTime + LinkRequestContainer.EXPIRE_DIFF < System.currentTimeMillis()) {
-                event.getMessage()
-                        .reply(plugin.getFormatConfig().get(FormatSettings.PLEASE_VERIFY))
-                        .delay(Duration.ofSeconds(LinkRequestContainer.EXPIRE_DIFF / 1000))
-                        .flatMap(m -> m.delete().flatMap(m1 -> event.getMessage().delete()))
-                        .queue(null, IGNORE_UNKNOWN_MESSAGE_ERROR);
-                previousLinkRequestTime.put(member.getIdLong(), System.currentTimeMillis());
-            } else {
-                event.getMessage().delete().queue(null, IGNORE_UNKNOWN_MESSAGE_ERROR);
-            }
+            sendNeedVerificationMessage(event.getMessage(), member);
             return;
         }
 
@@ -149,71 +128,49 @@ public class DiscordListener extends ListenerAdapter {
             return;
         }
 
-        var config = plugin.getGeneralConfig();
+        processChat(event.getMessage(), message, member, channelName, linkedUser.orElse(null));
+    }
 
-        int maxLength = config.get(GeneralSettings.CHAT_MAX_LENGTH);
+    private void replyAndScheduleDeletingMessage(@NotNull Message target, @NotNull ConfigValue<String> messageKey, @NotNull Duration duration) {
+        target.reply(plugin.getFormatConfig().get(messageKey))
+                .delay(duration)
+                .flatMap(m -> m.delete().flatMap(m1 -> target.delete()))
+                .queue(null, IGNORE_UNKNOWN_MESSAGE_ERROR);
+    }
 
-        if (0 < maxLength && maxLength < message.length()) {
-            plugin.getBot().addReaction(event.getMessage(), "U+26A0");
-            return;
-        }
+    private void sendNeedVerificationMessage(@NotNull Message message, @NotNull Member sender) {
+        Long linkRequestTime = previousLinkRequestTime.get(sender.getIdLong());
 
-        var lines = message.lines().collect(Collectors.toList());
-        var attachments = event.getMessage().getAttachments();
-
-        if (!attachments.isEmpty()) {
-            attachments.stream().map(Message.Attachment::getUrl).forEach(lines::add);
-        }
-
-        int maxLines = config.get(GeneralSettings.CHAT_MAX_LINES);
-
-        if (0 < maxLines && maxLines < lines.size()) {
-            plugin.getBot().addReaction(event.getMessage(), "U+26A0");
-            return;
-        }
-
-        var senderName = createSenderName(member);
-        var sourceName = config.get(GeneralSettings.DISCORD_SOURCE_NAME);
-
-        for (var line : lines) {
-            var result = plugin.getChatSystem().sendChat(channelName, senderName, sourceName, line, linkedUser.orElse(null));
-
-            if (result.succeed()) {
-                continue;
-            }
-
-            if (result.shouldDeleteMessage()) {
-                event.getMessage()
-                        .reply(plugin.getFormatConfig().get(result.reasonMessageKey()))
-                        .delay(Duration.ofSeconds(10))
-                        .flatMap(m -> m.delete().flatMap(m1 -> event.getMessage().delete()))
-                        .queue();
-            } else {
-                event.getMessage()
-                        .reply(plugin.getFormatConfig().get(result.reasonMessageKey()))
-                        .queue();
-            }
-
-            break;
+        if (linkRequestTime == null || linkRequestTime + LinkRequestContainer.EXPIRE_DIFF < System.currentTimeMillis()) {
+            previousLinkRequestTime.put(sender.getIdLong(), System.currentTimeMillis());
+            replyAndScheduleDeletingMessage(message, FormatSettings.PLEASE_VERIFY, Duration.ofSeconds(LinkRequestContainer.EXPIRE_DIFF / 1000));
+        } else {
+            message.delete().queue(null, IGNORE_UNKNOWN_MESSAGE_ERROR);
         }
     }
 
-    private ChatSystem.Result onLinkCommand(long discordUserId, String commandContext) {
-        String[] commandSplit = commandContext.split(" ", -1);
+    private void onLinkCommand(@NotNull MessageChannelUnion channel, @NotNull Member sender, @NotNull Message originalMessage, @NotNull String commandContext) {
+        String[] commandSplit = commandContext.split(" ", 3); // The argument after the third is not used.
 
         if (commandSplit.length < 2) {
-            return ChatSystem.Result.failureAndDeleteMessage(FormatSettings.SERVER_NOT_ENOUGH_ARGUMENTS);
+            replyAndScheduleDeletingMessage(originalMessage, FormatSettings.SERVER_NOT_ENOUGH_ARGUMENTS, Duration.ofSeconds(10));
+            return;
         }
 
         String passcode = commandSplit[1];
         LinkRequestEntry linkRequest = LinkRequestContainer.pop(passcode);
 
         if (linkRequest == null) {
-            return ChatSystem.Result.failureAndDeleteMessage(FormatSettings.INVALID_PASSCODE);
+            replyAndScheduleDeletingMessage(originalMessage, FormatSettings.INVALID_PASSCODE, Duration.ofSeconds(10));
+            return;
         }
 
-        plugin.getLinkManager().link(linkRequest.getMinecraftUuid(), linkRequest.getMinecraftName(), discordUserId);
-        return ChatSystem.Result.success();
+        plugin.getLinkManager().link(linkRequest.getMinecraftUuid(), linkRequest.getMinecraftName(), sender.getIdLong());
+
+        var linked = plugin.getFormatConfig().get(FormatSettings.LINKED).replace(Placeholders.PLAYER_NAME, sender.getAsMention());
+        channel.sendMessage(linked).queue();
+
+        originalMessage.delete().queue(null, IGNORE_UNKNOWN_MESSAGE_ERROR);
     }
 
     private void onPlayerListCommand(@NotNull MessageChannelUnion channel) {
@@ -247,6 +204,52 @@ public class DiscordListener extends ListenerAdapter {
         if (channel.canTalk()) {
             plugin.getBot().sendMessage(channel, builder.toString());
             lastPlayerListUsed.set(System.currentTimeMillis());
+        }
+    }
+
+    private void processChat(@NotNull Message originalMessage, @NotNull String message, @NotNull Member sender, @NotNull String channelName, @Nullable LinkedUser linkedUser) {
+        var config = plugin.getGeneralConfig();
+
+        int maxLength = config.get(GeneralSettings.CHAT_MAX_LENGTH);
+
+        if (0 < maxLength && maxLength < message.length()) {
+            plugin.getBot().addReaction(originalMessage, "U+26A0");
+            return;
+        }
+
+        var lines = message.lines().collect(Collectors.toList());
+        var attachments = originalMessage.getAttachments();
+
+        if (!attachments.isEmpty()) {
+            attachments.stream().map(Message.Attachment::getUrl).forEach(lines::add);
+        }
+
+        int maxLines = config.get(GeneralSettings.CHAT_MAX_LINES);
+
+        if (0 < maxLines && maxLines < lines.size()) {
+            plugin.getBot().addReaction(originalMessage, "U+26A0");
+            return;
+        }
+
+        var senderName = createSenderName(sender);
+        var sourceName = config.get(GeneralSettings.DISCORD_SOURCE_NAME);
+
+        for (var line : lines) {
+            var result = plugin.getChatSystem().sendChat(channelName, senderName, sourceName, line, linkedUser);
+
+            if (result.succeed()) {
+                continue;
+            }
+
+            var reply = originalMessage.reply(plugin.getFormatConfig().get(result.reasonMessageKey()));
+
+            if (result.shouldDeleteMessage()) {
+                replyAndScheduleDeletingMessage(originalMessage, result.reasonMessageKey(), Duration.ofSeconds(10));
+            } else {
+                reply.queue();
+            }
+
+            break;
         }
     }
 
