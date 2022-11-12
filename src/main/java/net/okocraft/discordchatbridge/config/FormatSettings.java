@@ -50,9 +50,6 @@ public final class FormatSettings {
     public static final ConfigValue<String> CHANNEL_NOT_FOUND =
             config -> config.getString("server.channel-not-found", "This channel is configured incorrectly. Please report to administrator.");
 
-    public static final ConfigValue<String> NOT_LUNACHAT_CHANNEL_MEMBER =
-            config -> config.getString("server.not-lunachat-channel-member", "You are not a channel member.");
-
     public static final ConfigValue<String> LUNACHAT_YOU_ARE_BANNED =
             config -> config.getString("server.you-are-banned-in-lunachat", "You are banned in this lunachat channel.");
 
