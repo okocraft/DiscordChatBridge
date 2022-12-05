@@ -6,32 +6,42 @@ public enum Query {
             "",
             "CREATE TABLE IF NOT EXISTS links(" +
                     "id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, " +
-                    "uuid TEXT NOT NULL UNIQUE, " +
-                    "name TEXT UNIQUE, " +
+                    "uuid TEXT NOT NULL, " +
+                    "name TEXT, " +
                     "discord_user_id BIGINT NOT NULL UNIQUE, " +
                     "created_at BIGINT NOT NULL, " +
-                    "updated_at BIGINT NOT NULL DEFAULT -1" +
+                    "updated_at BIGINT NOT NULL" +
                     ");"
+    ),
+
+    CREATE_UUID_INDEX(
+            "",
+            "CREATE INDEX IF NOT EXISTS idx_links_01 ON links(uuid)"
+    ),
+
+    CREATE_NAME_INDEX(
+            "",
+            "CREATE INDEX IF NOT EXISTS idx_links_02 ON links(name)"
     ),
 
     SELECT_ENTRY_BY_UUID(
             "",
-            "SELECT id, name, discord_user_id FROM links WHERE uuid = ?"
+            "SELECT name, discord_user_id FROM links WHERE uuid = ?"
     ),
 
     SELECT_ENTRY_BY_NAME(
             "",
-            "SELECT id, uuid, discord_user_id FROM links WHERE name = ?"
+            "SELECT uuid, discord_user_id FROM links WHERE name = ?"
     ),
 
     SELECT_ENTRY_BY_DISCORD_USER_ID(
             "",
-            "SELECT id, uuid, name FROM links WHERE discord_user_id = ?"
+            "SELECT uuid, name FROM links WHERE discord_user_id = ?"
     ),
 
     INSERT_ENTRY(
             "",
-            "INSERT INTO links(uuid, name, discord_user_id, created_at) VALUES(?, ?, ?, ?)"
+            "INSERT INTO links(uuid, name, discord_user_id, created_at, updated_at) VALUES(?, ?, ?, ?, ?)"
     ),
 
     DELETE_ENTRY_BY_DISCORD_USER_ID(
@@ -41,12 +51,7 @@ public enum Query {
 
     UPDATE_ENTRY_NAME(
             "",
-            "UPDATE links SET name = ? WHERE uuid = ?"
-    ),
-
-    UPDATE_DISCORD_USER_ID(
-            "",
-            "UPDATE links SET discord_user_id = ? WHERE uuid = ?"
+            "UPDATE links SET name = ?, updated_at = ? WHERE uuid = ?"
     );
 
     private final String mysqlQuery;
