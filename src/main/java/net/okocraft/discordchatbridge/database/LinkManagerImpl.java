@@ -54,7 +54,7 @@ public abstract class LinkManagerImpl implements LinkManager {
                 return isSame ? existingUuid.get() : null;
             } else {
                 // uuid conflict, discordUserId ok
-                if (updateLink(existingUuid.get(), discordUserId)) {
+                if (addDiscordUserId(existingUuid.get(), discordUserId)) {
                     if (!existingUuid.get().getName().equals(name)) {
                         updateLink(existingUuid.get(), name);
                     }
@@ -71,7 +71,11 @@ public abstract class LinkManagerImpl implements LinkManager {
                 // uuid ok, discordUserId ok
                 getLinkByName(name).ifPresent(linkedUser -> updateLink(linkedUser, null));
 
-                return insertLink(uuid, name, discordUserId);
+                LinkedUser created = insertLink(uuid, name, discordUserId);
+                linkCacheByUUID.put(uuid, created);
+                linkCacheByName.put(name, created);
+                linkCacheByDiscordUserId.put(discordUserId, created);
+                return created;
             }
         }
     }
@@ -95,13 +99,44 @@ public abstract class LinkManagerImpl implements LinkManager {
 
     protected abstract boolean updateName(LinkedUser user, @Nullable String name);
 
-    public boolean updateLink(LinkedUser user, long discordUserId) {
+    public boolean addDiscordUserId(LinkedUser user, long discordUserId) {
         Optional<LinkedUser> existing = getLinkByDiscordUserId(discordUserId);
-        return existing.map(linkedUser -> linkedUser.getUniqueId().equals(user.getUniqueId()))
-                .orElseGet(() -> updateDiscordUserId(user, discordUserId));
+        if (existing.isPresent()) {
+            return existing.get().getUniqueId().equals(user.getUniqueId());
+        }
+
+        if (execAddDiscordUserId(user, discordUserId)) {
+            linkCacheByDiscordUserId.put(discordUserId, user);
+            linkCacheByName.put(user.getName(), user);
+            linkCacheByUUID.put(user.getUniqueId(), user);
+            return true;
+        } else {
+            return false;
+        }
     }
 
-    protected abstract boolean updateDiscordUserId(LinkedUser user, long discordUserId);
+    protected abstract boolean execAddDiscordUserId(LinkedUser user, long discordUserId);
 
+    @Override
+    public boolean removeDiscordUserId(LinkedUser user, long discordUserId) {
+        Optional<LinkedUser> existing = getLinkByDiscordUserId(discordUserId);
+        if (existing.isEmpty()) {
+            return true;
+        }
+        if (!existing.get().getUniqueId().equals(user.getUniqueId())) {
+            return false;
+        }
+        if (execRemoveDiscordUserId(user, discordUserId)) {
+            if (existing.get().getDiscordUserIds().isEmpty()) {
+                linkCacheByDiscordUserId.remove(discordUserId);
+                linkCacheByName.remove(user.getName());
+                linkCacheByUUID.remove(user.getUniqueId());
+            }
+            return true;
+        } else {
+            return false;
+        }
+    }
 
+    protected abstract boolean execRemoveDiscordUserId(LinkedUser user, long discordUserId);
 }

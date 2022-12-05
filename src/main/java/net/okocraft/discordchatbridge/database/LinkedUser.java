@@ -1,23 +1,21 @@
 package net.okocraft.discordchatbridge.database;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
+import org.jetbrains.annotations.UnmodifiableView;
 
 public class LinkedUser {
 
-    private final int internalId;
     private final UUID uuid;
     private String name;
-    private long discordUserId;
+    private final List<Long> discordUserIds;
 
-    LinkedUser(int internalId, UUID uuid, String name, long discordUserId) {
-        this.internalId = internalId;
+    LinkedUser(UUID uuid, String name, List<Long> discordUserIds) {
         this.uuid = uuid;
         this.name = name;
-        this.discordUserId = discordUserId;
-    }
-
-    int getInternalId() {
-        return internalId;
+        this.discordUserIds = new ArrayList<>(discordUserIds);
     }
 
     public UUID getUniqueId() {
@@ -28,15 +26,20 @@ public class LinkedUser {
         return name;
     }
 
-    public long getDiscordUserId() {
-        return discordUserId;
+    @UnmodifiableView
+    public List<Long> getDiscordUserIds() {
+        return Collections.unmodifiableList(discordUserIds);
     }
 
     void setName(String name) {
         this.name = name;
     }
 
-    void setDiscordUserId(long discordUserId) {
-        this.discordUserId = discordUserId;
+    void addDiscordUserId(long newDiscordUserId) {
+        discordUserIds.add(newDiscordUserId);
+    }
+
+    boolean removeDiscordUserId(long discordUserId) {
+        return discordUserIds.remove(discordUserId);
     }
 }
