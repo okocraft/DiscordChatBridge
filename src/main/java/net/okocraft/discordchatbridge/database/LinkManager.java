@@ -12,7 +12,8 @@ public interface LinkManager {
     Optional<LinkedUser> getLinkByDiscordUserId(long discordUserId);
     LinkedUser link(UUID uuid, String name, long discordUserId);
     boolean updateLink(LinkedUser user, @Nullable String name);
-    boolean updateLink(LinkedUser user, long discordUserId);
+    boolean addDiscordUserId(LinkedUser user, long discordUserId);
+    boolean removeDiscordUserId(LinkedUser user, long discordUserId);
     default void shutdown() {}
 
 }

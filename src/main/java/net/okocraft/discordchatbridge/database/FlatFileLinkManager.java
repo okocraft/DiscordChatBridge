@@ -4,6 +4,7 @@ import com.github.siroshun09.configapi.api.Configuration;
 import com.github.siroshun09.configapi.yaml.YamlConfiguration;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import net.okocraft.discordchatbridge.DiscordChatBridgePlugin;
@@ -33,14 +34,14 @@ public class FlatFileLinkManager extends LinkManagerImpl {
                 Configuration data = configuration.getOrCreateSection(key);
                 UUID uuid = UUID.fromString(key);
                 String name = data.getString("name");
-                long discordUserId = data.getLong("discord-user-id", -1);
-                if (discordUserId == -1) {
+                List<Long> discordUserIds = data.getLongList("discord-user-id");
+                if (discordUserIds.isEmpty()) {
                     continue;
                 }
-                LinkedUser user = new LinkedUser(-1, uuid, name, discordUserId);
+                LinkedUser user = new LinkedUser(uuid, name, discordUserIds);
                 linkCacheByUUID.put(UUID.fromString(key), user);
                 linkCacheByName.put(name, user);
-                linkCacheByDiscordUserId.put(discordUserId, user);
+                discordUserIds.forEach(id -> linkCacheByDiscordUserId.put(id, user));
             } catch (IllegalArgumentException ignored) {
             }
 
@@ -52,7 +53,7 @@ public class FlatFileLinkManager extends LinkManagerImpl {
         configuration.clear();
         linkCacheByUUID.forEach((uuid, user) -> {
             configuration.set(uuid + ".name", user.getName());
-            configuration.set(uuid + ".discord-user-id", user.getDiscordUserId());
+            configuration.set(uuid + ".discord-user-id", user.getDiscordUserIds());
         });
 
         try {
@@ -79,20 +80,24 @@ public class FlatFileLinkManager extends LinkManagerImpl {
 
     @Override
     protected LinkedUser insertLink(UUID uuid, String name, long discordUserId) {
-        LinkedUser user = new LinkedUser(-1, uuid, name, discordUserId);
-        linkCacheByUUID.put(uuid, user);
-        linkCacheByName.put(name, user);
-        linkCacheByDiscordUserId.put(discordUserId, user);
-        return user;
+        return new LinkedUser(uuid, name, List.of(discordUserId));
     }
 
     @Override
     protected boolean updateName(LinkedUser user, @Nullable String name) {
+        user.setName(name);
         return true;
     }
 
     @Override
-    protected boolean updateDiscordUserId(LinkedUser user, long discordUserId) {
+    protected boolean execAddDiscordUserId(LinkedUser user, long discordUserId) {
+        user.addDiscordUserId(discordUserId);
+        return true;
+    }
+
+    @Override
+    protected boolean execRemoveDiscordUserId(LinkedUser user, long discordUserId) {
+        user.removeDiscordUserId(discordUserId);
         return true;
     }
 

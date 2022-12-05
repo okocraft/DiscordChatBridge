@@ -7,6 +7,8 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import net.okocraft.discordchatbridge.DiscordChatBridgePlugin;
@@ -23,6 +25,8 @@ public class DatabaseLinkManager extends LinkManagerImpl {
         this.databaseType = type;
     }
 
+    @FunctionalInterface private interface SQLConsumer<T> { void accept(T obj) throws SQLException; }
+
     public void init() throws Exception {
         Path dbFilePath = plugin.getDataDirectory().resolve("data.db");
             if (Files.notExists(dbFilePath)) {
@@ -30,9 +34,15 @@ public class DatabaseLinkManager extends LinkManagerImpl {
                 Files.createFile(dbFilePath);
             }
         this.connection = createSQLiteConnection(dbFilePath);
-        try (PreparedStatement statement = connection.prepareStatement(Query.CREATE_TABLE.getQuery(databaseType))) {
-            statement.executeUpdate();
-        }
+        SQLConsumer<Query> execution = query -> {
+            try (PreparedStatement statement = connection.prepareStatement(query.getQuery(databaseType))) {
+                statement.executeUpdate();
+            }
+        };
+
+        execution.accept(Query.CREATE_TABLE);
+        execution.accept(Query.CREATE_UUID_INDEX);
+        execution.accept(Query.CREATE_NAME_INDEX);
     }
 
     private Connection createSQLiteConnection(Path path) throws SQLException, ClassNotFoundException {
@@ -56,12 +66,11 @@ public class DatabaseLinkManager extends LinkManagerImpl {
                 Query.SELECT_ENTRY_BY_UUID.getQuery(databaseType))) {
             statement.setString(1, uuid.toString());
             ResultSet rs = statement.executeQuery();
-            if (rs.next()) {
-                int internalId = rs.getInt("id");
-                String name = rs.getString("name");
-                int discordUserId = rs.getInt("discord_user_id");
-                return Optional.of(new LinkedUser(internalId, uuid, name, discordUserId));
+            List<Long> discordUserIds = new ArrayList<>();
+            while (rs.next()) {
+                discordUserIds.add(rs.getLong("discord_user_id"));
             }
+            return Optional.of(new LinkedUser(uuid, rs.getString("name"), discordUserIds));
 
         } catch (SQLException e) {
             e.printStackTrace();
@@ -74,16 +83,16 @@ public class DatabaseLinkManager extends LinkManagerImpl {
                 Query.SELECT_ENTRY_BY_NAME.getQuery(databaseType))) {
             statement.setString(1, name);
             ResultSet rs = statement.executeQuery();
-            if (rs.next()) {
-                try {
-                    UUID uuid = UUID.fromString(rs.getString("uuid"));
-                    int internalId = rs.getInt("id");
-                    int discordUserId = rs.getInt("discord_user_id");
-                    return Optional.of(new LinkedUser(internalId, uuid, name, discordUserId));
-                } catch (IllegalArgumentException e) {
-                    e.printStackTrace();
-                    return Optional.empty();
-                }
+            List<Long> discordUserIds = new ArrayList<>();
+            while (rs.next()) {
+                discordUserIds.add(rs.getLong("discord_user_id"));
+            }
+            try {
+                UUID uuid = UUID.fromString(rs.getString("uuid"));
+                return Optional.of(new LinkedUser(uuid, name, discordUserIds));
+            } catch (IllegalArgumentException e) {
+                e.printStackTrace();
+                return Optional.empty();
             }
 
         } catch (SQLException e) {
@@ -100,9 +109,8 @@ public class DatabaseLinkManager extends LinkManagerImpl {
             if (rs.next()) {
                 try {
                     UUID uuid = UUID.fromString(rs.getString("uuid"));
-                    int internalId = rs.getInt("id");
                     String name = rs.getString("name");
-                    return Optional.of(new LinkedUser(internalId, uuid, name, discordUserId));
+                    return Optional.of(new LinkedUser(uuid, name, List.of(discordUserId)));
                 } catch (IllegalArgumentException e) {
                     e.printStackTrace();
                     return Optional.empty();
@@ -123,6 +131,7 @@ public class DatabaseLinkManager extends LinkManagerImpl {
             statement.setString(2, name);
             statement.setLong(3, discordUserId);
             statement.setLong(4, System.currentTimeMillis());
+            statement.setLong(5, System.currentTimeMillis());
             statement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -137,8 +146,8 @@ public class DatabaseLinkManager extends LinkManagerImpl {
         try (PreparedStatement statement = connection.prepareStatement(
                 Query.UPDATE_ENTRY_NAME.getQuery(databaseType))) {
             statement.setString(1, name);
-            statement.setString(2, user.getUniqueId().toString());
-            statement.setLong(3, System.currentTimeMillis());
+            statement.setLong(2, System.currentTimeMillis());
+            statement.setString(3, user.getUniqueId().toString());
             statement.executeUpdate();
             user.setName(name);
             return true;
@@ -149,21 +158,28 @@ public class DatabaseLinkManager extends LinkManagerImpl {
     }
 
     @Override
-    protected boolean updateDiscordUserId(LinkedUser user, long discordUserId) {
+    protected boolean execAddDiscordUserId(LinkedUser user, long discordUserId) {
+        if (!user.getDiscordUserIds().contains(discordUserId)) {
+            insertLink(user.getUniqueId(), user.getName(), discordUserId);
+            user.addDiscordUserId(discordUserId);
+            return true;
+        } else {
+            return false;
+        }
+    }
 
+    @Override
+    protected boolean execRemoveDiscordUserId(LinkedUser user, long discordUserId) {
         try (PreparedStatement statement = connection.prepareStatement(
-                Query.UPDATE_DISCORD_USER_ID.getQuery(databaseType))) {
+                Query.DELETE_ENTRY_BY_DISCORD_USER_ID.getQuery(databaseType))) {
             statement.setLong(1, discordUserId);
-            statement.setString(2, user.getUniqueId().toString());
-            statement.setLong(3, System.currentTimeMillis());
             statement.executeUpdate();
-            user.setDiscordUserId(discordUserId);
+            user.removeDiscordUserId(discordUserId);
             return true;
         } catch (SQLException e) {
             e.printStackTrace();
             return false;
         }
     }
-
 
 }
