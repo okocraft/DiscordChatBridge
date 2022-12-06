@@ -7,6 +7,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -25,24 +26,33 @@ public class DatabaseLinkManager extends LinkManagerImpl {
         this.databaseType = type;
     }
 
-    @FunctionalInterface private interface SQLConsumer<T> { void accept(T obj) throws SQLException; }
-
     public void init() throws Exception {
         Path dbFilePath = plugin.getDataDirectory().resolve("data.db");
-            if (Files.notExists(dbFilePath)) {
-                Files.createDirectories(dbFilePath.getParent());
-                Files.createFile(dbFilePath);
-            }
-        this.connection = createSQLiteConnection(dbFilePath);
-        SQLConsumer<Query> execution = query -> {
-            try (PreparedStatement statement = connection.prepareStatement(query.getQuery(databaseType))) {
-                statement.executeUpdate();
-            }
-        };
+        if (Files.notExists(dbFilePath)) {
+            Files.createDirectories(dbFilePath.getParent());
+            Files.createFile(dbFilePath);
+        }
 
-        execution.accept(Query.CREATE_TABLE);
-        execution.accept(Query.CREATE_UUID_INDEX);
-        execution.accept(Query.CREATE_NAME_INDEX);
+        this.connection = createSQLiteConnection(dbFilePath);
+
+        boolean autoCommit = connection.getAutoCommit();
+        if (autoCommit) {
+            connection.setAutoCommit(false);
+        }
+
+        try (Statement statement = connection.createStatement()) {
+            statement.addBatch(Query.CREATE_TABLE.getQuery(databaseType));
+            statement.addBatch(Query.CREATE_UUID_INDEX.getQuery(databaseType));
+            statement.addBatch(Query.CREATE_NAME_INDEX.getQuery(databaseType));
+            statement.executeBatch();
+            connection.commit();
+        } catch (SQLException e) {
+            connection.rollback();
+        }
+
+        if (autoCommit) {
+            connection.setAutoCommit(true);
+        }
     }
 
     private Connection createSQLiteConnection(Path path) throws SQLException, ClassNotFoundException {
