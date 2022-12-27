@@ -1,5 +1,5 @@
 ![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/okocraft/DiscordChatBridge)
-![GitHub Workflow Status](https://img.shields.io/github/workflow/status/okocraft/DiscordChatBridge/Java%20CI)
+![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/okocraft/DiscordChatBridge/maven.yml?branch=master)
 ![GitHub](https://img.shields.io/github/license/okocraft/DiscordChatBridge)
 
 # DiscordChatBridge
