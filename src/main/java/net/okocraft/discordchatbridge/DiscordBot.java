@@ -116,7 +116,7 @@ public class DiscordBot {
     }
 
     public void sendMessage(long id, @NotNull MessageCreateData message) {
-        var channel = jda.getTextChannelById(id);
+        var channel = jda.getChannelById(MessageChannel.class, id);
 
         if (channel != null) {
             this.sendMessage(channel, message);
