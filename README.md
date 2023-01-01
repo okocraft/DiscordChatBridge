@@ -24,4 +24,4 @@ LunaChat と Discord をチャット連携するプラグイン。
 
 This project is under the GPL-3.0 license. Please see [LICENSE](LICENSE) for more info.
 
-Copyright © 2020-2022, Okocraft
+Copyright © 2020-2023, Okocraft
