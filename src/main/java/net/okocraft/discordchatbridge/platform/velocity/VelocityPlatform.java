@@ -52,6 +52,10 @@ class VelocityPlatform implements PlatformInfo {
         var list = new ArrayList<String>();
 
         for (var server : server.getAllServers()) {
+            if (server.getPlayersConnected().isEmpty()) {
+                continue;
+            }
+
             var players =
                     server.getPlayersConnected()
                             .stream()

@@ -50,6 +50,10 @@ class BungeePlatform implements PlatformInfo {
         var list = new ArrayList<String>();
 
         for (var server : ProxyServer.getInstance().getServers().values()) {
+            if (server.getPlayers().isEmpty()) {
+                continue;
+            }
+
             var players =
                     server.getPlayers()
                             .stream()
