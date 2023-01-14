@@ -42,6 +42,9 @@ public abstract class ServerListener {
     }
 
     protected void processJoin(@NotNull UUID uuid, @NotNull String name, @NotNull String displayName) {
+        joinedPlayers.add(uuid);
+        plugin.getBot().updateGame();
+
         // The reason for not checking the config setting here is that if it is disabled, the user will not be added to the FirstJoinPlayerHolder.
         if (FirstJoinPlayerHolder.remove(uuid)) {
             var format = plugin.getFormatConfig().get(FormatSettings.SERVER_FIRST_JOIN);
@@ -51,9 +54,6 @@ public abstract class ServerListener {
                 return;
             }
         }
-
-        joinedPlayers.add(uuid);
-        plugin.getBot().updateGame();
 
         if (plugin.getGeneralConfig().get(GeneralSettings.SEND_JOIN_MESSAGE)) {
             var format = plugin.getFormatConfig().get(FormatSettings.SERVER_JOIN);
