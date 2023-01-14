@@ -22,6 +22,7 @@ package net.okocraft.discordchatbridge;
 import com.github.siroshun09.configapi.api.util.ResourceUtils;
 import com.github.siroshun09.configapi.yaml.YamlConfiguration;
 import net.okocraft.discordchatbridge.chat.ChatSystem;
+import net.okocraft.discordchatbridge.config.GeneralSettings;
 import net.okocraft.discordchatbridge.logger.LoggerWrapper;
 import net.okocraft.discordchatbridge.platform.PlatformInfo;
 import org.jetbrains.annotations.NotNull;
@@ -87,7 +88,10 @@ public interface DiscordChatBridgePlugin {
 
         registerCommands();
         registerListeners();
-        registerLuckPermsFirstJoinListener();
+
+        if (getGeneralConfig().get(GeneralSettings.SEND_FIRST_JOIN_MESSAGE)) {
+            registerLuckPermsFirstJoinListener();
+        }
 
         return true;
     }

@@ -87,6 +87,15 @@ public final class GeneralSettings {
 
     public static final ConfigValue<String> ALLOW_COLORS_IN_NAME = config -> config.getString("allow-colors-in-name", Boolean.TRUE.toString());
 
+    public static final ConfigValue<Boolean> SEND_JOIN_MESSAGE = c -> c.getBoolean("message-sending-setting.join", true);
+
+    public static final ConfigValue<Boolean> SEND_LEAVE_MESSAGE = c -> c.getBoolean("message-sending-setting.leave", true);
+
+    public static final ConfigValue<Boolean> SEND_SWITCH_MESSAGE = c -> c.getBoolean("message-sending-setting.switch", true);
+
+    public static final ConfigValue<Boolean> SEND_FIRST_JOIN_MESSAGE = c -> c.getBoolean("message-sending-setting.first-join", true);
+
+
     private GeneralSettings() {
         throw new UnsupportedOperationException();
     }

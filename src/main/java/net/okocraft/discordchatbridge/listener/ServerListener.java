@@ -42,6 +42,7 @@ public abstract class ServerListener {
     }
 
     protected void processJoin(@NotNull UUID uuid, @NotNull String name, @NotNull String displayName) {
+        // The reason for not checking the config setting here is that if it is disabled, the user will not be added to the FirstJoinPlayerHolder.
         if (FirstJoinPlayerHolder.remove(uuid)) {
             var format = plugin.getFormatConfig().get(FormatSettings.SERVER_FIRST_JOIN);
 
@@ -51,32 +52,39 @@ public abstract class ServerListener {
             }
         }
 
-        var format = plugin.getFormatConfig().get(FormatSettings.SERVER_JOIN);
-
-        if (!format.isEmpty()) {
-            sendMessage(replacePlayer(format, name, displayName));
-        }
-
         joinedPlayers.add(uuid);
         plugin.getBot().updateGame();
+
+        if (plugin.getGeneralConfig().get(GeneralSettings.SEND_JOIN_MESSAGE)) {
+            var format = plugin.getFormatConfig().get(FormatSettings.SERVER_JOIN);
+
+            if (!format.isEmpty()) {
+                sendMessage(replacePlayer(format, name, displayName));
+            }
+        }
     }
 
     protected void processDisconnection(@NotNull UUID uuid, @NotNull String name, @NotNull String displayName) {
-        if (!joinedPlayers.contains(uuid)) {
+        if (!joinedPlayers.remove(uuid)) {
             return;
         }
 
-        var format = plugin.getFormatConfig().get(FormatSettings.SERVER_LEAVE);
-
-        if (!format.isEmpty()) {
-            sendMessage(replacePlayer(format, name, displayName));
-        }
-
-        joinedPlayers.remove(uuid);
         plugin.getBot().updateGame();
+
+        if (plugin.getGeneralConfig().get(GeneralSettings.SEND_LEAVE_MESSAGE)) {
+            var format = plugin.getFormatConfig().get(FormatSettings.SERVER_LEAVE);
+
+            if (!format.isEmpty()) {
+                sendMessage(replacePlayer(format, name, displayName));
+            }
+        }
     }
 
     protected void processServerSwitch(@NotNull String name, @NotNull String displayName, @NotNull String serverName) {
+        if (!plugin.getGeneralConfig().get(GeneralSettings.SEND_SWITCH_MESSAGE)) {
+            return;
+        }
+
         var format = plugin.getFormatConfig().get(FormatSettings.SERVER_SWITCH);
 
         if (!format.isEmpty()) {
