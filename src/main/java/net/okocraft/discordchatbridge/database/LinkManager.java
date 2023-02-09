@@ -14,6 +14,7 @@ public interface LinkManager {
     boolean updateLink(LinkedUser user, @Nullable String name);
     boolean addDiscordUserId(LinkedUser user, long discordUserId);
     boolean removeDiscordUserId(LinkedUser user, long discordUserId);
+    default void flush() {}
     default void shutdown() {}
 
 }

@@ -31,7 +31,7 @@ public class FlatFileLinkManager extends LinkManagerImpl {
     }
 
     @Override
-    public void shutdown() {
+    public void flush() {
         try (var yaml = configuration.copy()) {
             exportLinkedUsers(yaml);
             yaml.save();
