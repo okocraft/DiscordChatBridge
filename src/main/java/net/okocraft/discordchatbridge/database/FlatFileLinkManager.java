@@ -27,7 +27,17 @@ public class FlatFileLinkManager extends LinkManagerImpl {
 
     @Override
     public void shutdown() {
-        save();
+        flush();
+    }
+
+    @Override
+    public void flush() {
+        try (var yaml = configuration.copy()) {
+            exportLinkedUsers(yaml);
+            yaml.save();
+        } catch (IOException e) {
+            plugin.getWrappedLogger().error("Could not save to data.yml", e);
+        }
     }
 
     @Override
@@ -74,15 +84,6 @@ public class FlatFileLinkManager extends LinkManagerImpl {
             restoreLinkedUsers(yaml);
         } catch (IOException e) {
             plugin.getWrappedLogger().error("Could not load data.yml", e);
-        }
-    }
-
-    private void save() {
-        try (var yaml = configuration.copy()) {
-            exportLinkedUsers(yaml);
-            yaml.save();
-        } catch (IOException e) {
-            plugin.getWrappedLogger().error("Could not save to data.yml", e);
         }
     }
 
