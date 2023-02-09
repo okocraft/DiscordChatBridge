@@ -2,14 +2,14 @@ package net.okocraft.discordchatbridge.database;
 
 import com.github.siroshun09.configapi.api.Configuration;
 import com.github.siroshun09.configapi.yaml.YamlConfiguration;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
 import net.okocraft.discordchatbridge.DiscordChatBridgePlugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 public class FlatFileLinkManager extends LinkManagerImpl {
 
@@ -21,45 +21,22 @@ public class FlatFileLinkManager extends LinkManagerImpl {
     }
 
     @Override
-    public void init() throws Exception {
-        if (Files.notExists(plugin.getDataDirectory())) {
-            Files.createDirectories(plugin.getDataDirectory());
-            Files.createFile(configuration.getPath());
-        }
-
-        configuration.load();
-
-        for (String key : configuration.getKeyList()) {
-            try {
-                Configuration data = configuration.getOrCreateSection(key);
-                UUID uuid = UUID.fromString(key);
-                String name = data.getString("name");
-                List<Long> discordUserIds = data.getLongList("discord-user-id");
-                if (discordUserIds.isEmpty()) {
-                    continue;
-                }
-                LinkedUser user = new LinkedUser(uuid, name, discordUserIds);
-                linkCacheByUUID.put(UUID.fromString(key), user);
-                linkCacheByName.put(name, user);
-                discordUserIds.forEach(id -> linkCacheByDiscordUserId.put(id, user));
-            } catch (IllegalArgumentException ignored) {
-            }
-
+    public void init() {
+        try (var yaml = configuration.copy()) {
+            yaml.load();
+            restoreLinkedUsers(yaml);
+        } catch (IOException e) {
+            plugin.getWrappedLogger().error("Could not load data.yml", e);
         }
     }
 
     @Override
     public void shutdown() {
-        configuration.clear();
-        linkCacheByUUID.forEach((uuid, user) -> {
-            configuration.set(uuid + ".name", user.getName());
-            configuration.set(uuid + ".discord-user-id", user.getDiscordUserIds());
-        });
-
-        try {
-            configuration.save();
+        try (var yaml = configuration.copy()) {
+            exportLinkedUsers(yaml);
+            yaml.save();
         } catch (IOException e) {
-            plugin.getWrappedLogger().error(e.getMessage(), e);
+            plugin.getWrappedLogger().error("Could not save to data.yml", e);
         }
     }
 
@@ -101,4 +78,38 @@ public class FlatFileLinkManager extends LinkManagerImpl {
         return true;
     }
 
+    private void restoreLinkedUsers(@NotNull Configuration source) {
+        for (String key : source.getKeyList()) {
+            UUID uuid;
+
+            try {
+                uuid = UUID.fromString(key);
+            } catch (IllegalArgumentException e) {
+                plugin.getWrappedLogger().warning("Invalid UUID in data.yml: " + key);
+                continue;
+            }
+
+            List<Long> discordUserIds = source.getLongList(key + ".discord-user-id");
+
+            if (discordUserIds.isEmpty()) {
+                continue;
+            }
+
+            String name = source.getString(key + ".name");
+
+            LinkedUser user = new LinkedUser(uuid, name, discordUserIds);
+
+            linkCacheByUUID.put(UUID.fromString(key), user);
+            linkCacheByName.put(name, user);
+
+            discordUserIds.forEach(id -> linkCacheByDiscordUserId.put(id, user));
+        }
+    }
+
+    private void exportLinkedUsers(@NotNull Configuration target) throws IOException {
+        linkCacheByUUID.forEach((uuid, user) -> {
+            target.set(uuid + ".name", user.getName());
+            target.set(uuid + ".discord-user-id", user.getDiscordUserIds());
+        });
+    }
 }
