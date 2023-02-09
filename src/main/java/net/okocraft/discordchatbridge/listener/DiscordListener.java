@@ -166,6 +166,7 @@ public class DiscordListener extends ListenerAdapter {
         }
 
         plugin.getLinkManager().link(linkRequest.getMinecraftUuid(), linkRequest.getMinecraftName(), sender.getIdLong());
+        plugin.getLinkManager().flush();
 
         var linked = plugin.getFormatConfig().get(FormatSettings.LINKED).replace(Placeholders.PLAYER_NAME, sender.getAsMention());
         channel.sendMessage(linked).queue();
