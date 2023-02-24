@@ -12,7 +12,7 @@ chat-max-length: 150 # 0 = unlimited
 chat-max-lines: 0 # 0 = unlimited
 chat-max-attachments: 0 # 0 = unlimited
 
-discord-souce-name: "Dis"
+discord-source-name: "Dis"
 
 system-channel: 0
 
