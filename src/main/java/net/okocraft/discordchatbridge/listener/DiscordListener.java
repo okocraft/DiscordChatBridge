@@ -99,7 +99,11 @@ public class DiscordListener extends ListenerAdapter {
         var lines = message.lines().collect(Collectors.toList());
         int maxLines = config.get(GeneralSettings.CHAT_MAX_LINES);
 
-        if (0 < maxLines && maxLines < lines.size()) {
+        var attachments = event.getMessage().getAttachments();
+        int maxAttachments = config.get(GeneralSettings.CHAT_MAX_ATTACHMENTS);
+
+        if ((0 < maxLines && maxLines < lines.size()) ||
+                (0 < maxAttachments && maxAttachments < attachments.size())) {
             plugin.getBot().addReaction(event.getMessage(), "U+26A0");
             return;
         }
@@ -113,12 +117,8 @@ public class DiscordListener extends ListenerAdapter {
             }
         }
 
-        var attachments = event.getMessage().getAttachments();
-
-        if (!attachments.isEmpty()) {
-            for (var attachment : attachments) {
-                plugin.getChatSystem().sendChat(channelName, senderName, sourceName, attachment.getUrl());
-            }
+        for (var attachment : attachments) {
+            plugin.getChatSystem().sendChat(channelName, senderName, sourceName, attachment.getUrl());
         }
     }
 

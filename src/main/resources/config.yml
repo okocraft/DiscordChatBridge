@@ -10,6 +10,7 @@ server-name: "server"
 
 chat-max-length: 150 # 0 = unlimited
 chat-max-lines: 0 # 0 = unlimited
+chat-max-attachments: 0 # 0 = unlimited
 
 discord-souce-name: "Dis"
 
