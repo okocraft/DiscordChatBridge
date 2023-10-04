@@ -27,6 +27,7 @@ public final class ColorStripper {
 
     private static final String EMPTY = "";
     private static final Pattern COLOR_SECTION_PATTERN = Pattern.compile("(?i)[&§][0-9A-FK-ORX]");
+    private static final int SECTION_CODE_POINT = 167; // §
 
     public static @NotNull String strip(String str) {
         if (str == null || str.isEmpty()) {
@@ -34,6 +35,17 @@ public final class ColorStripper {
         }
 
         return COLOR_SECTION_PATTERN.matcher(str).replaceAll(EMPTY);
+    }
+
+    public static boolean isLegacyColorCode(int codePoint) {
+        return ('0' <= codePoint && codePoint <= '9') ||
+                ('a' <= codePoint && codePoint <= 'f') ||
+                ('k' <= codePoint && codePoint <= 'o') ||
+                codePoint == 'r';
+    }
+
+    public static boolean isAmpersandOrSection(int codePoint) {
+        return codePoint == '&' || codePoint == SECTION_CODE_POINT;
     }
 
     private ColorStripper() {
