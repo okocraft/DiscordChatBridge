@@ -25,6 +25,8 @@ role-prefix:
 
 allow-colors-in-name: true # specifying the role name to limit using colors to only people who have that role.
 
+nickname-length-limit: 16 # Maximum length of the nickname; characters longer or equal to 2 bytes count as 2 characters.
+
 message-sending-setting:
   join: true
   leave: true
