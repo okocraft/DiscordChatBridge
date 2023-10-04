@@ -38,7 +38,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.stream.Collectors;
 
 public class DiscordListener extends ListenerAdapter {
 
@@ -103,7 +102,7 @@ public class DiscordListener extends ListenerAdapter {
         int maxAttachments = config.get(GeneralSettings.CHAT_MAX_ATTACHMENTS);
 
         if ((0 < maxLines && maxLines < lines.size()) ||
-                (0 < maxAttachments && maxAttachments < attachments.size())) {
+            (0 < maxAttachments && maxAttachments < attachments.size())) {
             this.plugin.getBot().addReaction(event.getMessage(), "U+26A0");
             return;
         }
@@ -168,9 +167,9 @@ public class DiscordListener extends ListenerAdapter {
         String senderName;
 
         if (allowColorsInName) {
-            senderName = originalName;
+            senderName = checkNameLength(originalName);
         } else {
-            senderName = ColorStripper.strip(originalName);
+            senderName = checkNameLength(ColorStripper.strip(originalName));
         }
 
         return rolePrefix + senderName;
@@ -204,5 +203,67 @@ public class DiscordListener extends ListenerAdapter {
 
     private boolean hasRole(@NotNull Member member, @NotNull String roleName) {
         return member.getRoles().stream().anyMatch(role -> role.getName().equals(roleName));
+    }
+
+    private @NotNull String checkNameLength(@NotNull String name) {
+        int limit = plugin.getGeneralConfig().get(GeneralSettings.NICKNAME_LENGTH_LIMIT);
+        int[] codePoints = name.codePoints().toArray();
+
+        if (codePoints.length <= (limit >> 1)) {
+            return name;
+        }
+
+        boolean color = false;
+        int length = 0;
+        var builder = new StringBuilder(name.length());
+
+        for (int i = 0; i < codePoints.length && length < limit; i++) {
+            int codePoint = codePoints[i];
+
+            if (color) {
+                color = false;
+
+                if (ColorStripper.isLegacyColorCode(codePoint)) {
+                    builder.appendCodePoint(codePoints[i - 1]);
+                    builder.appendCodePoint(codePoint);
+                } else {
+                    builder.appendCodePoint(codePoints[i - 1]);
+
+                    if (limit <= ++length) {
+                        break;
+                    }
+
+                    if (is1ByteChar(codePoint)) {
+                        builder.appendCodePoint(codePoint);
+                        length++;
+                    } else {
+                        length += 2;
+
+                        if (length <= limit) {
+                            builder.appendCodePoint(codePoint);
+                        }
+                    }
+                }
+            } else {
+                if (ColorStripper.isAmpersandOrSection(codePoint)) {
+                    color = true;
+                } else if (is1ByteChar(codePoint)) {
+                    builder.appendCodePoint(codePoint);
+                    length++;
+                } else {
+                    length += 2;
+
+                    if (length <= limit) {
+                        builder.appendCodePoint(codePoint);
+                    }
+                }
+            }
+        }
+
+        return builder.toString();
+    }
+
+    private boolean is1ByteChar(int codePoint) {
+        return codePoint <= 126;
     }
 }
