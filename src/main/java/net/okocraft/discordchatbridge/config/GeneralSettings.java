@@ -90,6 +90,8 @@ public final class GeneralSettings {
 
     public static final ConfigValue<String> ALLOW_COLORS_IN_NAME = config -> config.getString("allow-colors-in-name", Boolean.TRUE.toString());
 
+    public static final ConfigValue<Integer> NICKNAME_LENGTH_LIMIT = config -> config.getInteger("nickname-length-limit", 16);
+
     public static final ConfigValue<Boolean> SEND_JOIN_MESSAGE = c -> c.getBoolean("message-sending-setting.join", true);
 
     public static final ConfigValue<Boolean> SEND_LEAVE_MESSAGE = c -> c.getBoolean("message-sending-setting.leave", true);
