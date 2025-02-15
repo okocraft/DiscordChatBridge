@@ -21,7 +21,6 @@ package net.okocraft.discordchatbridge.platform.velocity;
 
 import com.github.siroshun09.configapi.yaml.YamlConfiguration;
 import com.google.inject.Inject;
-import com.velocitypowered.api.event.PostOrder;
 import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.proxy.ProxyInitializeEvent;
 import com.velocitypowered.api.event.proxy.ProxyShutdownEvent;
@@ -75,8 +74,6 @@ public class DiscordChatBridgeVelocity implements DiscordChatBridgePlugin {
     @Subscribe
     public void onEnable(ProxyInitializeEvent e) {
         load();
-
-        chatSystem = new VelocityChatSystem(server);
 
         isEnabled = enable();
     }
@@ -139,7 +136,6 @@ public class DiscordChatBridgeVelocity implements DiscordChatBridgePlugin {
     @Override
     public void registerListeners() {
         server.getEventManager().register(this, new VelocityServerListener(this));
-        server.getEventManager().register(this, new VelocityChatListener(this, server));
     }
 
     @Override
