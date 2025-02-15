@@ -72,7 +72,7 @@ public class DiscordChatBridgeVelocity implements DiscordChatBridgePlugin {
         this.velocityPlatform = new VelocityPlatform(server, formatConfig);
     }
 
-    @Subscribe(order = PostOrder.FIRST)
+    @Subscribe
     public void onEnable(ProxyInitializeEvent e) {
         load();
 
@@ -81,7 +81,7 @@ public class DiscordChatBridgeVelocity implements DiscordChatBridgePlugin {
         isEnabled = enable();
     }
 
-    @Subscribe(order = PostOrder.LAST)
+    @Subscribe
     public void onDisable(ProxyShutdownEvent e) {
         disable();
     }
