@@ -96,7 +96,7 @@ public class DiscordListener extends ListenerAdapter {
             return;
         }
 
-        var lines = message.lines().collect(Collectors.toList());
+        var lines = message.lines().toList();
         int maxLines = config.get(GeneralSettings.CHAT_MAX_LINES);
 
         var attachments = event.getMessage().getAttachments();
