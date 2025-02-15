@@ -148,6 +148,7 @@
     </pluginRepositories>
 
     <build>
+        <finalName>${project.name}-${project.version}</finalName>
         <resources>
             <resource>
                 <targetPath>.</targetPath>
@@ -172,7 +173,6 @@
                 <artifactId>maven-jar-plugin</artifactId>
                 <version>3.4.2</version>
                 <configuration>
-                    <finalName>${project.name}-${project.version}-original</finalName>
                     <archive combine.children="append">
                         <manifest>
                             <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
@@ -189,7 +189,6 @@
                 <artifactId>maven-shade-plugin</artifactId>
                 <version>3.6.0</version>
                 <configuration>
-                    <finalName>${project.name}-${project.version}</finalName>
                     <filters>
                         <filter>
                             <artifact>*:*</artifact>
