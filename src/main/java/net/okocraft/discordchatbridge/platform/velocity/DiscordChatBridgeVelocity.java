@@ -75,6 +75,9 @@ public class DiscordChatBridgeVelocity implements DiscordChatBridgePlugin {
     public void onEnable(ProxyInitializeEvent e) {
         load();
 
+        this.chatSystem = new SnapLunaChatSystemIntegrator();
+        SnapLunaChatListener.init(this);
+
         isEnabled = enable();
     }
 
@@ -107,7 +110,7 @@ public class DiscordChatBridgeVelocity implements DiscordChatBridgePlugin {
 
     @Override
     public @NotNull ChatSystem getChatSystem() {
-        return chatSystem;
+        return this.chatSystem;
     }
 
     @Override
