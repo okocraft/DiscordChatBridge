@@ -38,14 +38,14 @@ public abstract class AdventureChatListener extends AbstractChatListener {
     public void processChat(@NotNull String channelName, @NotNull String name,
                             @NotNull Component displayName, @NotNull Component message) {
         if (channelName.equals(Constants.GLOBAL_CHANNEL_NAME)) {
-            long systemChannelID = plugin.getGeneralConfig().get(GeneralSettings.SYSTEM_CHANNEL);
+            long systemChannelID = this.plugin.getGeneralConfig().get(GeneralSettings.SYSTEM_CHANNEL);
 
             if (systemChannelID != 0) {
-                sendChatToDiscord(
+                this.sendChatToDiscord(
                         systemChannelID,
-                        plainText(message),
+                        this.plainText(message),
                         name,
-                        plainText(displayName)
+                        this.plainText(displayName)
                 );
             }
         }

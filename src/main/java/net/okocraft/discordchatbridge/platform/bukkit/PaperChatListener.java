@@ -43,7 +43,7 @@ public class PaperChatListener extends AdventureChatListener implements Listener
         }
 
         var sender = event.getPlayer();
-        processChat(Constants.GLOBAL_CHANNEL_NAME, sender.getName(), sender.displayName(), event.originalMessage());
+        this.processChat(Constants.GLOBAL_CHANNEL_NAME, sender.getName(), sender.displayName(), event.originalMessage());
         Bukkit.broadcast(AdventureVanillaChatFormatter.format(sender.getName(), event.originalMessage()));
         event.setCancelled(true);
     }

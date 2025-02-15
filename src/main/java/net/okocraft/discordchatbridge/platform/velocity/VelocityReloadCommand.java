@@ -30,12 +30,12 @@ public class VelocityReloadCommand implements SimpleCommand {
     private final ReloadCommand reloadCommand;
 
     public VelocityReloadCommand(@NotNull DiscordChatBridgePlugin plugin) {
-        reloadCommand = new ReloadCommand(plugin);
+        this.reloadCommand = new ReloadCommand(plugin);
     }
 
     @Override
     public void execute(Invocation invocation) {
-        reloadCommand.processCommand(
+        this.reloadCommand.processCommand(
                 permission -> invocation.source().hasPermission(permission),
                 str -> invocation.source().sendMessage(LegacyComponentSerializer.legacySection().deserialize(str))
         );

@@ -66,46 +66,46 @@ public class DiscordChatBridgeVelocity implements DiscordChatBridgePlugin {
         this.wrappedLogger = new Slf4jLogger(logger);
         this.dataDirectory = dataDirectory;
 
-        this.generalConfig = YamlConfiguration.create(getDataDirectory().resolve("config.yml"));
-        this.formatConfig = YamlConfiguration.create(getDataDirectory().resolve("format.yml"));
-        this.velocityPlatform = new VelocityPlatform(server, formatConfig);
+        this.generalConfig = YamlConfiguration.create(this.getDataDirectory().resolve("config.yml"));
+        this.formatConfig = YamlConfiguration.create(this.getDataDirectory().resolve("format.yml"));
+        this.velocityPlatform = new VelocityPlatform(server, this.formatConfig);
     }
 
     @Subscribe
     public void onEnable(ProxyInitializeEvent e) {
-        load();
+        this.load();
 
         this.chatSystem = new SnapLunaChatSystemIntegrator();
         SnapLunaChatListener.init(this);
 
-        isEnabled = enable();
+        this.isEnabled = this.enable();
     }
 
     @Subscribe
     public void onDisable(ProxyShutdownEvent e) {
-        disable();
+        this.disable();
     }
 
     @Override
     public @NotNull LoggerWrapper getWrappedLogger() {
-        return wrappedLogger;
+        return this.wrappedLogger;
     }
 
     @Override
     public @NotNull Path getDataDirectory() {
-        return dataDirectory;
+        return this.dataDirectory;
     }
 
     public @NotNull YamlConfiguration getGeneralConfig() {
-        return generalConfig;
+        return this.generalConfig;
     }
 
     public @NotNull YamlConfiguration getFormatConfig() {
-        return formatConfig;
+        return this.formatConfig;
     }
 
     public @NotNull DiscordBot getBot() {
-        return bot;
+        return this.bot;
     }
 
     @Override
@@ -115,53 +115,53 @@ public class DiscordChatBridgeVelocity implements DiscordChatBridgePlugin {
 
     @Override
     public @NotNull PlatformInfo getPlatformInfo() {
-        return velocityPlatform;
+        return this.velocityPlatform;
     }
 
     @Override
     public void loginToDiscord() {
-        bot = DiscordBot.login(this);
+        this.bot = DiscordBot.login(this);
     }
 
     @Override
     public void registerCommands() {
-        server.getCommandManager().register(
-                server.getCommandManager().metaBuilder("dcbreload").build(),
+        this.server.getCommandManager().register(
+                this.server.getCommandManager().metaBuilder("dcbreload").build(),
                 new VelocityReloadCommand(this)
         );
     }
 
     @Override
     public void unregisterCommands() {
-        server.getCommandManager().unregister("dcbreload");
+        this.server.getCommandManager().unregister("dcbreload");
     }
 
     @Override
     public void registerListeners() {
-        server.getEventManager().register(this, new VelocityServerListener(this));
+        this.server.getEventManager().register(this, new VelocityServerListener(this));
     }
 
     @Override
     public void unregisterListeners() {
-        server.getEventManager().unregisterListeners(this);
+        this.server.getEventManager().unregisterListeners(this);
     }
 
     @Override
     public boolean enabled() {
-        return isEnabled;
+        return this.isEnabled;
     }
 
     @Override
     public void registerLuckPermsFirstJoinListener() {
-        if (server.getPluginManager().getPlugin("LuckPerms").isPresent()) {
-            firstJoinListener = new FirstJoinListener(this);
+        if (this.server.getPluginManager().getPlugin("LuckPerms").isPresent()) {
+            this.firstJoinListener = new FirstJoinListener(this);
         }
     }
 
     @Override
     public void unregisterLuckPermsFirstJoinListener() {
-        if (firstJoinListener != null) {
-            firstJoinListener.unsubscribe();
+        if (this.firstJoinListener != null) {
+            this.firstJoinListener.unsubscribe();
         }
     }
 

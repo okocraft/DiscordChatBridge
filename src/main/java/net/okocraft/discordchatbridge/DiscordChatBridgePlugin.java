@@ -50,27 +50,27 @@ public interface DiscordChatBridgePlugin {
     default boolean load() {
         try {
             ResourceUtils.copyFromClassLoaderIfNotExists(
-                    getClass().getClassLoader(),
+                    this.getClass().getClassLoader(),
                     "config.yml",
-                    getGeneralConfig().getPath()
+                    this.getGeneralConfig().getPath()
             );
 
-            getGeneralConfig().load();
+            this.getGeneralConfig().load();
         } catch (IOException e) {
-            getWrappedLogger().error("Could not load config.yml", e);
+            this.getWrappedLogger().error("Could not load config.yml", e);
             return false;
         }
 
         try {
             ResourceUtils.copyFromClassLoaderIfNotExists(
-                    getClass().getClassLoader(),
+                    this.getClass().getClassLoader(),
                     "format.yml",
-                    getFormatConfig().getPath()
+                    this.getFormatConfig().getPath()
             );
 
-            getFormatConfig().load();
+            this.getFormatConfig().load();
         } catch (IOException e) {
-            getWrappedLogger().error("Could not load format.yml", e);
+            this.getWrappedLogger().error("Could not load format.yml", e);
             return false;
         }
 
@@ -79,29 +79,29 @@ public interface DiscordChatBridgePlugin {
 
     default boolean enable() {
         try {
-            loginToDiscord();
-            getBot().updateGame();
+            this.loginToDiscord();
+            this.getBot().updateGame();
         } catch (Exception e) {
-            getWrappedLogger().error("Could not login to Discord", e);
+            this.getWrappedLogger().error("Could not login to Discord", e);
             return false;
         }
 
-        registerCommands();
-        registerListeners();
+        this.registerCommands();
+        this.registerListeners();
 
-        if (getGeneralConfig().get(GeneralSettings.SEND_FIRST_JOIN_MESSAGE)) {
-            registerLuckPermsFirstJoinListener();
+        if (this.getGeneralConfig().get(GeneralSettings.SEND_FIRST_JOIN_MESSAGE)) {
+            this.registerLuckPermsFirstJoinListener();
         }
 
         return true;
     }
 
     default void disable() {
-        if (enabled()) {
-            getBot().shutdown();
-            unregisterCommands();
-            unregisterListeners();
-            unregisterLuckPermsFirstJoinListener();
+        if (this.enabled()) {
+            this.getBot().shutdown();
+            this.unregisterCommands();
+            this.unregisterListeners();
+            this.unregisterLuckPermsFirstJoinListener();
         }
     }
 

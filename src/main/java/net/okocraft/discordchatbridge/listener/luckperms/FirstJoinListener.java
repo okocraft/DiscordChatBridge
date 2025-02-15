@@ -42,6 +42,6 @@ public class FirstJoinListener {
     }
 
     public void unsubscribe() {
-        listener.close();
+        this.listener.close();
     }
 }

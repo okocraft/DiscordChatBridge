@@ -41,20 +41,20 @@ public class ReloadCommand {
                                   @NotNull Consumer<String> messageSender) {
         if (!permissionChecker.test(PERMISSION)) {
             messageSender.accept(
-                    plugin.getFormatConfig()
+                    this.plugin.getFormatConfig()
                             .get(FormatSettings.COMMAND_NO_PERMISSION)
                             .replace(Placeholders.PERMISSION, PERMISSION)
             );
         }
 
-        messageSender.accept(plugin.getFormatConfig().get(FormatSettings.COMMAND_RELOAD_START));
+        messageSender.accept(this.plugin.getFormatConfig().get(FormatSettings.COMMAND_RELOAD_START));
 
-        plugin.disable();
+        this.plugin.disable();
 
-        if (plugin.load() && plugin.enable()) {
-            messageSender.accept(plugin.getFormatConfig().get(FormatSettings.COMMAND_RELOAD_SUCCESS));
+        if (this.plugin.load() && this.plugin.enable()) {
+            messageSender.accept(this.plugin.getFormatConfig().get(FormatSettings.COMMAND_RELOAD_SUCCESS));
         } else {
-            messageSender.accept(plugin.getFormatConfig().get(FormatSettings.COMMAND_RELOAD_FAILURE));
+            messageSender.accept(this.plugin.getFormatConfig().get(FormatSettings.COMMAND_RELOAD_FAILURE));
         }
     }
 }

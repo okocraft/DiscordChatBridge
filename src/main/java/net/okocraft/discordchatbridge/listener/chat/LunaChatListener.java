@@ -42,25 +42,25 @@ public abstract class LunaChatListener extends AbstractChatListener {
         for (var key : channelSection.getKeyList()) {
             var id = channelSection.getLong(key);
             if (id != 0) {
-                linkedChannels.put(key, id);
+                this.linkedChannels.put(key, id);
             }
         }
     }
 
     protected void processChat(@NotNull String channelName, @NotNull String displayName,
                                @NotNull ChannelMember member, @NotNull String message) {
-        var sourceName = plugin.getGeneralConfig().get(GeneralSettings.DISCORD_SOURCE_NAME);
+        var sourceName = this.plugin.getGeneralConfig().get(GeneralSettings.DISCORD_SOURCE_NAME);
 
         if (displayName.endsWith(sourceName)) {
             return;
         }
 
-        var id = linkedChannels.get(channelName);
+        var id = this.linkedChannels.get(channelName);
 
         if (id == null) {
             return;
         }
 
-        sendChatToDiscord(id, message, member.getName(), member.getDisplayName());
+        this.sendChatToDiscord(id, message, member.getName(), member.getDisplayName());
     }
 }

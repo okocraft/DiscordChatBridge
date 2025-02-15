@@ -37,15 +37,15 @@ public class VelocityServerListener extends ServerListener {
         var player = event.getPlayer();
 
         if (event.getPreviousServer().isEmpty()) {
-            processJoin(player.getUniqueId(), player.getUsername(), player.getUsername());
+            this.processJoin(player.getUniqueId(), player.getUsername(), player.getUsername());
         } else {
-            processServerSwitch(player.getUsername(), player.getUsername(), event.getServer().getServerInfo().getName());
+            this.processServerSwitch(player.getUsername(), player.getUsername(), event.getServer().getServerInfo().getName());
         }
     }
 
     @Subscribe
     public void onDisconnect(@NotNull DisconnectEvent event) {
         var player = event.getPlayer();
-        processDisconnection(player.getUniqueId(), player.getUsername(), player.getUsername());
+        this.processDisconnection(player.getUniqueId(), player.getUsername(), player.getUsername());
     }
 }

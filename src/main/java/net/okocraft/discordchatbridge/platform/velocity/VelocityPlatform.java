@@ -42,15 +42,15 @@ class VelocityPlatform implements PlatformInfo {
 
     @Override
     public int getNumberOfPlayers() {
-        return server.getPlayerCount();
+        return this.server.getPlayerCount();
     }
 
     @Override
     public @NotNull Collection<String> getPlayerListsPerServer() {
-        var format = formatConfig.get(FormatSettings.PLAYER_LIST_FORMAT);
+        var format = this.formatConfig.get(FormatSettings.PLAYER_LIST_FORMAT);
         var list = new ArrayList<String>();
 
-        for (var server : server.getAllServers()) {
+        for (var server : this.server.getAllServers()) {
             if (server.getPlayersConnected().isEmpty()) {
                 continue;
             }

@@ -32,11 +32,11 @@ public class Slf4jLogger implements LoggerWrapper {
 
     @Override
     public void warning(@NotNull String log) {
-        logger.warn(log);
+        this.logger.warn(log);
     }
 
     @Override
     public void error(@NotNull String message, @NotNull Throwable exception) {
-        logger.error(message, exception);
+        this.logger.error(message, exception);
     }
 }

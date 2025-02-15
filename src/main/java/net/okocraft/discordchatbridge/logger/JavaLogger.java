@@ -34,11 +34,11 @@ public class JavaLogger implements LoggerWrapper {
 
     @Override
     public void warning(@NotNull String log) {
-        logger.warning(log);
+        this.logger.warning(log);
     }
 
     @Override
     public void error(@NotNull String message, @NotNull Throwable exception) {
-        logger.log(Level.SEVERE, message, exception);
+        this.logger.log(Level.SEVERE, message, exception);
     }
 }

@@ -39,7 +39,7 @@ public class BukkitServerListener extends ServerListener implements Listener {
         var players = Bukkit.getOnlinePlayers();
 
         if (!players.isEmpty()) {
-            addJoinedPlayers(
+            this.addJoinedPlayers(
                     players.stream()
                             .map(Entity::getUniqueId)
                             .toList()
@@ -50,12 +50,12 @@ public class BukkitServerListener extends ServerListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR)
     public void onJoin(@NotNull PlayerJoinEvent event) {
         var player = event.getPlayer();
-        processJoin(player.getUniqueId(), player.getName(), player.getDisplayName());
+        this.processJoin(player.getUniqueId(), player.getName(), player.getDisplayName());
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onLeave(@NotNull PlayerQuitEvent event) {
         var player = event.getPlayer();
-        processDisconnection(player.getUniqueId(), player.getName(), player.getDisplayName());
+        this.processDisconnection(player.getUniqueId(), player.getName(), player.getDisplayName());
     }
 }

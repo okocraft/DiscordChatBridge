@@ -34,6 +34,6 @@ public class BukkitLunaChatListener extends LunaChatListener implements Listener
 
     @EventHandler
     public void onChat(@NotNull LunaChatBukkitChannelMessageEvent e) {
-        processChat(e.getChannelName(), e.getDisplayName(), e.getMember(), e.getOriginalMessage());
+        this.processChat(e.getChannelName(), e.getDisplayName(), e.getMember(), e.getOriginalMessage());
     }
 }

@@ -40,11 +40,11 @@ import java.nio.file.Path;
 
 public class DiscordChatBridgeBukkit extends JavaPlugin implements DiscordChatBridgePlugin {
 
-    private final LoggerWrapper wrappedLogger = new JavaLogger(getLogger());
+    private final LoggerWrapper wrappedLogger = new JavaLogger(this.getLogger());
     private final BukkitPlatform bukkitPlatform = new BukkitPlatform(this);
     private final ReloadCommand reloadCommand = new ReloadCommand(this);
-    private final YamlConfiguration generalConfig = YamlConfiguration.create(getDataDirectory().resolve("config.yml"));
-    private final YamlConfiguration formatConfig = YamlConfiguration.create(getDataDirectory().resolve("format.yml"));
+    private final YamlConfiguration generalConfig = YamlConfiguration.create(this.getDataDirectory().resolve("config.yml"));
+    private final YamlConfiguration formatConfig = YamlConfiguration.create(this.getDataDirectory().resolve("format.yml"));
 
     private DiscordBot bot;
     private ChatSystem chatSystem;
@@ -53,63 +53,63 @@ public class DiscordChatBridgeBukkit extends JavaPlugin implements DiscordChatBr
 
     @Override
     public void onEnable() {
-        load();
+        this.load();
 
-        if (isLunaChatEnabled()) {
-            chatSystem = new BukkitLunaChatSystem();
+        if (this.isLunaChatEnabled()) {
+            this.chatSystem = new BukkitLunaChatSystem();
         } else {
-            chatSystem = new PaperChatSystem();
+            this.chatSystem = new PaperChatSystem();
         }
 
-        isEnabled = enable();
+        this.isEnabled = this.enable();
     }
 
     @Override
     public void onDisable() {
-        disable();
+        this.disable();
     }
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-        reloadCommand.processCommand(sender::hasPermission, sender::sendMessage);
+        this.reloadCommand.processCommand(sender::hasPermission, sender::sendMessage);
         return true;
     }
 
     @Override
     public @NotNull LoggerWrapper getWrappedLogger() {
-        return wrappedLogger;
+        return this.wrappedLogger;
     }
 
     @Override
     public @NotNull Path getDataDirectory() {
-        return getDataFolder().toPath();
+        return this.getDataFolder().toPath();
     }
 
     public @NotNull YamlConfiguration getGeneralConfig() {
-        return generalConfig;
+        return this.generalConfig;
     }
 
     public @NotNull YamlConfiguration getFormatConfig() {
-        return formatConfig;
+        return this.formatConfig;
     }
 
     public @NotNull DiscordBot getBot() {
-        return bot;
+        return this.bot;
     }
 
     @Override
     public @NotNull ChatSystem getChatSystem() {
-        return chatSystem;
+        return this.chatSystem;
     }
 
     @Override
     public @NotNull PlatformInfo getPlatformInfo() {
-        return bukkitPlatform;
+        return this.bukkitPlatform;
     }
 
     @Override
     public void loginToDiscord() {
-        bot = DiscordBot.login(this);
+        this.bot = DiscordBot.login(this);
     }
 
     @Override
@@ -122,12 +122,12 @@ public class DiscordChatBridgeBukkit extends JavaPlugin implements DiscordChatBr
 
     @Override
     public void registerListeners() {
-        getServer().getPluginManager().registerEvents(new BukkitServerListener(this), this);
+        this.getServer().getPluginManager().registerEvents(new BukkitServerListener(this), this);
 
-        if (isLunaChatEnabled()) {
-            getServer().getPluginManager().registerEvents(new BukkitLunaChatListener(this), this);
+        if (this.isLunaChatEnabled()) {
+            this.getServer().getPluginManager().registerEvents(new BukkitLunaChatListener(this), this);
         } else {
-            getServer().getPluginManager().registerEvents(new PaperChatListener(this),this);
+            this.getServer().getPluginManager().registerEvents(new PaperChatListener(this),this);
         }
     }
 
@@ -138,20 +138,20 @@ public class DiscordChatBridgeBukkit extends JavaPlugin implements DiscordChatBr
 
     @Override
     public boolean enabled() {
-        return isEnabled;
+        return this.isEnabled;
     }
 
     @Override
     public void registerLuckPermsFirstJoinListener() {
-        if (getServer().getPluginManager().getPlugin("LuckPerms") != null) {
-            firstJoinListener = new FirstJoinListener(this);
+        if (this.getServer().getPluginManager().getPlugin("LuckPerms") != null) {
+            this.firstJoinListener = new FirstJoinListener(this);
         }
     }
 
     @Override
     public void unregisterLuckPermsFirstJoinListener() {
-        if (firstJoinListener != null) {
-            firstJoinListener.unsubscribe();
+        if (this.firstJoinListener != null) {
+            this.firstJoinListener.unsubscribe();
         }
     }
 
@@ -161,6 +161,6 @@ public class DiscordChatBridgeBukkit extends JavaPlugin implements DiscordChatBr
     }
 
     private boolean isLunaChatEnabled() {
-        return getServer().getPluginManager().getPlugin("LunaChat") != null;
+        return this.getServer().getPluginManager().getPlugin("LunaChat") != null;
     }
 }

@@ -83,7 +83,7 @@ public class DiscordBot {
         this.jda = jda;
         this.scheduler = Executors.newSingleThreadScheduledExecutor(r -> new Thread(r, "DiscordChatBridge-Thread"));
 
-        loadMembers();
+        this.loadMembers();
     }
 
     @Contract("_ -> new")
@@ -107,8 +107,8 @@ public class DiscordBot {
     }
 
     public void shutdown() {
-        jda.shutdown();
-        scheduler.shutdown();
+        this.jda.shutdown();
+        this.scheduler.shutdown();
     }
 
     public void sendMessage(long id, @NotNull String message) {
@@ -116,12 +116,12 @@ public class DiscordBot {
     }
 
     public void sendMessage(long id, @NotNull MessageCreateData message) {
-        var channel = jda.getChannelById(MessageChannel.class, id);
+        var channel = this.jda.getChannelById(MessageChannel.class, id);
 
         if (channel != null) {
             this.sendMessage(channel, message);
         } else {
-            plugin.getWrappedLogger().warning("Could not find the channel with id " + id);
+            this.plugin.getWrappedLogger().warning("Could not find the channel with id " + id);
         }
     }
 
@@ -130,11 +130,11 @@ public class DiscordBot {
     }
 
     public void sendMessage(@NotNull MessageChannel channel, @NotNull MessageCreateData message) {
-        scheduler.submit(() -> {
+        this.scheduler.submit(() -> {
             if (channel.canTalk()) {
                 channel.sendMessage(message).queue();
             } else {
-                plugin.getWrappedLogger().warning(
+                this.plugin.getWrappedLogger().warning(
                         "Could not send message to channel. " +
                                 "id: " + channel.getId() + " content: " + message.getContent()
                 );
@@ -144,11 +144,11 @@ public class DiscordBot {
 
     public void sendChat(long id, @NotNull String original,
                          @NotNull String name, @NotNull String displayName) {
-        scheduler.submit(() -> processChat(id, original, name, displayName));
+        this.scheduler.submit(() -> this.processChat(id, original, name, displayName));
     }
 
     public void addReaction(@NotNull Message message, @NotNull String unicode) {
-        scheduler.submit(() -> message.addReaction(Emoji.fromUnicode(unicode)).queue());
+        this.scheduler.submit(() -> message.addReaction(Emoji.fromUnicode(unicode)).queue());
     }
 
     public @Nullable Role getFirstRole(@NotNull Member member) {
@@ -164,41 +164,41 @@ public class DiscordBot {
     private void processChat(long id, @NotNull String original,
                              @NotNull String name, @NotNull String displayName) {
         var plain =
-                plugin.getFormatConfig().get(FormatSettings.DISCORD_CHAT)
-                        .replace(Placeholders.PLAYER_NAME, escapeUnderscore(name))
-                        .replace(Placeholders.DISPLAY_NAME, escapeUnderscore(displayName))
+                this.plugin.getFormatConfig().get(FormatSettings.DISCORD_CHAT)
+                        .replace(Placeholders.PLAYER_NAME, this.escapeUnderscore(name))
+                        .replace(Placeholders.DISPLAY_NAME, this.escapeUnderscore(displayName))
                         .replace(Placeholders.MESSAGE, original);
 
         plain = plain.replace("@everyone", "@.everyone");
         plain = plain.replace("@here", "@.here");
 
         if (plain.contains(MENTION_MARK)) {
-            plain = replaceMention(plain);
+            plain = this.replaceMention(plain);
         }
 
         if (plain.contains(CHANNEL_MARK)) {
-            plain = replaceChannel(plain);
+            plain = this.replaceChannel(plain);
         }
 
         if (plain.length() < Message.MAX_CONTENT_LENGTH) {
-            sendMessage(id, new MessageCreateBuilder().addContent(plain).setAllowedMentions(ALLOWED_MENTION_TYPE).build());
+            this.sendMessage(id, new MessageCreateBuilder().addContent(plain).setAllowedMentions(ALLOWED_MENTION_TYPE).build());
         } else {
-            plugin.getWrappedLogger().warning("The message is too long! :" + plain);
+            this.plugin.getWrappedLogger().warning("The message is too long! :" + plain);
         }
     }
 
     public void updateGame() {
-        scheduler.schedule(() -> {
-                    var type = plugin.getGeneralConfig().get(GeneralSettings.DISCORD_ACTIVITY_TYPE);
+        this.scheduler.schedule(() -> {
+                    var type = this.plugin.getGeneralConfig().get(GeneralSettings.DISCORD_ACTIVITY_TYPE);
                     var game =
-                            plugin.getGeneralConfig()
+                            this.plugin.getGeneralConfig()
                                     .get(GeneralSettings.DISCORD_ACTIVITY_GAME)
                                     .replace(
-                                            Placeholders.PLAYER_COUNT, String.valueOf(plugin.getPlatformInfo().getNumberOfPlayers())
+                                            Placeholders.PLAYER_COUNT, String.valueOf(this.plugin.getPlatformInfo().getNumberOfPlayers())
                                     );
-                    var url = plugin.getGeneralConfig().get(GeneralSettings.DISCORD_ACTIVITY_URL);
+                    var url = this.plugin.getGeneralConfig().get(GeneralSettings.DISCORD_ACTIVITY_URL);
 
-                    jda.getPresence().setActivity(Activity.of(type, game, url));
+            this.jda.getPresence().setActivity(Activity.of(type, game, url));
                 }, 1, TimeUnit.SECONDS
         );
     }
@@ -217,17 +217,17 @@ public class DiscordBot {
 
     private @Nullable String searchForUserOrRoleMention(@NotNull MatchResult result) {
         var name = result.group(1);
-        var userMention = searchForUserMention(name);
+        var userMention = this.searchForUserMention(name);
 
         if (userMention != null) {
             return userMention;
         }
 
-        return searchForRoleMention(name);
+        return this.searchForRoleMention(name);
     }
 
     private @Nullable String searchForUserMention(@NotNull String username) {
-        return getMentionableFromAllGuilds(guild -> searchForUser(guild, username));
+        return this.getMentionableFromAllGuilds(guild -> this.searchForUser(guild, username));
     }
 
     private @NotNull Collection<Member> searchForUser(@NotNull Guild guild, @NotNull String username) {
@@ -235,7 +235,7 @@ public class DiscordBot {
     }
 
     private @Nullable String searchForRoleMention(@NotNull String roleName) {
-        return getMentionableFromAllGuilds(guild -> guild.getRolesByName(roleName, true));
+        return this.getMentionableFromAllGuilds(guild -> guild.getRolesByName(roleName, true));
     }
 
     private @NotNull String replaceChannel(@NotNull String original) {
@@ -248,7 +248,7 @@ public class DiscordBot {
 
     private @Nullable String searchForChannelMention(@NotNull MatchResult result) {
         var channelName = result.group();
-        return getMentionableFromAllGuilds(guild -> searchForGuildMessageChannels(guild, channelName));
+        return this.getMentionableFromAllGuilds(guild -> this.searchForGuildMessageChannels(guild, channelName));
     }
 
     private @NotNull Collection<? extends GuildMessageChannel> searchForGuildMessageChannels(@NotNull Guild guild,
@@ -269,7 +269,7 @@ public class DiscordBot {
     }
 
     private <M extends IMentionable> @Nullable String getMentionableFromAllGuilds(@NotNull Function<Guild, Collection<M>> mentionableFunction) {
-        return jda.getGuilds().stream()
+        return this.jda.getGuilds().stream()
                 .map(mentionableFunction)
                 .flatMap(Collection::stream)
                 .map(IMentionable::getAsMention)
@@ -278,12 +278,12 @@ public class DiscordBot {
     }
 
     private void loadMembers() {
-        jda.getGuilds().stream()
+        this.jda.getGuilds().stream()
                 .map(Guild::loadMembers)
                 .forEach(task -> task.onError(this::failedToLoadMembers));
     }
 
     private void failedToLoadMembers(@NotNull Throwable ex) {
-        plugin.getWrappedLogger().error("Failed to load members.", ex);
+        this.plugin.getWrappedLogger().error("Failed to load members.", ex);
     }
 }

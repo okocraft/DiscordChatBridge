@@ -28,7 +28,7 @@ public abstract class LunaChatSystem implements ChatSystem {
     @Override
     public void sendChat(@NotNull String channelName, @NotNull String sender,
                          @NotNull String source, @NotNull String message) {
-        var channel = getChannel(channelName);
+        var channel = this.getChannel(channelName);
 
         if (channel != null) {
             channel.chatFromOtherSource(sender, source, message);

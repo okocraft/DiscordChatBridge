@@ -33,7 +33,7 @@ public abstract class AbstractChatListener {
 
     protected void sendChatToDiscord(long id, @NotNull String message,
                                      @NotNull String name, @NotNull String displayName) {
-        plugin.getBot().sendChat(
+        this.plugin.getBot().sendChat(
                 id,
                 ColorStripper.strip(message),
                 name,

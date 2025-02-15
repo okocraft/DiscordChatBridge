@@ -58,7 +58,7 @@ public class DiscordListener extends ListenerAdapter {
         for (var key : channelSection.getKeyList()) {
             var id = channelSection.getLong(key);
             if (id != 0) {
-                linkedChannels.put(id, key);
+                this.linkedChannels.put(id, key);
             }
         }
 
@@ -77,22 +77,22 @@ public class DiscordListener extends ListenerAdapter {
         var message = event.getMessage().getContentDisplay();
 
         if (message.startsWith("!playerlist")) {
-            onPlayerListCommand(event.getChannel());
+            this.onPlayerListCommand(event.getChannel());
             return;
         }
 
-        var channelName = linkedChannels.get(event.getChannel().getIdLong());
+        var channelName = this.linkedChannels.get(event.getChannel().getIdLong());
 
         if (channelName == null) {
             return;
         }
 
-        var config = plugin.getGeneralConfig();
+        var config = this.plugin.getGeneralConfig();
 
         int maxLength = config.get(GeneralSettings.CHAT_MAX_LENGTH);
 
         if (0 < maxLength && maxLength < message.length()) {
-            plugin.getBot().addReaction(event.getMessage(), "U+26A0");
+            this.plugin.getBot().addReaction(event.getMessage(), "U+26A0");
             return;
         }
 
@@ -104,44 +104,44 @@ public class DiscordListener extends ListenerAdapter {
 
         if ((0 < maxLines && maxLines < lines.size()) ||
                 (0 < maxAttachments && maxAttachments < attachments.size())) {
-            plugin.getBot().addReaction(event.getMessage(), "U+26A0");
+            this.plugin.getBot().addReaction(event.getMessage(), "U+26A0");
             return;
         }
 
-        var senderName = createSenderName(member);
+        var senderName = this.createSenderName(member);
         var sourceName = config.get(GeneralSettings.DISCORD_SOURCE_NAME);
 
         for (var line : lines) {
             if (!line.isEmpty()) {
-                plugin.getChatSystem().sendChat(channelName, senderName, sourceName, line);
+                this.plugin.getChatSystem().sendChat(channelName, senderName, sourceName, line);
             }
         }
 
         for (var attachment : attachments) {
-            plugin.getChatSystem().sendChat(channelName, senderName, sourceName, attachment.getUrl());
+            this.plugin.getChatSystem().sendChat(channelName, senderName, sourceName, attachment.getUrl());
         }
     }
 
     private void onPlayerListCommand(@NotNull MessageChannelUnion channel) {
-        if (System.currentTimeMillis() - lastPlayerListUsed.get() < 5000) {
+        if (System.currentTimeMillis() - this.lastPlayerListUsed.get() < 5000) {
             return;
         }
 
-        plugin.getBot().updateGame();
+        this.plugin.getBot().updateGame();
 
         var builder = new StringBuilder();
 
         var top =
-                plugin.getFormatConfig()
+                this.plugin.getFormatConfig()
                         .get(FormatSettings.PLAYER_LIST_TOP)
                         .replace(
                                 Placeholders.PLAYER_COUNT,
-                                String.valueOf(plugin.getPlatformInfo().getNumberOfPlayers())
+                                String.valueOf(this.plugin.getPlatformInfo().getNumberOfPlayers())
                         );
 
         builder.append(top).append(Constants.LINE_SEPARATOR).append("```").append(Constants.LINE_SEPARATOR);
 
-        plugin.getPlatformInfo()
+        this.plugin.getPlatformInfo()
                 .getPlayerListsPerServer()
                 .forEach(list -> {
                     builder.append(list);
@@ -151,19 +151,19 @@ public class DiscordListener extends ListenerAdapter {
         builder.append(Constants.LINE_SEPARATOR).append("```");
 
         if (channel.canTalk()) {
-            plugin.getBot().sendMessage(channel, builder.toString());
-            lastPlayerListUsed.set(System.currentTimeMillis());
+            this.plugin.getBot().sendMessage(channel, builder.toString());
+            this.lastPlayerListUsed.set(System.currentTimeMillis());
         }
     }
 
     private @NotNull String createSenderName(@NotNull Member member) {
-        var rolePrefix = getRolePrefix(member);
+        var rolePrefix = this.getRolePrefix(member);
         var originalName = member.getNickname() != null ? member.getNickname() : member.getEffectiveName();
 
         // true / false / role name
-        var setting = plugin.getGeneralConfig().get(GeneralSettings.ALLOW_COLORS_IN_NAME);
+        var setting = this.plugin.getGeneralConfig().get(GeneralSettings.ALLOW_COLORS_IN_NAME);
 
-        boolean allowColorsInName = Boolean.parseBoolean(setting) || (!setting.equalsIgnoreCase("false") && hasRole(member, setting));
+        boolean allowColorsInName = Boolean.parseBoolean(setting) || (!setting.equalsIgnoreCase("false") && this.hasRole(member, setting));
 
         String senderName;
 
@@ -177,19 +177,19 @@ public class DiscordListener extends ListenerAdapter {
     }
 
     private @NotNull String getRolePrefix(@NotNull Member member) {
-        if (!plugin.getGeneralConfig().get(GeneralSettings.ENABLE_ROLE_PREFIX)) {
+        if (!this.plugin.getGeneralConfig().get(GeneralSettings.ENABLE_ROLE_PREFIX)) {
             return "";
         }
 
-        var role = plugin.getBot().getFirstRole(member);
+        var role = this.plugin.getBot().getFirstRole(member);
         String prefix;
 
         if (role != null) {
-            var roleColorCode = Optional.ofNullable(role.getColor()).map(plugin::serializeColor).orElse(defaultRoleColorCode);
-            var rolePrefix = rolePrefixes.getString(Long.toString(role.getIdLong()));
+            var roleColorCode = Optional.ofNullable(role.getColor()).map(this.plugin::serializeColor).orElse(this.defaultRoleColorCode);
+            var rolePrefix = this.rolePrefixes.getString(Long.toString(role.getIdLong()));
 
             if (rolePrefix.isEmpty()) {
-                prefix = plugin.getGeneralConfig()
+                prefix = this.plugin.getGeneralConfig()
                         .get(GeneralSettings.DEFAULT_ROLE_PREFIX)
                         .replace(Placeholders.ROLE_COLOR, roleColorCode);
             } else {

@@ -46,8 +46,8 @@ class BukkitPlatform implements PlatformInfo {
 
     @Override
     public @NotNull Collection<String> getPlayerListsPerServer() {
-        var format = plugin.getFormatConfig().get(FormatSettings.PLAYER_LIST_FORMAT);
-        var serverName = plugin.getGeneralConfig().get(GeneralSettings.SERVER_NAME);
+        var format = this.plugin.getFormatConfig().get(FormatSettings.PLAYER_LIST_FORMAT);
+        var serverName = this.plugin.getGeneralConfig().get(GeneralSettings.SERVER_NAME);
         var players =
                 Bukkit.getOnlinePlayers()
                         .stream()
