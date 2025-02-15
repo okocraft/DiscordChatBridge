@@ -20,8 +20,7 @@
 package net.okocraft.discordchatbridge.listener.chat;
 
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.TextComponent;
-import net.kyori.adventure.text.serializer.ComponentSerializer;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import net.okocraft.discordchatbridge.DiscordChatBridgePlugin;
 import net.okocraft.discordchatbridge.config.GeneralSettings;
 import net.okocraft.discordchatbridge.constant.Constants;
@@ -52,17 +51,7 @@ public abstract class AdventureChatListener extends AbstractChatListener {
         }
     }
 
-    @SuppressWarnings("deprecation")
     public @NotNull String plainText(@NotNull Component component) {
-        ComponentSerializer<Component, TextComponent, String> serializer;
-
-        try {
-            serializer = net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer.plainText();
-        } catch (Throwable throwable) {
-            // use old plain serializer
-            serializer = net.kyori.adventure.text.serializer.plain.PlainComponentSerializer.plain();
-        }
-
-        return serializer.serialize(component);
+        return PlainTextComponentSerializer.plainText().serialize(component);
     }
 }
