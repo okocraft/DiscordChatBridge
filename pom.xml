@@ -30,7 +30,7 @@
 
     <name>DiscordChatBridge</name>
     <url>https://github.com/okocraft/DiscordChatBridge</url>
-    <description>A Spigot/Velocity plugin that connects Vanilla chat or LunaChat and Discord</description>
+    <description>A Paper/Velocity plugin that connects Vanilla chat or LunaChat and Discord</description>
 
     <licenses>
         <license>

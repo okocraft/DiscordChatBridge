@@ -58,7 +58,7 @@ public class DiscordChatBridgeBukkit extends JavaPlugin implements DiscordChatBr
         if (isLunaChatEnabled()) {
             chatSystem = new BukkitLunaChatSystem();
         } else {
-            chatSystem = PaperChecker.IS_PAPER ? new PaperChatSystem() : new BukkitChatSystem();
+            chatSystem = new PaperChatSystem();
         }
 
         isEnabled = enable();
@@ -127,10 +127,7 @@ public class DiscordChatBridgeBukkit extends JavaPlugin implements DiscordChatBr
         if (isLunaChatEnabled()) {
             getServer().getPluginManager().registerEvents(new BukkitLunaChatListener(this), this);
         } else {
-            getServer().getPluginManager().registerEvents(
-                    PaperChecker.IS_PAPER ? new PaperChatListener(this) : new BukkitChatListener(this),
-                    this
-            );
+            getServer().getPluginManager().registerEvents(new PaperChatListener(this),this);
         }
     }
 
@@ -160,7 +157,7 @@ public class DiscordChatBridgeBukkit extends JavaPlugin implements DiscordChatBr
 
     @Override
     public @NotNull String serializeColor(@NotNull Color color) {
-        return PaperChecker.IS_PAPER ? ColorSerializer.adventure(color) : ColorSerializer.bungeecord(color);
+        return ColorSerializer.adventure(color);
     }
 
     private boolean isLunaChatEnabled() {

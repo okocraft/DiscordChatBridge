@@ -19,16 +19,11 @@
 
 package net.okocraft.discordchatbridge.util;
 
-import net.md_5.bungee.api.ChatColor;
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.Color;
 
 public final class ColorSerializer {
-
-    public static @NotNull String bungeecord(@NotNull Color color) {
-        return ChatColor.of(color).toString();
-    }
 
     public static @NotNull String adventure(@NotNull Color color) {
         return "&#" + Integer.toHexString(color.getRGB()).substring(2);
