@@ -61,7 +61,7 @@ class VelocityPlatform implements PlatformInfo {
                             .stream()
                             .map(Player::getUsername)
                             .sorted()
-                            .collect(Collectors.toUnmodifiableList());
+                            .toList();
 
             list.add(PlayerListFormatter.format(format, server.getServerInfo().getName(), players));
         }

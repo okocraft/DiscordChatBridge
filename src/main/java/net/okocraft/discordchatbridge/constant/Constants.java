@@ -21,7 +21,7 @@ package net.okocraft.discordchatbridge.constant;
 
 public final class Constants {
 
-    public static final String LINE_SEPARATOR = System.getProperty("line.separator");
+    public static final String LINE_SEPARATOR = System.lineSeparator();
 
     public static final String GLOBAL_CHANNEL_NAME = "global";
 

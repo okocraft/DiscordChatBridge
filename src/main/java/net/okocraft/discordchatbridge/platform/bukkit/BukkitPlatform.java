@@ -54,7 +54,7 @@ class BukkitPlatform implements PlatformInfo {
                         .stream()
                         .map(HumanEntity::getName)
                         .sorted()
-                        .collect(Collectors.toUnmodifiableList());
+                        .toList();
 
         return Collections.singletonList(PlayerListFormatter.format(format, serverName, players));
     }

@@ -44,7 +44,7 @@ public class BukkitServerListener extends ServerListener implements Listener {
             addJoinedPlayers(
                     players.stream()
                             .map(Entity::getUniqueId)
-                            .collect(Collectors.toUnmodifiableList())
+                            .toList()
             );
         }
     }
