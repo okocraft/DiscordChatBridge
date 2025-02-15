@@ -30,8 +30,6 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.stream.Collectors;
-
 @SuppressWarnings("deprecation")
 public class BukkitServerListener extends ServerListener implements Listener {
 
