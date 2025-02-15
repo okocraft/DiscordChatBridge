@@ -30,7 +30,7 @@
 
     <name>DiscordChatBridge</name>
     <url>https://github.com/okocraft/DiscordChatBridge</url>
-    <description>A Spigot/Bungeecord/Velocity plugin that connects Vanilla chat or LunaChat and Discord</description>
+    <description>A Spigot/Velocity plugin that connects Vanilla chat or LunaChat and Discord</description>
 
     <licenses>
         <license>
@@ -69,10 +69,6 @@
             <url>https://repo.papermc.io/repository/maven-public/</url>
         </repository>
         <repository>
-            <id>bungeecord-repo</id>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-        </repository>
-        <repository>
             <id>ucchy-github</id>
             <url>https://raw.github.com/ucchyocean/mvn-repo/master</url>
         </repository>
@@ -81,29 +77,16 @@
     <dependencies>
         <!-- Paper https://github.com/PaperMC/Paper -->
         <dependency>
-            <groupId>com.destroystokyo.paper</groupId>
+            <groupId>io.papermc.paper</groupId>
             <artifactId>paper-api</artifactId>
-            <version>1.16.5-R0.1-SNAPSHOT</version>
-            <scope>provided</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>net.kyori</groupId>
-                    <artifactId>adventure-text-serializer-plain</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <!-- BungeeCord https://github.com/SpigotMC/BungeeCord -->
-        <dependency>
-            <groupId>net.md-5</groupId>
-            <artifactId>bungeecord-api</artifactId>
-            <version>1.20-R0.1</version>
+            <version>1.21.4-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
         <!-- Velocity -->
         <dependency>
             <groupId>com.velocitypowered</groupId>
             <artifactId>velocity-api</artifactId>
-            <version>3.1.2-SNAPSHOT</version>
+            <version>3.4.0-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
         <!-- LuckPerms -->
@@ -124,7 +107,7 @@
         <dependency>
             <groupId>net.dv8tion</groupId>
             <artifactId>JDA</artifactId>
-            <version>5.0.0-beta.15</version>
+            <version>5.3.0</version>
             <scope>compile</scope>
             <exclusions>
                 <exclusion>
@@ -132,28 +115,14 @@
                     <artifactId>opus-java</artifactId>
                 </exclusion>
                 <exclusion>
-                    <groupId>com.fasterxml.jackson.core</groupId>
-                    <artifactId>jackson-core</artifactId>
+                    <groupId>com.google.code.gson</groupId>
+                    <artifactId>gson</artifactId>
                 </exclusion>
                 <exclusion>
-                    <groupId>com.fasterxml.jackson.core</groupId>
-                    <artifactId>jackson-databind</artifactId>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-api</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency>
-        <!-- jackson-databind < 2.13.4.2 has CVE-2022-42003 and CVE-2022-42004 -->
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-            <version>2.15.3</version>
-            <scope>runtime</scope>
-        </dependency>
-        <!-- slf4j https://mvnrepository.com/artifact/org.slf4j/slf4j-api -->
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>2.0.9</version>
-            <scope>compile</scope>
         </dependency>
         <!-- ConfigAPI https://github.com/Siroshun09/ConfigAPI -->
         <dependency>
@@ -184,7 +153,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.11.0</version>
+                <version>3.13.0</version>
                 <configuration>
                     <target>${java.version}</target>
                     <source>${java.version}</source>
@@ -194,7 +163,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>3.3.0</version>
+                <version>3.4.2</version>
                 <configuration>
                     <finalName>${project.name}-${project.version}-original</finalName>
                     <archive combine.children="append">
@@ -211,7 +180,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>3.5.1</version>
+                <version>3.6.0</version>
                 <configuration>
                     <finalName>${project.name}-${project.version}</finalName>
                     <filters>
@@ -229,6 +198,18 @@
                         <relocation>
                             <pattern>com.github.siroshun09.configapi</pattern>
                             <shadedPattern>${project.groupId}.lib.configapi</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>com.google.crypto</pattern>
+                            <shadedPattern>${project.groupId}.lib.crypto</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>com.google.errorprone</pattern>
+                            <shadedPattern>${project.groupId}.lib.errorprone</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>google.protobuf</pattern>
+                            <shadedPattern>${project.groupId}.lib.protobuf</shadedPattern>
                         </relocation>
                         <relocation>
                             <pattern>net.dv8tion.jda</pattern>
@@ -269,6 +250,10 @@
                         <relocation>
                             <pattern>org.jetbrains</pattern>
                             <shadedPattern>${project.groupId}.lib.jetbrains</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>org.intellij</pattern>
+                            <shadedPattern>${project.groupId}.lib.intellij</shadedPattern>
                         </relocation>
                         <relocation>
                             <pattern>kotlin</pattern>

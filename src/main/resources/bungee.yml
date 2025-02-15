@@ -1,7 +1,0 @@
-name: DiscordChatBridge
-main: net.okocraft.discordchatbridge.platform.bungee.DiscordChatBridgeBungee
-version: ${project.version}
-description: ${project.description}
-url: ${project.url}
-author: Siroshun09
-softDepends: [LunaChat, LuckPerms]
