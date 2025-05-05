@@ -107,7 +107,7 @@
         <dependency>
             <groupId>net.dv8tion</groupId>
             <artifactId>JDA</artifactId>
-            <version>5.5.0</version>
+            <version>5.5.1</version>
             <scope>compile</scope>
             <exclusions>
                 <exclusion>
