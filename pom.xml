@@ -82,13 +82,6 @@
             <version>1.21.10-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
-        <!-- BungeeCord https://github.com/SpigotMC/BungeeCord -->
-        <dependency>
-            <groupId>net.md-5</groupId>
-            <artifactId>bungeecord-api</artifactId>
-            <version>1.21-R0.1-SNAPSHOT</version>
-            <scope>provided</scope>
-        </dependency>
         <!-- Velocity -->
         <dependency>
             <groupId>com.velocitypowered</groupId>
