@@ -6,6 +6,11 @@
   "authors": [
     "Siroshun09"
   ],
-  "dependencies": [],
+  "dependencies": [
+    {
+      "id": "lunachat",
+      "optional": false
+    }
+  ],
   "main": "net.okocraft.discordchatbridge.platform.velocity.DiscordChatBridgeVelocity"
 }

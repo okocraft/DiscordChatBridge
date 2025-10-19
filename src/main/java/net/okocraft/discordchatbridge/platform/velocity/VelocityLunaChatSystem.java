@@ -19,16 +19,17 @@
 
 package net.okocraft.discordchatbridge.platform.velocity;
 
-import com.github.ucchyocean.lc3.LunaChatBungee;
+import com.github.ucchyocean.lc3.LunaChatVelocity;
 import com.github.ucchyocean.lc3.channel.Channel;
 import net.okocraft.discordchatbridge.chat.LunaChatSystem;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class SnapLunaChatSystemIntegrator extends LunaChatSystem {
+public class VelocityLunaChatSystem extends LunaChatSystem {
 
     @Override
     protected @Nullable Channel getChannel(@NotNull String channelName) {
-        return LunaChatBungee.getInstance().getLunaChatAPI().getChannel(channelName);
+        return LunaChatVelocity.getInstance().getLunaChatAPI().getChannel(channelName);
     }
+
 }

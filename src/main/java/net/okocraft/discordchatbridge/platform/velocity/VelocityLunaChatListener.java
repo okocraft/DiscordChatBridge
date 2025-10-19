@@ -19,28 +19,20 @@
 
 package net.okocraft.discordchatbridge.platform.velocity;
 
-import com.github.ucchyocean.lc3.bungee.event.LunaChatBungeeChannelMessageEvent;
+import com.github.ucchyocean.lc3.velocity.event.LunaChatVelocityChannelMessageEvent;
+import com.velocitypowered.api.event.Subscribe;
 import net.okocraft.discordchatbridge.DiscordChatBridgePlugin;
 import net.okocraft.discordchatbridge.listener.chat.LunaChatListener;
 import org.jetbrains.annotations.NotNull;
 
-public class SnapLunaChatListener extends LunaChatListener {
+public class VelocityLunaChatListener extends LunaChatListener  {
 
-    private static SnapLunaChatListener instance;
-
-    public static SnapLunaChatListener getInstance() {
-        return instance;
-    }
-
-    public static void init(final DiscordChatBridgePlugin plugin) {
-        instance = new SnapLunaChatListener(plugin);
-    }
-
-    private SnapLunaChatListener(@NotNull DiscordChatBridgePlugin plugin) {
+    public VelocityLunaChatListener(@NotNull DiscordChatBridgePlugin plugin) {
         super(plugin);
     }
 
-    public void onChat(@NotNull LunaChatBungeeChannelMessageEvent e) {
+    @Subscribe
+    public void onChat(@NotNull LunaChatVelocityChannelMessageEvent e) {
         processChat(e.getChannelName(), e.getDisplayName(), e.getMember(), e.getOriginalMessage());
     }
 }

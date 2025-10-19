@@ -72,6 +72,10 @@
             <id>ucchy-github</id>
             <url>https://raw.github.com/ucchyocean/mvn-repo/master</url>
         </repository>
+        <repository>
+            <id>local-repo</id>
+            <url>file://${basedir}/libs</url>
+        </repository>
     </repositories>
 
     <dependencies>
@@ -101,6 +105,13 @@
             <groupId>com.github.ucchyocean</groupId>
             <artifactId>LunaChat</artifactId>
             <version>3.0.16</version>
+            <scope>provided</scope>
+        </dependency>
+        <!-- OkoChat https://github.com/ucchyocean/LunaChat -->
+        <dependency>
+            <groupId>net.okocraft.okochat</groupId>
+            <artifactId>okochat-legacy</artifactId>
+            <version>0.0.1</version>
             <scope>provided</scope>
         </dependency>
         <!-- JDA https://github.com/DV8FromTheWorld/JDA -->

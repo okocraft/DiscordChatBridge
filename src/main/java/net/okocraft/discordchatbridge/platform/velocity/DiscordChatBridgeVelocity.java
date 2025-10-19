@@ -75,8 +75,9 @@ public class DiscordChatBridgeVelocity implements DiscordChatBridgePlugin {
     public void onEnable(ProxyInitializeEvent e) {
         this.load();
 
-        this.chatSystem = new SnapLunaChatSystemIntegrator();
-        SnapLunaChatListener.init(this);
+        if (this.server.getPluginManager().isLoaded("lunachat")) {
+            this.chatSystem = new VelocityLunaChatSystem();
+        }
 
         this.isEnabled = this.enable();
     }
@@ -138,6 +139,9 @@ public class DiscordChatBridgeVelocity implements DiscordChatBridgePlugin {
 
     @Override
     public void registerListeners() {
+        if (this.server.getPluginManager().isLoaded("lunachat")) {
+            this.server.getEventManager().register(this, new VelocityLunaChatListener(this));
+        }
         this.server.getEventManager().register(this, new VelocityServerListener(this));
     }
 
@@ -153,7 +157,7 @@ public class DiscordChatBridgeVelocity implements DiscordChatBridgePlugin {
 
     @Override
     public void registerLuckPermsFirstJoinListener() {
-        if (this.server.getPluginManager().getPlugin("LuckPerms").isPresent()) {
+        if (this.server.getPluginManager().getPlugin("luckperms").isPresent()) {
             this.firstJoinListener = new FirstJoinListener(this);
         }
     }
