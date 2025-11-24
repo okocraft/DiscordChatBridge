@@ -2,6 +2,17 @@
   $schema: 'https://docs.renovatebot.com/renovate-schema.json',
   extends: [
     'github>okocraft/renovate-config//java/maven/renovate.json5',
-    'github>okocraft/renovate-config//java/ignores/papermc/renovate.json5',
+    'github>okocraft/renovate-config//java/ignores/papermc/renovate.json5'
+  ],
+  packageRules: [
+    {
+      matchManagers: [
+        'maven'
+      ],
+      "matchPackagePatterns": [
+        'net\\.okocraft\\.okochat:okochat-legacy'
+      ],
+      "enabled": false
+    }
   ]
 }
