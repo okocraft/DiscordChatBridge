@@ -3,5 +3,16 @@
   extends: [
     'github>okocraft/renovate-config//java/maven/renovate.json5',
     'github>okocraft/renovate-config//java/ignores/papermc/renovate.json5',
-  ]
+  ],
+  packageRules: [
+    {
+      matchManagers: [
+        'maven',
+      ],
+      enabled: false,
+      matchPackageNames: [
+        '/net\\.okocraft\\.okochat:okochat-legacy/',
+      ],
+    },
+  ],
 }
