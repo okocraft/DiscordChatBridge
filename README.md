@@ -8,7 +8,7 @@ LunaChat と Discord をチャット連携するプラグイン。
 
 ## Requirements
 
-- Java 21+
+- Java 25+
 - Paper / Velocity
 - (Optional) [LunaChat 3.0.8+](https://github.com/ucchyocean/LunaChat/releases/tag/v3.0.8)
 
