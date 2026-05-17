@@ -27,6 +27,6 @@ public final class AdventureVanillaChatFormatter {
     public static @NotNull Component format(@NotNull String sender, @NotNull Component message) {
         return Component.text()
                 .append(Component.text('<')).append(Component.text(sender)).append(Component.text('>'))
-                .append(Component.space()).append(message).build();
+                .append(Component.space()).append(message).asComponent();
     }
 }
