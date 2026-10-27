@@ -83,14 +83,14 @@
         <dependency>
             <groupId>io.papermc.paper</groupId>
             <artifactId>paper-api</artifactId>
-            <version>26.3.build.209-stable</version>
+            <version>26.3.build.222-stable</version>
             <scope>provided</scope>
         </dependency>
         <!-- Velocity -->
         <dependency>
             <groupId>com.velocitypowered</groupId>
             <artifactId>velocity-api</artifactId>
-            <version>4.2.0</version>
+            <version>4.3.0</version>
             <scope>provided</scope>
         </dependency>
         <!-- LuckPerms -->
