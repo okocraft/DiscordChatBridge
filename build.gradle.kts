@@ -50,6 +50,7 @@ dependencies {
         exclude(group = "org.slf4j", module = "slf4j-api")
     }
     testImplementation(libs.junit.jupiter)
+    testImplementation(libs.configurate.yaml)
 }
 
 val pluginProperties = mapOf(
