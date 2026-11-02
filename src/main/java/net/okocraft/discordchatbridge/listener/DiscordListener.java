@@ -179,7 +179,7 @@ public class DiscordListener extends ListenerAdapter {
         String prefix;
 
         if (role != null) {
-            var roleColorCode = Optional.ofNullable(role.getColor()).map(this.plugin::serializeColor).orElse(this.defaultRoleColorCode);
+            var roleColorCode = Optional.ofNullable(role.getColors().getPrimary()).map(this.plugin::serializeColor).orElse(this.defaultRoleColorCode);
             var rolePrefix = this.rolePrefixes.getOrDefault(Long.toString(role.getIdLong()), "");
 
             if (rolePrefix.isEmpty()) {
