@@ -92,11 +92,3 @@ tasks {
         relocate("kotlin", "net.okocraft.discordchatbridge.lib.kotlin")
     }
 }
-
-tasks.test {
-    val distribution = tasks.shadowJar.flatMap { it.archiveFile }
-    dependsOn(tasks.shadowJar)
-    inputs.file(distribution)
-    systemProperty("distributionJar", distribution.get().asFile.absolutePath)
-    systemProperty("projectVersion", project.version.toString())
-}
