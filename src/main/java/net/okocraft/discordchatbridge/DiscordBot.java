@@ -35,8 +35,6 @@ import net.dv8tion.jda.api.utils.MemberCachePolicy;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
-import net.okocraft.discordchatbridge.config.FormatSettings;
-import net.okocraft.discordchatbridge.config.GeneralSettings;
 import net.okocraft.discordchatbridge.constant.Placeholders;
 import net.okocraft.discordchatbridge.listener.DiscordListener;
 import org.jetbrains.annotations.Contract;
@@ -91,10 +89,10 @@ public class DiscordBot {
         try {
             return new DiscordBot(
                     plugin,
-                    JDABuilder.createDefault(plugin.getGeneralConfig().get(GeneralSettings.DISCORD_TOKEN))
+                    JDABuilder.createDefault(plugin.getGeneralConfig().discordToken())
                             .addEventListeners(new DiscordListener(plugin))
                             .setAutoReconnect(true)
-                            .setStatus(plugin.getGeneralConfig().get(GeneralSettings.DISCORD_STATUS))
+                            .setStatus(plugin.getGeneralConfig().discordStatus())
                             .enableIntents(GatewayIntent.GUILD_MEMBERS, GatewayIntent.MESSAGE_CONTENT)
                             .setMemberCachePolicy(MemberCachePolicy.ALL)
                             .disableCache(Arrays.asList(CacheFlag.values()))
@@ -164,7 +162,7 @@ public class DiscordBot {
     private void processChat(long id, @NotNull String original,
                              @NotNull String name, @NotNull String displayName) {
         var plain =
-                this.plugin.getFormatConfig().get(FormatSettings.DISCORD_CHAT)
+                this.plugin.getFormatConfig().discordChat()
                         .replace(Placeholders.PLAYER_NAME, this.escapeUnderscore(name))
                         .replace(Placeholders.DISPLAY_NAME, this.escapeUnderscore(displayName))
                         .replace(Placeholders.MESSAGE, original);
@@ -189,14 +187,14 @@ public class DiscordBot {
 
     public void updateGame() {
         this.scheduler.schedule(() -> {
-                    var type = this.plugin.getGeneralConfig().get(GeneralSettings.DISCORD_ACTIVITY_TYPE);
+                    var type = this.plugin.getGeneralConfig().discordActivityType();
                     var game =
                             this.plugin.getGeneralConfig()
-                                    .get(GeneralSettings.DISCORD_ACTIVITY_GAME)
+                                    .discordActivityGame()
                                     .replace(
                                             Placeholders.PLAYER_COUNT, String.valueOf(this.plugin.getPlatformInfo().getNumberOfPlayers())
                                     );
-                    var url = this.plugin.getGeneralConfig().get(GeneralSettings.DISCORD_ACTIVITY_URL);
+                    var url = this.plugin.getGeneralConfig().discordActivityUrl();
 
             this.jda.getPresence().setActivity(Activity.of(type, game, url));
                 }, 1, TimeUnit.SECONDS

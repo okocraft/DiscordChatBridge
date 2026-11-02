@@ -19,10 +19,9 @@
 
 package net.okocraft.discordchatbridge.platform.velocity;
 
-import com.github.siroshun09.configapi.api.Configuration;
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ProxyServer;
-import net.okocraft.discordchatbridge.config.FormatSettings;
+import net.okocraft.discordchatbridge.DiscordChatBridgePlugin;
 import net.okocraft.discordchatbridge.platform.PlatformInfo;
 import net.okocraft.discordchatbridge.util.PlayerListFormatter;
 import org.jetbrains.annotations.NotNull;
@@ -33,11 +32,11 @@ import java.util.Collection;
 class VelocityPlatform implements PlatformInfo {
 
     private final ProxyServer server;
-    private final Configuration formatConfig;
+    private final DiscordChatBridgePlugin plugin;
 
-    VelocityPlatform(@NotNull ProxyServer server, @NotNull Configuration formatConfig) {
+    VelocityPlatform(@NotNull ProxyServer server, @NotNull DiscordChatBridgePlugin plugin) {
         this.server = server;
-        this.formatConfig = formatConfig;
+        this.plugin = plugin;
     }
 
     @Override
@@ -47,7 +46,7 @@ class VelocityPlatform implements PlatformInfo {
 
     @Override
     public @NotNull Collection<String> getPlayerListsPerServer() {
-        var format = this.formatConfig.get(FormatSettings.PLAYER_LIST_FORMAT);
+        var format = this.plugin.getFormatConfig().playerListFormat();
         var list = new ArrayList<String>();
 
         for (var server : this.server.getAllServers()) {

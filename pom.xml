@@ -135,12 +135,18 @@
                 </exclusion>
             </exclusions>
         </dependency>
-        <!-- ConfigAPI https://github.com/Siroshun09/ConfigAPI -->
+        <!-- Configurate is provided by both Paper and Velocity. -->
         <dependency>
-            <groupId>com.github.siroshun09.configapi</groupId>
-            <artifactId>configapi-yaml</artifactId>
-            <version>4.6.4</version>
-            <scope>compile</scope>
+            <groupId>org.spongepowered</groupId>
+            <artifactId>configurate-yaml</artifactId>
+            <version>4.2.0</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>6.0.3</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 
@@ -162,6 +168,11 @@
         </resources>
 
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.5.4</version>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -210,10 +221,6 @@
                     <minimizeJar>true</minimizeJar>
                     <createDependencyReducedPom>false</createDependencyReducedPom>
                     <relocations>
-                        <relocation>
-                            <pattern>com.github.siroshun09.configapi</pattern>
-                            <shadedPattern>${project.groupId}.lib.configapi</shadedPattern>
-                        </relocation>
                         <relocation>
                             <pattern>com.google.crypto</pattern>
                             <shadedPattern>${project.groupId}.lib.crypto</shadedPattern>

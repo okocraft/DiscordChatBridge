@@ -19,15 +19,12 @@
 
 package net.okocraft.discordchatbridge.listener;
 
-import com.github.siroshun09.configapi.api.Configuration;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.channel.unions.MessageChannelUnion;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.okocraft.discordchatbridge.DiscordChatBridgePlugin;
-import net.okocraft.discordchatbridge.config.FormatSettings;
-import net.okocraft.discordchatbridge.config.GeneralSettings;
 import net.okocraft.discordchatbridge.constant.Constants;
 import net.okocraft.discordchatbridge.constant.Placeholders;
 import net.okocraft.discordchatbridge.util.ColorStripper;
@@ -44,7 +41,7 @@ public class DiscordListener extends ListenerAdapter {
     private final DiscordChatBridgePlugin plugin;
     private final Map<Long, String> linkedChannels = new HashMap<>();
 
-    private final Configuration rolePrefixes;
+    private final Map<String, String> rolePrefixes;
     private final String defaultRoleColorCode;
 
     private final AtomicLong lastPlayerListUsed = new AtomicLong(0);
@@ -52,16 +49,14 @@ public class DiscordListener extends ListenerAdapter {
     public DiscordListener(@NotNull DiscordChatBridgePlugin plugin) {
         this.plugin = plugin;
 
-        var channelSection = plugin.getGeneralConfig().get(GeneralSettings.LINKED_CHANNELS);
-
-        for (var key : channelSection.getKeyList()) {
-            var id = channelSection.getLong(key);
-            if (id != 0) {
-                this.linkedChannels.put(id, key);
+        var channelSection = plugin.getGeneralConfig().linkedChannels();
+        for (var entry : channelSection.entrySet()) {
+            if (entry.getValue() != 0) {
+                this.linkedChannels.put(entry.getValue(), entry.getKey());
             }
         }
 
-        this.rolePrefixes = plugin.getGeneralConfig().get(GeneralSettings.ROLE_PREFIX);
+        this.rolePrefixes = plugin.getGeneralConfig().rolePrefixes();
         this.defaultRoleColorCode = plugin.serializeColor(new Color(Role.DEFAULT_COLOR_RAW));
     }
 
@@ -88,7 +83,7 @@ public class DiscordListener extends ListenerAdapter {
 
         var config = this.plugin.getGeneralConfig();
 
-        int maxLength = config.get(GeneralSettings.CHAT_MAX_LENGTH);
+        int maxLength = config.chatMaxLength();
 
         if (0 < maxLength && maxLength < message.length()) {
             this.plugin.getBot().addReaction(event.getMessage(), "U+26A0");
@@ -96,10 +91,10 @@ public class DiscordListener extends ListenerAdapter {
         }
 
         var lines = message.lines().toList();
-        int maxLines = config.get(GeneralSettings.CHAT_MAX_LINES);
+        int maxLines = config.chatMaxLines();
 
         var attachments = event.getMessage().getAttachments();
-        int maxAttachments = config.get(GeneralSettings.CHAT_MAX_ATTACHMENTS);
+        int maxAttachments = config.chatMaxAttachments();
 
         if ((0 < maxLines && maxLines < lines.size()) ||
             (0 < maxAttachments && maxAttachments < attachments.size())) {
@@ -108,7 +103,7 @@ public class DiscordListener extends ListenerAdapter {
         }
 
         var senderName = this.createSenderName(member);
-        var sourceName = config.get(GeneralSettings.DISCORD_SOURCE_NAME);
+        var sourceName = config.discordSourceName();
 
         for (var line : lines) {
             if (!line.isEmpty()) {
@@ -132,7 +127,7 @@ public class DiscordListener extends ListenerAdapter {
 
         var top =
                 this.plugin.getFormatConfig()
-                        .get(FormatSettings.PLAYER_LIST_TOP)
+                        .playerListTop()
                         .replace(
                                 Placeholders.PLAYER_COUNT,
                                 String.valueOf(this.plugin.getPlatformInfo().getNumberOfPlayers())
@@ -160,7 +155,7 @@ public class DiscordListener extends ListenerAdapter {
         var originalName = member.getNickname() != null ? member.getNickname() : member.getEffectiveName();
 
         // true / false / role name
-        var setting = this.plugin.getGeneralConfig().get(GeneralSettings.ALLOW_COLORS_IN_NAME);
+        var setting = this.plugin.getGeneralConfig().allowColorsInName();
 
         boolean allowColorsInName = Boolean.parseBoolean(setting) || (!setting.equalsIgnoreCase("false") && this.hasRole(member, setting));
 
@@ -176,7 +171,7 @@ public class DiscordListener extends ListenerAdapter {
     }
 
     private @NotNull String getRolePrefix(@NotNull Member member) {
-        if (!this.plugin.getGeneralConfig().get(GeneralSettings.ENABLE_ROLE_PREFIX)) {
+        if (!this.plugin.getGeneralConfig().enableRolePrefix()) {
             return "";
         }
 
@@ -185,11 +180,11 @@ public class DiscordListener extends ListenerAdapter {
 
         if (role != null) {
             var roleColorCode = Optional.ofNullable(role.getColor()).map(this.plugin::serializeColor).orElse(this.defaultRoleColorCode);
-            var rolePrefix = this.rolePrefixes.getString(Long.toString(role.getIdLong()));
+            var rolePrefix = this.rolePrefixes.getOrDefault(Long.toString(role.getIdLong()), "");
 
             if (rolePrefix.isEmpty()) {
                 prefix = this.plugin.getGeneralConfig()
-                        .get(GeneralSettings.DEFAULT_ROLE_PREFIX)
+                        .defaultRolePrefix()
                         .replace(Placeholders.ROLE_COLOR, roleColorCode);
             } else {
                 prefix = rolePrefix.replace(Placeholders.ROLE_COLOR, roleColorCode);
@@ -206,7 +201,7 @@ public class DiscordListener extends ListenerAdapter {
     }
 
     private @NotNull String checkNameLength(@NotNull String name) {
-        int limit = plugin.getGeneralConfig().get(GeneralSettings.NICKNAME_LENGTH_LIMIT);
+        int limit = plugin.getGeneralConfig().nicknameLengthLimit();
         int[] codePoints = name.codePoints().toArray();
 
         if (codePoints.length <= (limit >> 1)) {

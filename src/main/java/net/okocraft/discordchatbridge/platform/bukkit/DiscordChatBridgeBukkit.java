@@ -19,7 +19,7 @@
 
 package net.okocraft.discordchatbridge.platform.bukkit;
 
-import com.github.siroshun09.configapi.yaml.YamlConfiguration;
+import net.okocraft.discordchatbridge.config.ConfigLoader;
 import net.okocraft.discordchatbridge.DiscordBot;
 import net.okocraft.discordchatbridge.DiscordChatBridgePlugin;
 import net.okocraft.discordchatbridge.chat.ChatSystem;
@@ -43,8 +43,7 @@ public class DiscordChatBridgeBukkit extends JavaPlugin implements DiscordChatBr
     private final LoggerWrapper wrappedLogger = new JavaLogger(this.getLogger());
     private final BukkitPlatform bukkitPlatform = new BukkitPlatform(this);
     private final ReloadCommand reloadCommand = new ReloadCommand(this);
-    private final YamlConfiguration generalConfig = YamlConfiguration.create(this.getDataDirectory().resolve("config.yml"));
-    private final YamlConfiguration formatConfig = YamlConfiguration.create(this.getDataDirectory().resolve("format.yml"));
+    private volatile ConfigLoader.ConfigPair config;
 
     private DiscordBot bot;
     private ChatSystem chatSystem;
@@ -53,7 +52,10 @@ public class DiscordChatBridgeBukkit extends JavaPlugin implements DiscordChatBr
 
     @Override
     public void onEnable() {
-        this.load();
+        if (!this.load()) {
+            this.getServer().getPluginManager().disablePlugin(this);
+            return;
+        }
 
         if (this.isLunaChatEnabled()) {
             this.chatSystem = new BukkitLunaChatSystem();
@@ -85,12 +87,14 @@ public class DiscordChatBridgeBukkit extends JavaPlugin implements DiscordChatBr
         return this.getDataFolder().toPath();
     }
 
-    public @NotNull YamlConfiguration getGeneralConfig() {
-        return this.generalConfig;
+    @Override
+    public @NotNull ConfigLoader.ConfigPair getConfig() {
+        return this.config;
     }
 
-    public @NotNull YamlConfiguration getFormatConfig() {
-        return this.formatConfig;
+    @Override
+    public void setConfig(@NotNull ConfigLoader.ConfigPair config) {
+        this.config = config;
     }
 
     public @NotNull DiscordBot getBot() {

@@ -19,47 +19,108 @@
 
 package net.okocraft.discordchatbridge.config;
 
-import com.github.siroshun09.configapi.api.value.ConfigValue;
+import org.spongepowered.configurate.objectmapping.ConfigSerializable;
+import org.spongepowered.configurate.objectmapping.meta.Setting;
 
+@ConfigSerializable
 public final class FormatSettings {
 
-    public static final ConfigValue<String> DISCORD_CHAT =
-            config -> config.getString("server.chat", "%player_name%: %message%");
+    private ServerSettings server = new ServerSettings();
+    private CommandSettings command = new CommandSettings();
 
-    public static final ConfigValue<String> SERVER_JOIN =
-            config -> config.getString("server.join", ":heavy_plus_sign: **%player_name%** joined the server.");
+    public String discordChat() {
+        return this.server.chat;
+    }
 
-    public static final ConfigValue<String> SERVER_FIRST_JOIN =
-            config -> config.getString("server.first-join", ":heavy_plus_sign: **%player_name%** joined the server for the first time! :tada:");
+    public String serverJoin() {
+        return this.server.join;
+    }
 
-    public static final ConfigValue<String> SERVER_LEAVE =
-            config -> config.getString("server.leave", ":heavy_plus_sign: **%player_name%** left the server.");
+    public String serverFirstJoin() {
+        return this.server.firstJoin;
+    }
 
-    public static final ConfigValue<String> SERVER_SWITCH =
-            config -> config.getString(
-                    "server.switch",
-                    ":heavy_plus_sign: **%player_name%** moved to **%server_name%**"
-            );
+    public String serverLeave() {
+        return this.server.leave;
+    }
 
-    public static final ConfigValue<String> PLAYER_LIST_TOP =
-            config -> config.getString("server.player-list.top", "**===== Player List (%player_count%) =====**");
+    public String serverSwitch() {
+        return this.server.switchMessage;
+    }
 
-    public static final ConfigValue<String> PLAYER_LIST_FORMAT =
-            config -> config.getString("server.player-list.list", "%server%: %player_list%");
+    public String playerListTop() {
+        return this.server.playerList.top;
+    }
 
-    public static final ConfigValue<String> COMMAND_NO_PERMISSION =
-            config -> config.getString("command.no-permission", "* You have no permission: %permission%");
+    public String playerListFormat() {
+        return this.server.playerList.list;
+    }
 
-    public static final ConfigValue<String> COMMAND_RELOAD_START =
-            config -> config.getString("command.reload.start", "* Reloading DiscordChatBridge...");
+    public String commandNoPermission() {
+        return this.command.noPermission;
+    }
 
-    public static final ConfigValue<String> COMMAND_RELOAD_SUCCESS =
-            config -> config.getString("command.reload.success", "* The reload was successful.");
+    public String commandReloadStart() {
+        return this.command.reload.start;
+    }
 
-    public static final ConfigValue<String> COMMAND_RELOAD_FAILURE =
-            config -> config.getString("command.reload.failure", "* Failed to reload. Please check the console.");
+    public String commandReloadSuccess() {
+        return this.command.reload.success;
+    }
 
-    private FormatSettings() {
-        throw new UnsupportedOperationException();
+    public String commandReloadFailure() {
+        return this.command.reload.failure;
+    }
+
+    void validate() {
+        if (this.server == null || this.server.playerList == null ||
+                this.command == null || this.command.reload == null) {
+            throw new IllegalArgumentException("server, server.player-list, command and command.reload must be mappings");
+        }
+        if (this.server.chat == null || this.server.join == null || this.server.firstJoin == null ||
+                this.server.leave == null || this.server.switchMessage == null ||
+                this.server.playerList.top == null || this.server.playerList.list == null ||
+                this.command.noPermission == null || this.command.reload.start == null ||
+                this.command.reload.success == null || this.command.reload.failure == null) {
+            throw new IllegalArgumentException("format.yml message values must be strings");
+        }
+    }
+
+    @ConfigSerializable
+    public static final class ServerSettings {
+        private String chat = "%player_name%: %message%";
+        private String join = ":heavy_plus_sign: **%player_name%** joined the server.";
+
+        @Setting("first-join")
+        private String firstJoin = ":heavy_plus_sign: **%player_name%** joined the server for the first time! :tada:";
+
+        private String leave = ":heavy_plus_sign: **%player_name%** left the server.";
+
+        @Setting("switch")
+        private String switchMessage = ":heavy_plus_sign: **%player_name%** moved to **%server_name%**";
+
+        @Setting("player-list")
+        private PlayerListSettings playerList = new PlayerListSettings();
+    }
+
+    @ConfigSerializable
+    public static final class PlayerListSettings {
+        private String top = "**===== Player List (%player_count%) =====**";
+        private String list = "%server%: %player_list%";
+    }
+
+    @ConfigSerializable
+    public static final class CommandSettings {
+        @Setting("no-permission")
+        private String noPermission = "* You have no permission: %permission%";
+
+        private ReloadSettings reload = new ReloadSettings();
+    }
+
+    @ConfigSerializable
+    public static final class ReloadSettings {
+        private String start = "* Reloading DiscordChatBridge...";
+        private String success = "* The reload was successful.";
+        private String failure = "* Failed to reload. Please check the console.";
     }
 }

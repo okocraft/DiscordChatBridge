@@ -21,7 +21,6 @@ package net.okocraft.discordchatbridge.listener.chat;
 
 import com.github.ucchyocean.lc3.member.ChannelMember;
 import net.okocraft.discordchatbridge.DiscordChatBridgePlugin;
-import net.okocraft.discordchatbridge.config.GeneralSettings;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
@@ -37,19 +36,17 @@ public abstract class LunaChatListener extends AbstractChatListener {
 
         this.plugin = plugin;
 
-        var channelSection = plugin.getGeneralConfig().get(GeneralSettings.LINKED_CHANNELS);
-
-        for (var key : channelSection.getKeyList()) {
-            var id = channelSection.getLong(key);
-            if (id != 0) {
-                this.linkedChannels.put(key, id);
+        var channelSection = plugin.getGeneralConfig().linkedChannels();
+        for (var entry : channelSection.entrySet()) {
+            if (entry.getValue() != 0) {
+                this.linkedChannels.put(entry.getKey(), entry.getValue());
             }
         }
     }
 
     protected void processChat(@NotNull String channelName, @NotNull String displayName,
                                @NotNull ChannelMember member, @NotNull String message) {
-        var sourceName = this.plugin.getGeneralConfig().get(GeneralSettings.DISCORD_SOURCE_NAME);
+        var sourceName = this.plugin.getGeneralConfig().discordSourceName();
 
         if (displayName.endsWith(sourceName)) {
             return;

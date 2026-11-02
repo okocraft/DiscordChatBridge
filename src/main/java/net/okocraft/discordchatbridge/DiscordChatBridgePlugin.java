@@ -19,9 +19,9 @@
 
 package net.okocraft.discordchatbridge;
 
-import com.github.siroshun09.configapi.api.util.ResourceUtils;
-import com.github.siroshun09.configapi.yaml.YamlConfiguration;
 import net.okocraft.discordchatbridge.chat.ChatSystem;
+import net.okocraft.discordchatbridge.config.ConfigLoader;
+import net.okocraft.discordchatbridge.config.FormatSettings;
 import net.okocraft.discordchatbridge.config.GeneralSettings;
 import net.okocraft.discordchatbridge.logger.LoggerWrapper;
 import net.okocraft.discordchatbridge.platform.PlatformInfo;
@@ -37,9 +37,17 @@ public interface DiscordChatBridgePlugin {
 
     @NotNull Path getDataDirectory();
 
-    @NotNull YamlConfiguration getGeneralConfig();
+    @NotNull ConfigLoader.ConfigPair getConfig();
 
-    @NotNull YamlConfiguration getFormatConfig();
+    void setConfig(@NotNull ConfigLoader.ConfigPair config);
+
+    default @NotNull GeneralSettings getGeneralConfig() {
+        return this.getConfig().general();
+    }
+
+    default @NotNull FormatSettings getFormatConfig() {
+        return this.getConfig().format();
+    }
 
     @NotNull DiscordBot getBot();
 
@@ -49,32 +57,26 @@ public interface DiscordChatBridgePlugin {
 
     default boolean load() {
         try {
-            ResourceUtils.copyFromClassLoaderIfNotExists(
-                    this.getClass().getClassLoader(),
-                    "config.yml",
-                    this.getGeneralConfig().getPath()
-            );
-
-            this.getGeneralConfig().load();
+            this.setConfig(ConfigLoader.load(this.getDataDirectory()));
+            return true;
         } catch (IOException e) {
-            this.getWrappedLogger().error("Could not load config.yml", e);
+            this.getWrappedLogger().error("Could not load plugin configuration", e);
             return false;
         }
+    }
 
+    default boolean reload() {
+        final ConfigLoader.ConfigPair next;
         try {
-            ResourceUtils.copyFromClassLoaderIfNotExists(
-                    this.getClass().getClassLoader(),
-                    "format.yml",
-                    this.getFormatConfig().getPath()
-            );
-
-            this.getFormatConfig().load();
+            next = ConfigLoader.load(this.getDataDirectory());
         } catch (IOException e) {
-            this.getWrappedLogger().error("Could not load format.yml", e);
+            this.getWrappedLogger().error("Could not reload plugin configuration", e);
             return false;
         }
 
-        return true;
+        this.disable();
+        this.setConfig(next);
+        return this.enable();
     }
 
     default boolean enable() {
@@ -89,7 +91,7 @@ public interface DiscordChatBridgePlugin {
         this.registerCommands();
         this.registerListeners();
 
-        if (this.getGeneralConfig().get(GeneralSettings.SEND_FIRST_JOIN_MESSAGE)) {
+        if (this.getGeneralConfig().sendFirstJoinMessage()) {
             this.registerLuckPermsFirstJoinListener();
         }
 
