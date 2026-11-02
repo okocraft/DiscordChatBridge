@@ -22,7 +22,6 @@ package net.okocraft.discordchatbridge.listener.chat;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import net.okocraft.discordchatbridge.DiscordChatBridgePlugin;
-import net.okocraft.discordchatbridge.config.GeneralSettings;
 import net.okocraft.discordchatbridge.constant.Constants;
 import org.jetbrains.annotations.NotNull;
 
@@ -38,7 +37,7 @@ public abstract class AdventureChatListener extends AbstractChatListener {
     public void processChat(@NotNull String channelName, @NotNull String name,
                             @NotNull Component displayName, @NotNull Component message) {
         if (channelName.equals(Constants.GLOBAL_CHANNEL_NAME)) {
-            long systemChannelID = this.plugin.getGeneralConfig().get(GeneralSettings.SYSTEM_CHANNEL);
+            long systemChannelID = this.plugin.getGeneralConfig().systemChannel;
 
             if (systemChannelID != 0) {
                 this.sendChatToDiscord(

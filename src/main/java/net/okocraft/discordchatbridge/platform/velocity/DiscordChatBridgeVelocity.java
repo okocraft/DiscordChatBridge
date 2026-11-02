@@ -19,7 +19,7 @@
 
 package net.okocraft.discordchatbridge.platform.velocity;
 
-import com.github.siroshun09.configapi.yaml.YamlConfiguration;
+import net.okocraft.discordchatbridge.config.ConfigLoader;
 import com.google.inject.Inject;
 import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.proxy.ProxyInitializeEvent;
@@ -50,8 +50,7 @@ public class DiscordChatBridgeVelocity implements DiscordChatBridgePlugin {
     private final LoggerWrapper wrappedLogger;
     private final Path dataDirectory;
 
-    private final YamlConfiguration generalConfig;
-    private final YamlConfiguration formatConfig;
+    private volatile ConfigLoader.ConfigPair config;
     private final VelocityPlatform velocityPlatform;
 
     private DiscordBot bot;
@@ -66,14 +65,14 @@ public class DiscordChatBridgeVelocity implements DiscordChatBridgePlugin {
         this.wrappedLogger = new Slf4jLogger(logger);
         this.dataDirectory = dataDirectory;
 
-        this.generalConfig = YamlConfiguration.create(this.getDataDirectory().resolve("config.yml"));
-        this.formatConfig = YamlConfiguration.create(this.getDataDirectory().resolve("format.yml"));
-        this.velocityPlatform = new VelocityPlatform(server, this.formatConfig);
+        this.velocityPlatform = new VelocityPlatform(server, this);
     }
 
     @Subscribe
     public void onEnable(ProxyInitializeEvent e) {
-        this.load();
+        if (!this.load()) {
+            return;
+        }
 
         if (this.server.getPluginManager().isLoaded("lunachat")) {
             this.chatSystem = new VelocityLunaChatSystem();
@@ -97,12 +96,14 @@ public class DiscordChatBridgeVelocity implements DiscordChatBridgePlugin {
         return this.dataDirectory;
     }
 
-    public @NotNull YamlConfiguration getGeneralConfig() {
-        return this.generalConfig;
+    @Override
+    public @NotNull ConfigLoader.ConfigPair getSettings() {
+        return this.config;
     }
 
-    public @NotNull YamlConfiguration getFormatConfig() {
-        return this.formatConfig;
+    @Override
+    public void setSettings(@NotNull ConfigLoader.ConfigPair config) {
+        this.config = config;
     }
 
     public @NotNull DiscordBot getBot() {

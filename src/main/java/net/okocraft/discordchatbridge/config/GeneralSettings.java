@@ -19,89 +19,99 @@
 
 package net.okocraft.discordchatbridge.config;
 
-import com.github.siroshun09.configapi.api.Configuration;
-import com.github.siroshun09.configapi.api.MappedConfiguration;
-import com.github.siroshun09.configapi.api.value.ConfigValue;
 import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Activity;
+import org.spongepowered.configurate.objectmapping.ConfigSerializable;
+import org.spongepowered.configurate.objectmapping.meta.Setting;
 
-import java.util.Objects;
+import java.util.Map;
 
+@ConfigSerializable
 public final class GeneralSettings {
 
-    public static final ConfigValue<String> DISCORD_TOKEN = config -> config.getString("discord.token");
+    public Discord discord = new Discord();
+    public String serverName = "server";
+    public int chatMaxLength = 150;
+    public int chatMaxLines;
+    public int chatMaxAttachments;
+    public String discordSourceName = "Dis";
+    public long systemChannel;
+    public Map<String, Long> channels = Map.of();
+    public Map<String, String> rolePrefix = Map.of();
+    public String allowColorsInName = "true";
+    public int nicknameLengthLimit = 16;
+    public MessageSending messageSendingSetting = new MessageSending();
 
-    public static final ConfigValue<OnlineStatus> DISCORD_STATUS =
-            config -> {
-                try {
-                    var value = config.getString("discord.status");
-                    return OnlineStatus.valueOf(value);
-                } catch (IllegalArgumentException e) {
-                    return OnlineStatus.ONLINE;
-                }
-            };
+    public OnlineStatus discordStatus() {
+        try {
+            return OnlineStatus.valueOf(this.discord.status);
+        } catch (IllegalArgumentException e) {
+            return OnlineStatus.ONLINE;
+        }
+    }
 
-    public static final ConfigValue<Activity.ActivityType> DISCORD_ACTIVITY_TYPE =
-            config -> {
-                try {
-                    var value = config.getString("discord.activity.type");
-                    return value.equalsIgnoreCase("DEFAULT") ?
-                            Activity.ActivityType.PLAYING : // for compatibility
-                            Activity.ActivityType.valueOf(value);
-                } catch (IllegalArgumentException e) {
-                    return Activity.ActivityType.PLAYING;
-                }
-            };
+    public Activity.ActivityType discordActivityType() {
+        var type = this.discord.activity.type;
+        if ("DEFAULT".equalsIgnoreCase(type)) {
+            return Activity.ActivityType.PLAYING;
+        }
+        try {
+            return Activity.ActivityType.valueOf(type);
+        } catch (IllegalArgumentException e) {
+            return Activity.ActivityType.PLAYING;
+        }
+    }
 
-    public static final ConfigValue<String> DISCORD_ACTIVITY_GAME =
-            config -> config.getString("discord.activity.game");
+    public boolean enableRolePrefix() {
+        return Boolean.parseBoolean(this.rolePrefix.getOrDefault("enable", "true"));
+    }
 
-    public static final ConfigValue<String> DISCORD_ACTIVITY_URL =
-            config -> config.getString("discord.activity.url");
+    public String defaultRolePrefix() {
+        return this.rolePrefix.getOrDefault("default", "&f*");
+    }
 
-    public static final ConfigValue<String> SERVER_NAME =
-            config -> config.getString("server-name", "server");
+    void validate() {
+        if (this.discord == null || this.discord.activity == null ||
+                this.discord.token == null || this.discord.token.isBlank()) {
+            throw new IllegalArgumentException("discord.token must not be blank");
+        }
+        if (this.discord.status == null || this.discord.activity.type == null ||
+                this.discord.activity.game == null || this.discord.activity.url == null) {
+            throw new IllegalArgumentException("discord.status and discord.activity fields must be strings");
+        }
+        if (this.channels == null || this.rolePrefix == null || this.messageSendingSetting == null) {
+            throw new IllegalArgumentException("channels, role-prefix and message-sending-setting must be mappings");
+        }
+        if (this.chatMaxLength < 0 || this.chatMaxLines < 0 || this.chatMaxAttachments < 0 ||
+                this.nicknameLengthLimit <= 0) {
+            throw new IllegalArgumentException("Chat limits must be non-negative and nickname-length-limit positive");
+        }
+        this.channels = Map.copyOf(this.channels);
+        this.rolePrefix = Map.copyOf(this.rolePrefix);
+    }
 
-    public static final ConfigValue<Integer> CHAT_MAX_LENGTH =
-            config -> config.getInteger("chat-max-length", 150);
+    @ConfigSerializable
+    public static final class Discord {
+        public String token = "";
+        public String status = "ONLINE";
+        public ActivitySettings activity = new ActivitySettings();
+    }
 
-    public static final ConfigValue<Integer> CHAT_MAX_LINES =
-            config -> config.getInteger("chat-max-lines");
+    @ConfigSerializable
+    public static final class ActivitySettings {
+        public String type = "PLAYING";
+        public String game = "%player_count% players in server";
+        public String url = "";
+    }
 
-    public static final ConfigValue<Integer> CHAT_MAX_ATTACHMENTS =
-            config -> config.getInteger("chat-max-attachments");
+    @ConfigSerializable
+    public static final class MessageSending {
+        public boolean join = true;
+        public boolean leave = true;
 
-    public static final ConfigValue<String> DISCORD_SOURCE_NAME =
-            config -> config.getString("discord-source-name", "Dis");
+        @Setting("switch")
+        public boolean switchMessage = true;
 
-    public static final ConfigValue<Configuration> ROLE_PREFIX =
-            config -> Objects.requireNonNullElseGet(config.getSection("role-prefix"), MappedConfiguration::create);
-
-    public static final ConfigValue<Boolean> ENABLE_ROLE_PREFIX = config -> config.getBoolean("role-prefix.enable", true);
-
-    public static final ConfigValue<String> DEFAULT_ROLE_PREFIX =
-            config -> config.getString("role-prefix.default", "&f*");
-
-    public static final ConfigValue<Long> SYSTEM_CHANNEL =
-            config -> config.getLong("system-channel");
-
-    public static final ConfigValue<Configuration> LINKED_CHANNELS =
-            config -> Objects.requireNonNullElseGet(config.getSection("channels"), MappedConfiguration::create);
-
-    public static final ConfigValue<String> ALLOW_COLORS_IN_NAME = config -> config.getString("allow-colors-in-name", Boolean.TRUE.toString());
-
-    public static final ConfigValue<Integer> NICKNAME_LENGTH_LIMIT = config -> config.getInteger("nickname-length-limit", 16);
-
-    public static final ConfigValue<Boolean> SEND_JOIN_MESSAGE = c -> c.getBoolean("message-sending-setting.join", true);
-
-    public static final ConfigValue<Boolean> SEND_LEAVE_MESSAGE = c -> c.getBoolean("message-sending-setting.leave", true);
-
-    public static final ConfigValue<Boolean> SEND_SWITCH_MESSAGE = c -> c.getBoolean("message-sending-setting.switch", true);
-
-    public static final ConfigValue<Boolean> SEND_FIRST_JOIN_MESSAGE = c -> c.getBoolean("message-sending-setting.first-join", true);
-
-
-    private GeneralSettings() {
-        throw new UnsupportedOperationException();
+        public boolean firstJoin = true;
     }
 }

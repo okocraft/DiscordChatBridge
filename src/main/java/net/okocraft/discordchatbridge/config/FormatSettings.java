@@ -19,47 +19,51 @@
 
 package net.okocraft.discordchatbridge.config;
 
-import com.github.siroshun09.configapi.api.value.ConfigValue;
+import org.spongepowered.configurate.objectmapping.ConfigSerializable;
+import org.spongepowered.configurate.objectmapping.meta.Setting;
 
+@ConfigSerializable
 public final class FormatSettings {
 
-    public static final ConfigValue<String> DISCORD_CHAT =
-            config -> config.getString("server.chat", "%player_name%: %message%");
+    public Server server = new Server();
+    public Command command = new Command();
 
-    public static final ConfigValue<String> SERVER_JOIN =
-            config -> config.getString("server.join", ":heavy_plus_sign: **%player_name%** joined the server.");
+    void validate() {
+        if (this.server == null || this.server.playerList == null ||
+                this.command == null || this.command.reload == null) {
+            throw new IllegalArgumentException("server, server.player-list, command and command.reload must be mappings");
+        }
+    }
 
-    public static final ConfigValue<String> SERVER_FIRST_JOIN =
-            config -> config.getString("server.first-join", ":heavy_plus_sign: **%player_name%** joined the server for the first time! :tada:");
+    @ConfigSerializable
+    public static final class Server {
+        public String chat = "%player_name%: %message%";
+        public String join = ":heavy_plus_sign: **%player_name%** joined the server.";
+        public String firstJoin = ":heavy_plus_sign: **%player_name%** joined the server for the first time! :tada:";
+        public String leave = ":heavy_plus_sign: **%player_name%** left the server.";
 
-    public static final ConfigValue<String> SERVER_LEAVE =
-            config -> config.getString("server.leave", ":heavy_plus_sign: **%player_name%** left the server.");
+        @Setting("switch")
+        public String switchMessage = ":heavy_plus_sign: **%player_name%** moved to **%server_name%**";
 
-    public static final ConfigValue<String> SERVER_SWITCH =
-            config -> config.getString(
-                    "server.switch",
-                    ":heavy_plus_sign: **%player_name%** moved to **%server_name%**"
-            );
+        public PlayerList playerList = new PlayerList();
+    }
 
-    public static final ConfigValue<String> PLAYER_LIST_TOP =
-            config -> config.getString("server.player-list.top", "**===== Player List (%player_count%) =====**");
+    @ConfigSerializable
+    public static final class PlayerList {
+        public String top = "**===== Player List (%player_count%) =====**";
+        public String list = "%server%: %player_list%";
+    }
 
-    public static final ConfigValue<String> PLAYER_LIST_FORMAT =
-            config -> config.getString("server.player-list.list", "%server%: %player_list%");
+    @ConfigSerializable
+    public static final class Command {
+        public String noPermission = "* You have no permission: %permission%";
+        public Reload reload = new Reload();
+    }
 
-    public static final ConfigValue<String> COMMAND_NO_PERMISSION =
-            config -> config.getString("command.no-permission", "* You have no permission: %permission%");
-
-    public static final ConfigValue<String> COMMAND_RELOAD_START =
-            config -> config.getString("command.reload.start", "* Reloading DiscordChatBridge...");
-
-    public static final ConfigValue<String> COMMAND_RELOAD_SUCCESS =
-            config -> config.getString("command.reload.success", "* The reload was successful.");
-
-    public static final ConfigValue<String> COMMAND_RELOAD_FAILURE =
-            config -> config.getString("command.reload.failure", "* Failed to reload. Please check the console.");
-
-    private FormatSettings() {
-        throw new UnsupportedOperationException();
+    @ConfigSerializable
+    public static final class Reload {
+        public String start = "* Reloading DiscordChatBridge...";
+        public String success = "* The reload was successful.";
+        public String failure = "* Failed to reload. Please check the console.";
     }
 }

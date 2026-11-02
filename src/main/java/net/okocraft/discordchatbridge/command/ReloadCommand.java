@@ -20,7 +20,6 @@
 package net.okocraft.discordchatbridge.command;
 
 import net.okocraft.discordchatbridge.DiscordChatBridgePlugin;
-import net.okocraft.discordchatbridge.config.FormatSettings;
 import net.okocraft.discordchatbridge.constant.Placeholders;
 import org.jetbrains.annotations.NotNull;
 
@@ -42,19 +41,18 @@ public class ReloadCommand {
         if (!permissionChecker.test(PERMISSION)) {
             messageSender.accept(
                     this.plugin.getFormatConfig()
-                            .get(FormatSettings.COMMAND_NO_PERMISSION)
+                            .command.noPermission
                             .replace(Placeholders.PERMISSION, PERMISSION)
             );
+            return;
         }
 
-        messageSender.accept(this.plugin.getFormatConfig().get(FormatSettings.COMMAND_RELOAD_START));
+        messageSender.accept(this.plugin.getFormatConfig().command.reload.start);
 
-        this.plugin.disable();
-
-        if (this.plugin.load() && this.plugin.enable()) {
-            messageSender.accept(this.plugin.getFormatConfig().get(FormatSettings.COMMAND_RELOAD_SUCCESS));
+        if (this.plugin.reload()) {
+            messageSender.accept(this.plugin.getFormatConfig().command.reload.success);
         } else {
-            messageSender.accept(this.plugin.getFormatConfig().get(FormatSettings.COMMAND_RELOAD_FAILURE));
+            messageSender.accept(this.plugin.getFormatConfig().command.reload.failure);
         }
     }
 }

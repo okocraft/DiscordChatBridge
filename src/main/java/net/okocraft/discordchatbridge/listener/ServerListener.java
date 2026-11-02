@@ -20,8 +20,6 @@
 package net.okocraft.discordchatbridge.listener;
 
 import net.okocraft.discordchatbridge.DiscordChatBridgePlugin;
-import net.okocraft.discordchatbridge.config.FormatSettings;
-import net.okocraft.discordchatbridge.config.GeneralSettings;
 import net.okocraft.discordchatbridge.constant.Placeholders;
 import net.okocraft.discordchatbridge.util.ColorStripper;
 import net.okocraft.discordchatbridge.util.FirstJoinPlayerHolder;
@@ -47,7 +45,7 @@ public abstract class ServerListener {
 
         // The reason for not checking the config setting here is that if it is disabled, the user will not be added to the FirstJoinPlayerHolder.
         if (FirstJoinPlayerHolder.remove(uuid)) {
-            var format = this.plugin.getFormatConfig().get(FormatSettings.SERVER_FIRST_JOIN);
+            var format = this.plugin.getFormatConfig().server.firstJoin;
 
             if (!format.isEmpty()) {
                 this.sendMessage(replacePlayer(format, name, displayName));
@@ -55,8 +53,8 @@ public abstract class ServerListener {
             }
         }
 
-        if (this.plugin.getGeneralConfig().get(GeneralSettings.SEND_JOIN_MESSAGE)) {
-            var format = this.plugin.getFormatConfig().get(FormatSettings.SERVER_JOIN);
+        if (this.plugin.getGeneralConfig().messageSendingSetting.join) {
+            var format = this.plugin.getFormatConfig().server.join;
 
             if (!format.isEmpty()) {
                 this.sendMessage(replacePlayer(format, name, displayName));
@@ -71,8 +69,8 @@ public abstract class ServerListener {
 
         this.plugin.getBot().updateGame();
 
-        if (this.plugin.getGeneralConfig().get(GeneralSettings.SEND_LEAVE_MESSAGE)) {
-            var format = this.plugin.getFormatConfig().get(FormatSettings.SERVER_LEAVE);
+        if (this.plugin.getGeneralConfig().messageSendingSetting.leave) {
+            var format = this.plugin.getFormatConfig().server.leave;
 
             if (!format.isEmpty()) {
                 this.sendMessage(replacePlayer(format, name, displayName));
@@ -81,11 +79,11 @@ public abstract class ServerListener {
     }
 
     protected void processServerSwitch(@NotNull String name, @NotNull String displayName, @NotNull String serverName) {
-        if (!this.plugin.getGeneralConfig().get(GeneralSettings.SEND_SWITCH_MESSAGE)) {
+        if (!this.plugin.getGeneralConfig().messageSendingSetting.switchMessage) {
             return;
         }
 
-        var format = this.plugin.getFormatConfig().get(FormatSettings.SERVER_SWITCH);
+        var format = this.plugin.getFormatConfig().server.switchMessage;
 
         if (!format.isEmpty()) {
             var playerReplaced = replacePlayer(format, name, displayName);
@@ -99,7 +97,7 @@ public abstract class ServerListener {
     }
 
     private void sendMessage(@NotNull String message) {
-        long systemChannelID = this.plugin.getGeneralConfig().get(GeneralSettings.SYSTEM_CHANNEL);
+        long systemChannelID = this.plugin.getGeneralConfig().systemChannel;
 
         if (systemChannelID != 0) {
             this.plugin.getBot().sendMessage(systemChannelID, message);

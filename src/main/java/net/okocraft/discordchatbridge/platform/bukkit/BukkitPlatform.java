@@ -20,8 +20,6 @@
 package net.okocraft.discordchatbridge.platform.bukkit;
 
 import net.okocraft.discordchatbridge.DiscordChatBridgePlugin;
-import net.okocraft.discordchatbridge.config.FormatSettings;
-import net.okocraft.discordchatbridge.config.GeneralSettings;
 import net.okocraft.discordchatbridge.platform.PlatformInfo;
 import net.okocraft.discordchatbridge.util.PlayerListFormatter;
 import org.bukkit.Bukkit;
@@ -46,8 +44,8 @@ class BukkitPlatform implements PlatformInfo {
 
     @Override
     public @NotNull Collection<String> getPlayerListsPerServer() {
-        var format = this.plugin.getFormatConfig().get(FormatSettings.PLAYER_LIST_FORMAT);
-        var serverName = this.plugin.getGeneralConfig().get(GeneralSettings.SERVER_NAME);
+        var format = this.plugin.getFormatConfig().server.playerList.list;
+        var serverName = this.plugin.getGeneralConfig().serverName;
         var players =
                 Bukkit.getOnlinePlayers()
                         .stream()
