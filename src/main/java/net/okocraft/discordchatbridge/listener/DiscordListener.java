@@ -25,12 +25,13 @@ import net.dv8tion.jda.api.entities.channel.unions.MessageChannelUnion;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.okocraft.discordchatbridge.DiscordChatBridgePlugin;
-import net.okocraft.discordchatbridge.constant.Constants;
 import net.okocraft.discordchatbridge.constant.Placeholders;
 import net.okocraft.discordchatbridge.util.ColorStripper;
+import net.okocraft.discordchatbridge.util.PlayerListFormatter;
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.Color;
+import java.time.Clock;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -44,10 +45,16 @@ public class DiscordListener extends ListenerAdapter {
     private final Map<String, String> rolePrefixes;
     private final String defaultRoleColorCode;
 
-    private final AtomicLong lastPlayerListUsed = new AtomicLong(0);
+    private final Clock clock;
+    private final AtomicLong nextPlayerListUse = new AtomicLong(Long.MIN_VALUE);
 
     public DiscordListener(@NotNull DiscordChatBridgePlugin plugin) {
+        this(plugin, Clock.systemUTC());
+    }
+
+    DiscordListener(@NotNull DiscordChatBridgePlugin plugin, @NotNull Clock clock) {
         this.plugin = plugin;
+        this.clock = clock;
 
         var channelSection = plugin.getGeneralConfig().channels;
         for (var entry : channelSection.entrySet()) {
@@ -123,13 +130,17 @@ public class DiscordListener extends ListenerAdapter {
     }
 
     private void onPlayerListCommand(@NotNull MessageChannelUnion channel) {
-        if (System.currentTimeMillis() - this.lastPlayerListUsed.get() < 5000) {
+        if (!channel.canTalk()) {
+            return;
+        }
+
+        var nextUse = this.nextPlayerListUse.get();
+        var now = this.clock.millis();
+        if (now < nextUse || !this.nextPlayerListUse.compareAndSet(nextUse, now + 5000)) {
             return;
         }
 
         this.plugin.getBot().updateGame();
-
-        var builder = new StringBuilder();
 
         var top =
                 this.plugin.getFormatConfig()
@@ -139,21 +150,8 @@ public class DiscordListener extends ListenerAdapter {
                                 String.valueOf(this.plugin.getPlatformInfo().getNumberOfPlayers())
                         );
 
-        builder.append(top).append(Constants.LINE_SEPARATOR).append("```").append(Constants.LINE_SEPARATOR);
-
-        this.plugin.getPlatformInfo()
-                .getPlayerListsPerServer()
-                .forEach(list -> {
-                    builder.append(list);
-                    builder.append(Constants.LINE_SEPARATOR);
-                });
-
-        builder.append(Constants.LINE_SEPARATOR).append("```");
-
-        if (channel.canTalk()) {
-            this.plugin.getBot().sendMessage(channel, builder.toString());
-            this.lastPlayerListUsed.set(System.currentTimeMillis());
-        }
+        this.plugin.getBot().sendMessage(channel, PlayerListFormatter.formatMessage(
+                top, this.plugin.getPlatformInfo().getPlayerListsPerServer()));
     }
 
     private @NotNull String createSenderName(@NotNull Member member) {

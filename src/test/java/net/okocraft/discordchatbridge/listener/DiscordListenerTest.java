@@ -35,9 +35,18 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneOffset;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
@@ -68,15 +77,8 @@ class DiscordListenerTest {
     @ParameterizedTest
     @ValueSource(longs = {10, 20})
     void testPlayerListIsAvailableToOrdinaryMemberInConfiguredChannel(long channelId) {
+        preparePlayerListCommand();
         when(channel.getIdLong()).thenReturn(channelId);
-        when(event.getMessage()).thenReturn(message);
-        when(message.getContentDisplay()).thenReturn("!playerlist");
-        when(channel.canTalk()).thenReturn(true);
-        when(plugin.getBot()).thenReturn(bot);
-        when(plugin.getPlatformInfo()).thenReturn(platform);
-        when(plugin.getFormatConfig()).thenReturn(new FormatSettings());
-        when(platform.getNumberOfPlayers()).thenReturn(2);
-        when(platform.getPlayerListsPerServer()).thenReturn(List.of("survival: Alice, Bob"));
 
         new DiscordListener(plugin).onMessageReceived(event);
 
@@ -145,19 +147,110 @@ class DiscordListenerTest {
     }
 
     @Test
-    void testPlayerListIsNotSentWhenBotCannotTalk() {
-        when(channel.getIdLong()).thenReturn(10L);
-        when(event.getMessage()).thenReturn(message);
-        when(message.getContentDisplay()).thenReturn("!playerlist");
+    void testUnavailableChannelDoesNotConsumeCooldownOrReadPlayers() {
+        preparePlayerListCommand();
         when(channel.canTalk()).thenReturn(false);
-        when(plugin.getBot()).thenReturn(bot);
-        when(plugin.getPlatformInfo()).thenReturn(platform);
-        when(plugin.getFormatConfig()).thenReturn(new FormatSettings());
-        when(platform.getPlayerListsPerServer()).thenReturn(List.of("survival: Alice"));
+        var listener = new DiscordListener(plugin, Clock.fixed(Instant.EPOCH, ZoneOffset.UTC));
 
-        new DiscordListener(plugin).onMessageReceived(event);
+        listener.onMessageReceived(event);
 
-        verify(bot, never()).sendMessage(any(MessageChannelUnion.class), anyString());
+        verifyNoInteractions(bot, platform);
+        when(channel.canTalk()).thenReturn(true);
+        listener.onMessageReceived(event);
+        verify(bot).sendMessage(eq(channel), anyString());
+    }
+
+    @Test
+    void testCooldownExpiresAtExactlyFiveSeconds() {
+        preparePlayerListCommand();
+        var clock = mock(Clock.class);
+        when(clock.millis()).thenReturn(0L, 4999L, 5000L);
+        var listener = new DiscordListener(plugin, clock);
+
+        listener.onMessageReceived(event);
+        listener.onMessageReceived(event);
+        listener.onMessageReceived(event);
+
+        verify(bot, times(2)).sendMessage(eq(channel), anyString());
+        verify(platform, times(2)).getPlayerListsPerServer();
+    }
+
+    @Test
+    void testCooldownIsSharedAcrossConfiguredChannels() {
+        preparePlayerListCommand();
+        var listener = new DiscordListener(plugin, Clock.fixed(Instant.EPOCH, ZoneOffset.UTC));
+
+        listener.onMessageReceived(event);
+        when(channel.getIdLong()).thenReturn(20L);
+        listener.onMessageReceived(event);
+
+        verify(bot).sendMessage(eq(channel), anyString());
+        verify(platform).getPlayerListsPerServer();
+    }
+
+    @Test
+    void testUnauthorizedRequestDoesNotConsumeCooldown() {
+        preparePlayerListCommand();
+        when(channel.getIdLong()).thenReturn(30L);
+        var listener = new DiscordListener(plugin, Clock.fixed(Instant.EPOCH, ZoneOffset.UTC));
+
+        listener.onMessageReceived(event);
+
+        verifyNoInteractions(bot, platform);
+        when(channel.getIdLong()).thenReturn(10L);
+        listener.onMessageReceived(event);
+        verify(bot).sendMessage(eq(channel), anyString());
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void testProcessingOrSendFailureKeepsCooldown(boolean sendFailure) {
+        preparePlayerListCommand();
+        if (sendFailure) {
+            doThrow(new IllegalStateException("send failed")).when(bot).sendMessage(eq(channel), anyString());
+        } else {
+            doThrow(new IllegalStateException("update failed")).when(bot).updateGame();
+        }
+        var listener = new DiscordListener(plugin, Clock.fixed(Instant.EPOCH, ZoneOffset.UTC));
+
+        assertThrows(IllegalStateException.class, () -> listener.onMessageReceived(event));
+        assertDoesNotThrow(() -> listener.onMessageReceived(event));
+
+        verify(bot).updateGame();
+    }
+
+    @Test
+    void testConcurrentRequestsOnlyFetchAndSendOnePlayerList() throws Exception {
+        preparePlayerListCommand();
+        var listener = new DiscordListener(plugin, Clock.fixed(Instant.EPOCH, ZoneOffset.UTC));
+        var ready = new CountDownLatch(8);
+        var start = new CountDownLatch(1);
+        try (var executor = Executors.newFixedThreadPool(8)) {
+            var requests = new ArrayList<Future<?>>();
+            for (int i = 0; i < 8; i++) {
+                requests.add(executor.submit(() -> {
+                    ready.countDown();
+                    if (!start.await(10, TimeUnit.SECONDS)) {
+                        throw new IllegalStateException("Requests were not started");
+                    }
+                    listener.onMessageReceived(event);
+                    return null;
+                }));
+            }
+            try {
+                assertTrue(ready.await(10, TimeUnit.SECONDS));
+            } finally {
+                start.countDown();
+            }
+            for (var request : requests) {
+                request.get(10, TimeUnit.SECONDS);
+            }
+        }
+
+        verify(bot).updateGame();
+        verify(bot).sendMessage(eq(channel), anyString());
+        verify(platform).getNumberOfPlayers();
+        verify(platform).getPlayerListsPerServer();
     }
 
     @Test
@@ -187,5 +280,17 @@ class DiscordListenerTest {
 
         verify(chat).sendChat("global", "Alice", "Dis", "hello");
         verify(plugin, never()).getBot();
+    }
+
+    private void preparePlayerListCommand() {
+        when(channel.getIdLong()).thenReturn(10L);
+        when(event.getMessage()).thenReturn(message);
+        when(message.getContentDisplay()).thenReturn("!playerlist");
+        when(channel.canTalk()).thenReturn(true);
+        when(plugin.getBot()).thenReturn(bot);
+        when(plugin.getPlatformInfo()).thenReturn(platform);
+        when(plugin.getFormatConfig()).thenReturn(new FormatSettings());
+        when(platform.getNumberOfPlayers()).thenReturn(2);
+        when(platform.getPlayerListsPerServer()).thenReturn(List.of("survival: Alice, Bob"));
     }
 }
