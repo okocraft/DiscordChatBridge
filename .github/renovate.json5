@@ -1,13 +1,13 @@
 {
   $schema: 'https://docs.renovatebot.com/renovate-schema.json',
   extends: [
-    'github>okocraft/renovate-config//java/maven/renovate.json5',
+    'github>okocraft/renovate-config//java/gradle/renovate.json5',
     'github>okocraft/renovate-config//java/ignores/papermc/renovate.json5'
   ],
   packageRules: [
     {
       matchManagers: [
-        'maven'
+        'gradle'
       ],
       "matchPackagePatterns": [
         'net\\.okocraft\\.okochat:okochat-legacy'

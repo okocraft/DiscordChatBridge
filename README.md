@@ -1,5 +1,5 @@
 ![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/okocraft/DiscordChatBridge)
-![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/okocraft/DiscordChatBridge/maven.yml?branch=master)
+![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/okocraft/DiscordChatBridge/gradle.yml?branch=master)
 ![GitHub](https://img.shields.io/github/license/okocraft/DiscordChatBridge)
 
 # DiscordChatBridge
@@ -17,6 +17,12 @@ LunaChat と Discord をチャット連携するプラグイン。
 1. `plugins` ディレクトリ内に配置し、サーバーを再起動する。
 2. 作成された `config.yml` にて各種設定する。
 3. 再読み込みコマンド: `/dcbreload`
+
+## Build
+
+Java 25 を使用し、`./gradlew clean build` でビルドします。
+配布用 JAR は `build/libs/DiscordChatBridge-3.0-SNAPSHOT.jar` です。
+`-plain.jar` は依存ライブラリを含まないため、サーバーには配置しないでください。
 
 ## License
 
