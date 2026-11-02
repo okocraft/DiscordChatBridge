@@ -91,7 +91,7 @@ public interface DiscordChatBridgePlugin {
         this.registerCommands();
         this.registerListeners();
 
-        if (this.getGeneralConfig().sendFirstJoinMessage()) {
+        if (this.getGeneralConfig().messageSendingSetting.firstJoin) {
             this.registerLuckPermsFirstJoinListener();
         }
 

@@ -45,7 +45,7 @@ public abstract class ServerListener {
 
         // The reason for not checking the config setting here is that if it is disabled, the user will not be added to the FirstJoinPlayerHolder.
         if (FirstJoinPlayerHolder.remove(uuid)) {
-            var format = this.plugin.getFormatConfig().serverFirstJoin();
+            var format = this.plugin.getFormatConfig().server.firstJoin;
 
             if (!format.isEmpty()) {
                 this.sendMessage(replacePlayer(format, name, displayName));
@@ -53,8 +53,8 @@ public abstract class ServerListener {
             }
         }
 
-        if (this.plugin.getGeneralConfig().sendJoinMessage()) {
-            var format = this.plugin.getFormatConfig().serverJoin();
+        if (this.plugin.getGeneralConfig().messageSendingSetting.join) {
+            var format = this.plugin.getFormatConfig().server.join;
 
             if (!format.isEmpty()) {
                 this.sendMessage(replacePlayer(format, name, displayName));
@@ -69,8 +69,8 @@ public abstract class ServerListener {
 
         this.plugin.getBot().updateGame();
 
-        if (this.plugin.getGeneralConfig().sendLeaveMessage()) {
-            var format = this.plugin.getFormatConfig().serverLeave();
+        if (this.plugin.getGeneralConfig().messageSendingSetting.leave) {
+            var format = this.plugin.getFormatConfig().server.leave;
 
             if (!format.isEmpty()) {
                 this.sendMessage(replacePlayer(format, name, displayName));
@@ -79,11 +79,11 @@ public abstract class ServerListener {
     }
 
     protected void processServerSwitch(@NotNull String name, @NotNull String displayName, @NotNull String serverName) {
-        if (!this.plugin.getGeneralConfig().sendSwitchMessage()) {
+        if (!this.plugin.getGeneralConfig().messageSendingSetting.switchMessage) {
             return;
         }
 
-        var format = this.plugin.getFormatConfig().serverSwitch();
+        var format = this.plugin.getFormatConfig().server.switchMessage;
 
         if (!format.isEmpty()) {
             var playerReplaced = replacePlayer(format, name, displayName);
@@ -97,7 +97,7 @@ public abstract class ServerListener {
     }
 
     private void sendMessage(@NotNull String message) {
-        long systemChannelID = this.plugin.getGeneralConfig().systemChannel();
+        long systemChannelID = this.plugin.getGeneralConfig().systemChannel;
 
         if (systemChannelID != 0) {
             this.plugin.getBot().sendMessage(systemChannelID, message);

@@ -49,14 +49,14 @@ public class DiscordListener extends ListenerAdapter {
     public DiscordListener(@NotNull DiscordChatBridgePlugin plugin) {
         this.plugin = plugin;
 
-        var channelSection = plugin.getGeneralConfig().linkedChannels();
+        var channelSection = plugin.getGeneralConfig().channels;
         for (var entry : channelSection.entrySet()) {
             if (entry.getValue() != 0) {
                 this.linkedChannels.put(entry.getValue(), entry.getKey());
             }
         }
 
-        this.rolePrefixes = plugin.getGeneralConfig().rolePrefixes();
+        this.rolePrefixes = plugin.getGeneralConfig().rolePrefix;
         this.defaultRoleColorCode = plugin.serializeColor(new Color(Role.DEFAULT_COLOR_RAW));
     }
 
@@ -83,7 +83,7 @@ public class DiscordListener extends ListenerAdapter {
 
         var config = this.plugin.getGeneralConfig();
 
-        int maxLength = config.chatMaxLength();
+        int maxLength = config.chatMaxLength;
 
         if (0 < maxLength && maxLength < message.length()) {
             this.plugin.getBot().addReaction(event.getMessage(), "U+26A0");
@@ -91,10 +91,10 @@ public class DiscordListener extends ListenerAdapter {
         }
 
         var lines = message.lines().toList();
-        int maxLines = config.chatMaxLines();
+        int maxLines = config.chatMaxLines;
 
         var attachments = event.getMessage().getAttachments();
-        int maxAttachments = config.chatMaxAttachments();
+        int maxAttachments = config.chatMaxAttachments;
 
         if ((0 < maxLines && maxLines < lines.size()) ||
             (0 < maxAttachments && maxAttachments < attachments.size())) {
@@ -103,7 +103,7 @@ public class DiscordListener extends ListenerAdapter {
         }
 
         var senderName = this.createSenderName(member);
-        var sourceName = config.discordSourceName();
+        var sourceName = config.discordSourceName;
 
         for (var line : lines) {
             if (!line.isEmpty()) {
@@ -127,7 +127,7 @@ public class DiscordListener extends ListenerAdapter {
 
         var top =
                 this.plugin.getFormatConfig()
-                        .playerListTop()
+                        .server.playerList.top
                         .replace(
                                 Placeholders.PLAYER_COUNT,
                                 String.valueOf(this.plugin.getPlatformInfo().getNumberOfPlayers())
@@ -155,7 +155,7 @@ public class DiscordListener extends ListenerAdapter {
         var originalName = member.getNickname() != null ? member.getNickname() : member.getEffectiveName();
 
         // true / false / role name
-        var setting = this.plugin.getGeneralConfig().allowColorsInName();
+        var setting = this.plugin.getGeneralConfig().allowColorsInName;
 
         boolean allowColorsInName = Boolean.parseBoolean(setting) || (!setting.equalsIgnoreCase("false") && this.hasRole(member, setting));
 
@@ -201,7 +201,7 @@ public class DiscordListener extends ListenerAdapter {
     }
 
     private @NotNull String checkNameLength(@NotNull String name) {
-        int limit = plugin.getGeneralConfig().nicknameLengthLimit();
+        int limit = plugin.getGeneralConfig().nicknameLengthLimit;
         int[] codePoints = name.codePoints().toArray();
 
         if (codePoints.length <= (limit >> 1)) {

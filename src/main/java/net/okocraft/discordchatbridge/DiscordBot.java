@@ -89,7 +89,7 @@ public class DiscordBot {
         try {
             return new DiscordBot(
                     plugin,
-                    JDABuilder.createDefault(plugin.getGeneralConfig().discordToken())
+                    JDABuilder.createDefault(plugin.getGeneralConfig().discord.token)
                             .addEventListeners(new DiscordListener(plugin))
                             .setAutoReconnect(true)
                             .setStatus(plugin.getGeneralConfig().discordStatus())
@@ -162,7 +162,7 @@ public class DiscordBot {
     private void processChat(long id, @NotNull String original,
                              @NotNull String name, @NotNull String displayName) {
         var plain =
-                this.plugin.getFormatConfig().discordChat()
+                this.plugin.getFormatConfig().server.chat
                         .replace(Placeholders.PLAYER_NAME, this.escapeUnderscore(name))
                         .replace(Placeholders.DISPLAY_NAME, this.escapeUnderscore(displayName))
                         .replace(Placeholders.MESSAGE, original);
@@ -190,11 +190,11 @@ public class DiscordBot {
                     var type = this.plugin.getGeneralConfig().discordActivityType();
                     var game =
                             this.plugin.getGeneralConfig()
-                                    .discordActivityGame()
+                                    .discord.activity.game
                                     .replace(
                                             Placeholders.PLAYER_COUNT, String.valueOf(this.plugin.getPlatformInfo().getNumberOfPlayers())
                                     );
-                    var url = this.plugin.getGeneralConfig().discordActivityUrl();
+                    var url = this.plugin.getGeneralConfig().discord.activity.url;
 
             this.jda.getPresence().setActivity(Activity.of(type, game, url));
                 }, 1, TimeUnit.SECONDS

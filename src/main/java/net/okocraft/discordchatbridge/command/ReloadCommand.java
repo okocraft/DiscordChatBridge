@@ -41,18 +41,18 @@ public class ReloadCommand {
         if (!permissionChecker.test(PERMISSION)) {
             messageSender.accept(
                     this.plugin.getFormatConfig()
-                            .commandNoPermission()
+                            .command.noPermission
                             .replace(Placeholders.PERMISSION, PERMISSION)
             );
             return;
         }
 
-        messageSender.accept(this.plugin.getFormatConfig().commandReloadStart());
+        messageSender.accept(this.plugin.getFormatConfig().command.reload.start);
 
         if (this.plugin.reload()) {
-            messageSender.accept(this.plugin.getFormatConfig().commandReloadSuccess());
+            messageSender.accept(this.plugin.getFormatConfig().command.reload.success);
         } else {
-            messageSender.accept(this.plugin.getFormatConfig().commandReloadFailure());
+            messageSender.accept(this.plugin.getFormatConfig().command.reload.failure);
         }
     }
 }

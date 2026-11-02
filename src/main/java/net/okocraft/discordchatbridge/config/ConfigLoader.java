@@ -23,7 +23,6 @@ import org.spongepowered.configurate.ConfigurateException;
 import org.spongepowered.configurate.yaml.YamlConfigurationLoader;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -36,41 +35,36 @@ public final class ConfigLoader {
     }
 
     public static ConfigPair load(Path directory) throws IOException {
-        var general = loadFile(directory.resolve("config.yml"), GeneralSettings.class);
-        var format = loadFile(directory.resolve("format.yml"), FormatSettings.class);
-        return new ConfigPair(general, format);
+        return new ConfigPair(
+                loadFile(directory.resolve("config.yml"), GeneralSettings.class),
+                loadFile(directory.resolve("format.yml"), FormatSettings.class)
+        );
     }
 
     private static <T> T loadFile(Path path, Class<T> type) throws IOException {
-        copyDefaultIfMissing(path);
+        Files.createDirectories(path.getParent());
+        if (Files.notExists(path)) {
+            try (var resource = ConfigLoader.class.getClassLoader().getResourceAsStream(path.getFileName().toString())) {
+                if (resource == null) {
+                    throw new IOException("Missing default resource: " + path.getFileName());
+                }
+                Files.copy(resource, path);
+            }
+        }
 
         try {
-            var loaded = YamlConfigurationLoader.builder().path(path).build().load().get(type);
-            if (loaded == null) {
+            var value = YamlConfigurationLoader.builder().path(path).build().load().get(type);
+            if (value == null) {
                 throw new IllegalArgumentException("Configuration root must be a mapping");
             }
-            if (loaded instanceof GeneralSettings general) {
+            if (value instanceof GeneralSettings general) {
                 general.validate();
-            } else if (loaded instanceof FormatSettings format) {
+            } else if (value instanceof FormatSettings format) {
                 format.validate();
             }
-            return loaded;
+            return value;
         } catch (ConfigurateException | IllegalArgumentException e) {
             throw new IOException("Invalid configuration in " + path + ": " + e.getMessage(), e);
-        }
-    }
-
-    private static void copyDefaultIfMissing(Path path) throws IOException {
-        Files.createDirectories(path.getParent());
-        if (Files.exists(path)) {
-            return;
-        }
-
-        try (InputStream resource = ConfigLoader.class.getClassLoader().getResourceAsStream(path.getFileName().toString())) {
-            if (resource == null) {
-                throw new IOException("Missing default configuration resource: " + path.getFileName());
-            }
-            Files.copy(resource, path);
         }
     }
 }

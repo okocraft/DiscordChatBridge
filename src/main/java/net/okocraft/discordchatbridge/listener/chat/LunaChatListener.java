@@ -36,7 +36,7 @@ public abstract class LunaChatListener extends AbstractChatListener {
 
         this.plugin = plugin;
 
-        var channelSection = plugin.getGeneralConfig().linkedChannels();
+        var channelSection = plugin.getGeneralConfig().channels;
         for (var entry : channelSection.entrySet()) {
             if (entry.getValue() != 0) {
                 this.linkedChannels.put(entry.getKey(), entry.getValue());
@@ -46,7 +46,7 @@ public abstract class LunaChatListener extends AbstractChatListener {
 
     protected void processChat(@NotNull String channelName, @NotNull String displayName,
                                @NotNull ChannelMember member, @NotNull String message) {
-        var sourceName = this.plugin.getGeneralConfig().discordSourceName();
+        var sourceName = this.plugin.getGeneralConfig().discordSourceName;
 
         if (displayName.endsWith(sourceName)) {
             return;

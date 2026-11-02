@@ -35,7 +35,7 @@ public abstract class VanillaChatListener extends AbstractChatListener {
     public void processChat(@NotNull String channelName, @NotNull String name,
                             @NotNull String displayName, @NotNull String message) {
         if (channelName.equals(Constants.GLOBAL_CHANNEL_NAME)) {
-            long systemChannelID = this.plugin.getGeneralConfig().systemChannel();
+            long systemChannelID = this.plugin.getGeneralConfig().systemChannel;
 
             if (systemChannelID != 0) {
                 this.sendChatToDiscord(systemChannelID, message, name, displayName);

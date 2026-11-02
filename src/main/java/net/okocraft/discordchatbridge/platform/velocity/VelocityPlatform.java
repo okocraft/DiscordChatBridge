@@ -46,7 +46,7 @@ class VelocityPlatform implements PlatformInfo {
 
     @Override
     public @NotNull Collection<String> getPlayerListsPerServer() {
-        var format = this.plugin.getFormatConfig().playerListFormat();
+        var format = this.plugin.getFormatConfig().server.playerList.list;
         var list = new ArrayList<String>();
 
         for (var server : this.server.getAllServers()) {
