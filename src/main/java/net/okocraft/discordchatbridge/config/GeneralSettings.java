@@ -153,7 +153,7 @@ public final class GeneralSettings {
     }
 
     public boolean sendSwitchMessage() {
-        return this.messageSendingSetting.switch;
+        return this.messageSendingSetting.switchMessage;
     }
 
     public boolean sendFirstJoinMessage() {
@@ -216,7 +216,8 @@ public final class GeneralSettings {
     public static final class MessageSendingSettings {
         private boolean join = true;
         private boolean leave = true;
-        private boolean switch = true;
+        @Setting("switch")
+        private boolean switchMessage = true;
 
         @Setting("first-join")
         private boolean firstJoin = true;
