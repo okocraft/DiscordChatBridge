@@ -97,12 +97,12 @@ public class DiscordChatBridgeVelocity implements DiscordChatBridgePlugin {
     }
 
     @Override
-    public @NotNull ConfigLoader.ConfigPair getConfig() {
+    public @NotNull ConfigLoader.ConfigPair getSettings() {
         return this.config;
     }
 
     @Override
-    public void setConfig(@NotNull ConfigLoader.ConfigPair config) {
+    public void setSettings(@NotNull ConfigLoader.ConfigPair config) {
         this.config = config;
     }
 

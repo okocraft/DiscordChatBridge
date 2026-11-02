@@ -37,16 +37,16 @@ public interface DiscordChatBridgePlugin {
 
     @NotNull Path getDataDirectory();
 
-    @NotNull ConfigLoader.ConfigPair getConfig();
+    @NotNull ConfigLoader.ConfigPair getSettings();
 
-    void setConfig(@NotNull ConfigLoader.ConfigPair config);
+    void setSettings(@NotNull ConfigLoader.ConfigPair config);
 
     default @NotNull GeneralSettings getGeneralConfig() {
-        return this.getConfig().general();
+        return this.getSettings().general();
     }
 
     default @NotNull FormatSettings getFormatConfig() {
-        return this.getConfig().format();
+        return this.getSettings().format();
     }
 
     @NotNull DiscordBot getBot();
@@ -57,7 +57,7 @@ public interface DiscordChatBridgePlugin {
 
     default boolean load() {
         try {
-            this.setConfig(ConfigLoader.load(this.getDataDirectory()));
+            this.setSettings(ConfigLoader.load(this.getDataDirectory()));
             return true;
         } catch (IOException e) {
             this.getWrappedLogger().error("Could not load plugin configuration", e);
@@ -75,7 +75,7 @@ public interface DiscordChatBridgePlugin {
         }
 
         this.disable();
-        this.setConfig(next);
+        this.setSettings(next);
         return this.enable();
     }
 
