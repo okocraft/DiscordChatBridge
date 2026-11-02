@@ -1,0 +1,11 @@
+name: Java CI
+on: [ push, pull_request ]
+
+jobs:
+  build-java-25:
+    uses: okocraft/workflows/.github/workflows/gradle.yml@v1
+    with:
+      java-version: '25'
+      build-arguments: 'clean build'
+      artifact-directory: 'build/libs/DiscordChatBridge-3.0-SNAPSHOT.jar'
+      package-name: DiscordChatBridge-Build-${{ github.run_number }}
