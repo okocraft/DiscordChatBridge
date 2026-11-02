@@ -64,7 +64,15 @@ public class DiscordListener extends ListenerAdapter {
     public void onMessageReceived(@NotNull MessageReceivedEvent event) {
         var member = event.getMember();
 
-        if (event.getAuthor().isBot() || member == null) {
+        if (!event.isFromGuild() || event.getAuthor().isBot() || member == null) {
+            return;
+        }
+
+        var channelId = event.getChannel().getIdLong();
+        var channelName = this.linkedChannels.get(channelId);
+        var systemChannel = this.plugin.getGeneralConfig().systemChannel;
+
+        if (channelName == null && (systemChannel == 0 || channelId != systemChannel)) {
             return;
         }
 
@@ -74,8 +82,6 @@ public class DiscordListener extends ListenerAdapter {
             this.onPlayerListCommand(event.getChannel());
             return;
         }
-
-        var channelName = this.linkedChannels.get(event.getChannel().getIdLong());
 
         if (channelName == null) {
             return;
