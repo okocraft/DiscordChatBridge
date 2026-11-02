@@ -51,6 +51,7 @@ dependencies {
     }
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.configurate.yaml)
+    testImplementation(libs.platform.paper)
 }
 
 val pluginProperties = mapOf(
