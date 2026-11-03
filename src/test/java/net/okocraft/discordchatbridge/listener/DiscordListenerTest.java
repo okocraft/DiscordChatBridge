@@ -65,6 +65,7 @@ class DiscordListenerTest {
 
     @BeforeEach
     void setUp() {
+        when(plugin.enabled()).thenReturn(true);
         config.channels = Map.of("global", 10L, "disabled", 0L);
         config.systemChannel = 20L;
         when(plugin.getGeneralConfig()).thenReturn(config);
@@ -72,6 +73,15 @@ class DiscordListenerTest {
         when(event.getAuthor()).thenReturn(author);
         when(event.getMember()).thenReturn(member);
         when(event.getChannel()).thenReturn(channel);
+    }
+
+    @Test
+    void testInactiveBridgeDoesNotReadDiscordEvent() {
+        when(plugin.enabled()).thenReturn(false);
+
+        new DiscordListener(plugin).onMessageReceived(event);
+
+        verifyNoInteractions(event);
     }
 
     @ParameterizedTest

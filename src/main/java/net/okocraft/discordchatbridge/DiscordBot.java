@@ -21,6 +21,8 @@ package net.okocraft.discordchatbridge;
 
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
+import net.dv8tion.jda.api.events.session.ShutdownEvent;
+import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.IMentionable;
@@ -53,7 +55,7 @@ import java.util.function.Function;
 import java.util.regex.MatchResult;
 import java.util.regex.Pattern;
 
-public class DiscordBot {
+public class DiscordBot extends ListenerAdapter {
 
     private static final Collection<Message.MentionType> ALLOWED_MENTION_TYPE =
             Set.of(Message.MentionType.EMOJI, Message.MentionType.USER, Message.MentionType.CHANNEL);
@@ -73,48 +75,106 @@ public class DiscordBot {
     }
 
     private final DiscordChatBridgePlugin plugin;
-    private final JDA jda;
-    private final ScheduledExecutorService scheduler;
+    private volatile JDA jda;
+    private ScheduledExecutorService scheduler;
 
-    private DiscordBot(@NotNull DiscordChatBridgePlugin plugin, @NotNull JDA jda) {
+    private volatile boolean stopped;
+    private boolean shutdownComplete;
+
+    DiscordBot(@NotNull DiscordChatBridgePlugin plugin, @NotNull JDA jda,
+               @NotNull ScheduledExecutorService scheduler) {
         this.plugin = plugin;
         this.jda = jda;
-        this.scheduler = Executors.newSingleThreadScheduledExecutor(r -> new Thread(r, "DiscordChatBridge-Thread"));
-
-        this.loadMembers();
+        this.scheduler = scheduler;
     }
 
     @Contract("_ -> new")
     public static @NotNull DiscordBot login(@NotNull DiscordChatBridgePlugin plugin) throws IllegalStateException {
+        JDA jda = null;
+        DiscordBot bot = null;
         try {
-            return new DiscordBot(
-                    plugin,
-                    JDABuilder.createDefault(plugin.getGeneralConfig().discord.token)
-                            .addEventListeners(new DiscordListener(plugin))
-                            .setAutoReconnect(true)
-                            .setStatus(plugin.getGeneralConfig().discordStatus())
-                            .enableIntents(GatewayIntent.GUILD_MEMBERS, GatewayIntent.MESSAGE_CONTENT)
-                            .setMemberCachePolicy(MemberCachePolicy.ALL)
-                            .disableCache(Arrays.asList(CacheFlag.values()))
-                            .build()
-                            .awaitReady()
-            );
-        } catch (InterruptedException e) {
+            jda = JDABuilder.createDefault(plugin.getGeneralConfig().discord.token)
+                    .addEventListeners(new DiscordListener(plugin))
+                    .setAutoReconnect(true)
+                    .setStatus(plugin.getGeneralConfig().discordStatus())
+                    .enableIntents(GatewayIntent.GUILD_MEMBERS, GatewayIntent.MESSAGE_CONTENT)
+                    .setMemberCachePolicy(MemberCachePolicy.ALL)
+                    .disableCache(Arrays.asList(CacheFlag.values()))
+                    .build();
+            jda.awaitReady();
+            bot = new DiscordBot(plugin, jda,
+                    Executors.newSingleThreadScheduledExecutor(r -> new Thread(r, "DiscordChatBridge-Thread")));
+            jda.addEventListener(bot);
+            bot.loadMembers();
+            return bot;
+        } catch (Exception e) {
+            try {
+                if (bot != null) {
+                    bot.shutdown();
+                } else if (jda != null) {
+                    jda.shutdownNow();
+                }
+            } catch (Exception cleanup) {
+                e.addSuppressed(cleanup);
+            }
+            if (e instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+            }
             throw new IllegalStateException("Could not log in to Discord", e);
         }
     }
 
-    public void shutdown() {
-        this.jda.shutdown();
-        this.scheduler.shutdown();
+    public boolean connected() {
+        var current = this.jda;
+        return !this.stopped && current != null && current.getStatus() == JDA.Status.CONNECTED;
+    }
+
+    @Override
+    public void onShutdown(@NotNull ShutdownEvent event) {
+        this.plugin.getLifecycle().botStopped(this);
+    }
+
+    public synchronized void shutdown() {
+        if (this.shutdownComplete) {
+            return;
+        }
+        this.stopped = true;
+        try {
+            this.scheduler.shutdownNow();
+        } finally {
+            this.jda.shutdownNow();
+        }
+        this.shutdownComplete = true;
+        this.jda = null;
+        this.scheduler = null;
+    }
+
+    private synchronized void schedule(Runnable action, long delayMillis) {
+        if (!this.connected() || !this.plugin.enabled()) {
+            return;
+        }
+        this.scheduler.schedule(() -> {
+            synchronized (DiscordBot.this) {
+                if (this.connected() && this.plugin.enabled()) {
+                    action.run();
+                }
+            }
+        }, delayMillis, TimeUnit.MILLISECONDS);
     }
 
     public void sendMessage(long id, @NotNull String message) {
+        if (!this.connected()) {
+            return;
+        }
         this.sendMessage(id, new MessageCreateBuilder().setContent(message).build());
     }
 
     public void sendMessage(long id, @NotNull MessageCreateData message) {
-        var channel = this.jda.getChannelById(MessageChannel.class, id);
+        var current = this.jda;
+        if (!this.connected() || current == null) {
+            return;
+        }
+        var channel = current.getChannelById(MessageChannel.class, id);
 
         if (channel != null) {
             this.sendMessage(channel, message);
@@ -124,11 +184,14 @@ public class DiscordBot {
     }
 
     public void sendMessage(@NotNull MessageChannel channel, @NotNull String message) {
+        if (!this.connected()) {
+            return;
+        }
         this.sendMessage(channel, new MessageCreateBuilder().setContent(message).build());
     }
 
     public void sendMessage(@NotNull MessageChannel channel, @NotNull MessageCreateData message) {
-        this.scheduler.submit(() -> {
+        this.schedule(() -> {
             if (channel.canTalk()) {
                 channel.sendMessage(message).queue();
             } else {
@@ -137,16 +200,16 @@ public class DiscordBot {
                                 "id: " + channel.getId() + " content: " + message.getContent()
                 );
             }
-        });
+        }, 0);
     }
 
     public void sendChat(long id, @NotNull String original,
                          @NotNull String name, @NotNull String displayName) {
-        this.scheduler.submit(() -> this.processChat(id, original, name, displayName));
+        this.schedule(() -> this.processChat(id, original, name, displayName), 0);
     }
 
     public void addReaction(@NotNull Message message, @NotNull String unicode) {
-        this.scheduler.submit(() -> message.addReaction(Emoji.fromUnicode(unicode)).queue());
+        this.schedule(() -> message.addReaction(Emoji.fromUnicode(unicode)).queue(), 0);
     }
 
     public @Nullable Role getFirstRole(@NotNull Member member) {
@@ -186,19 +249,12 @@ public class DiscordBot {
     }
 
     public void updateGame() {
-        this.scheduler.schedule(() -> {
-                    var type = this.plugin.getGeneralConfig().discordActivityType();
-                    var game =
-                            this.plugin.getGeneralConfig()
-                                    .discord.activity.game
-                                    .replace(
-                                            Placeholders.PLAYER_COUNT, String.valueOf(this.plugin.getPlatformInfo().getNumberOfPlayers())
-                                    );
-                    var url = this.plugin.getGeneralConfig().discord.activity.url;
-
-            this.jda.getPresence().setActivity(Activity.of(type, game, url));
-                }, 1, TimeUnit.SECONDS
-        );
+        this.schedule(() -> {
+            var config = this.plugin.getGeneralConfig();
+            var game = config.discord.activity.game.replace(
+                    Placeholders.PLAYER_COUNT, String.valueOf(this.plugin.getPlatformInfo().getNumberOfPlayers()));
+            this.jda.getPresence().setActivity(Activity.of(config.discordActivityType(), game, config.discord.activity.url));
+        }, 1000);
     }
 
     public @NotNull String escapeUnderscore(@NotNull String text) {

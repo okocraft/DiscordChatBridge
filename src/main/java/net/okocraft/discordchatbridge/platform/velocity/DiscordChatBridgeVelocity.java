@@ -27,7 +27,7 @@ import com.velocitypowered.api.event.proxy.ProxyShutdownEvent;
 //import com.velocitypowered.api.plugin.Plugin;
 import com.velocitypowered.api.plugin.annotation.DataDirectory;
 import com.velocitypowered.api.proxy.ProxyServer;
-import net.okocraft.discordchatbridge.DiscordBot;
+import net.okocraft.discordchatbridge.BridgeLifecycle;
 import net.okocraft.discordchatbridge.DiscordChatBridgePlugin;
 import net.okocraft.discordchatbridge.chat.ChatSystem;
 import net.okocraft.discordchatbridge.listener.luckperms.FirstJoinListener;
@@ -54,11 +54,12 @@ public class DiscordChatBridgeVelocity implements DiscordChatBridgePlugin {
     private volatile ConfigLoader.ConfigPair config;
     private final VelocityPlatform velocityPlatform;
 
-    private DiscordBot bot;
+    private final BridgeLifecycle lifecycle = new BridgeLifecycle(this);
     private ChatSystem chatSystem;
     private FirstJoinListener firstJoinListener;
+    private VelocityServerListener serverListener;
+    private VelocityLunaChatListener lunaChatListener;
     private volatile FirstJoinPlayerHolder firstJoinPlayers = new FirstJoinPlayerHolder();
-    private boolean isEnabled;
 
     @Inject
     public DiscordChatBridgeVelocity(@NotNull ProxyServer server, @NotNull Logger logger,
@@ -80,7 +81,7 @@ public class DiscordChatBridgeVelocity implements DiscordChatBridgePlugin {
             this.chatSystem = new VelocityLunaChatSystem();
         }
 
-        this.isEnabled = this.enable();
+        this.enable();
     }
 
     @Subscribe
@@ -108,8 +109,9 @@ public class DiscordChatBridgeVelocity implements DiscordChatBridgePlugin {
         this.config = config;
     }
 
-    public @NotNull DiscordBot getBot() {
-        return this.bot;
+    @Override
+    public @NotNull BridgeLifecycle getLifecycle() {
+        return this.lifecycle;
     }
 
     @Override
@@ -120,11 +122,6 @@ public class DiscordChatBridgeVelocity implements DiscordChatBridgePlugin {
     @Override
     public @NotNull PlatformInfo getPlatformInfo() {
         return this.velocityPlatform;
-    }
-
-    @Override
-    public void loginToDiscord() {
-        this.bot = DiscordBot.login(this);
     }
 
     @Override
@@ -143,19 +140,39 @@ public class DiscordChatBridgeVelocity implements DiscordChatBridgePlugin {
     @Override
     public void registerListeners() {
         if (this.server.getPluginManager().isLoaded("lunachat")) {
-            this.server.getEventManager().register(this, new VelocityLunaChatListener(this));
+            this.lunaChatListener = new VelocityLunaChatListener(this);
+            this.server.getEventManager().register(this, this.lunaChatListener);
         }
-        this.server.getEventManager().register(this, new VelocityServerListener(this));
+        this.serverListener = new VelocityServerListener(this);
+        this.server.getEventManager().register(this, this.serverListener);
     }
 
     @Override
     public void unregisterListeners() {
-        this.server.getEventManager().unregisterListeners(this);
-    }
-
-    @Override
-    public boolean enabled() {
-        return this.isEnabled;
+        RuntimeException failure = null;
+        if (this.serverListener != null) {
+            try {
+                this.server.getEventManager().unregisterListener(this, this.serverListener);
+                this.serverListener = null;
+            } catch (RuntimeException e) {
+                failure = e;
+            }
+        }
+        if (this.lunaChatListener != null) {
+            try {
+                this.server.getEventManager().unregisterListener(this, this.lunaChatListener);
+                this.lunaChatListener = null;
+            } catch (RuntimeException e) {
+                if (failure == null) {
+                    failure = e;
+                } else {
+                    failure.addSuppressed(e);
+                }
+            }
+        }
+        if (failure != null) {
+            throw failure;
+        }
     }
 
     @Override
