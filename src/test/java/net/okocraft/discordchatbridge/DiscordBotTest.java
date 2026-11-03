@@ -30,8 +30,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
+import java.util.Collections;
+import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -52,24 +55,31 @@ class DiscordBotTest {
     }
 
     @Test
-    void testShutdownCancelsBothResourcesOnlyOnce() {
-        bot.shutdown();
-        bot.shutdown();
+    void testConcurrentShutdownClosesEachResourceOnce() throws Exception {
+        try (var executor = Executors.newFixedThreadPool(8)) {
+            for (var shutdown : executor.invokeAll(Collections.nCopies(8, (Callable<Void>) () -> {
+                bot.shutdown();
+                return null;
+            }))) {
+                shutdown.get();
+            }
+        }
 
+        bot.shutdown();
+        assertFalse(bot.connected());
         verify(scheduler).shutdownNow();
         verify(jda).shutdownNow();
-        assertFalse(bot.connected());
     }
 
     @Test
     void testJdaIsClosedEvenIfExecutorShutdownFails() {
-        when(scheduler.shutdownNow()).thenThrow(new IllegalStateException("executor failed")).thenReturn(java.util.List.of());
+        doThrow(new IllegalStateException("executor failed")).when(scheduler).shutdownNow();
 
         assertThrows(IllegalStateException.class, bot::shutdown);
         assertDoesNotThrow(bot::shutdown);
         assertDoesNotThrow(bot::shutdown);
 
-        verify(jda, times(2)).shutdownNow();
+        verify(jda).shutdownNow();
     }
 
     @Test
@@ -131,6 +141,28 @@ class DiscordBotTest {
 
         verify(channel).sendMessage(argThat((MessageCreateData data) -> data.getContent().equals("new message")));
         verify(delivery).queue();
+    }
+
+    @Test
+    void testConcurrentShutdownRejectsWorkWithoutLeakingException() {
+        var channel = mock(MessageChannel.class);
+        doAnswer(invocation -> {
+            bot.shutdown();
+            throw new RejectedExecutionException("closed");
+        }).when(scheduler).schedule(any(Runnable.class), anyLong(), any());
+
+        assertDoesNotThrow(() -> bot.sendMessage(channel, "text"));
+
+        verifyNoInteractions(channel);
+        verify(jda).shutdownNow();
+    }
+
+    @Test
+    void testUnexpectedExecutorRejectionIsNotHidden() {
+        doThrow(new RejectedExecutionException("unexpected rejection"))
+                .when(scheduler).schedule(any(Runnable.class), anyLong(), any());
+
+        assertThrows(RejectedExecutionException.class, bot::updateGame);
     }
 
     @Test

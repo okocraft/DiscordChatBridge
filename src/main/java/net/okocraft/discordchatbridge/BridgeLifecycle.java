@@ -43,7 +43,7 @@ public final class BridgeLifecycle {
         return this.bot;
     }
 
-    synchronized void login() {
+    void login() {
         if (this.state != State.STARTING) {
             throw new IllegalStateException("Login requires an active startup");
         }
@@ -51,6 +51,10 @@ public final class BridgeLifecycle {
     }
 
     synchronized boolean start() {
+        return this.startRuntime();
+    }
+
+    private boolean startRuntime() {
         if (this.state == State.RUNNING) {
             return true;
         }
@@ -99,7 +103,7 @@ public final class BridgeLifecycle {
             return false;
         }
         this.plugin.setSettings(settings);
-        return this.start();
+        return this.startRuntime();
     }
 
     synchronized void stop() {
@@ -115,15 +119,10 @@ public final class BridgeLifecycle {
         }
     }
 
-    void botStopped(DiscordBot stopped) {
-        if (this.bot != stopped || this.state != State.RUNNING) {
-            return;
-        }
-        synchronized (this) {
-            if (this.bot == stopped && this.state == State.RUNNING) {
-                this.stopRuntime();
-                this.state = State.FAILED;
-            }
+    synchronized void botStopped(DiscordBot stopped) {
+        if (this.bot == stopped && this.state == State.RUNNING) {
+            this.stopRuntime();
+            this.state = State.FAILED;
         }
     }
 

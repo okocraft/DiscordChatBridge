@@ -49,8 +49,10 @@ import java.util.Comparator;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Executors;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.regex.MatchResult;
 import java.util.regex.Pattern;
@@ -75,11 +77,10 @@ public class DiscordBot extends ListenerAdapter {
     }
 
     private final DiscordChatBridgePlugin plugin;
-    private volatile JDA jda;
-    private ScheduledExecutorService scheduler;
+    private final JDA jda;
+    private final ScheduledExecutorService scheduler;
 
-    private volatile boolean stopped;
-    private boolean shutdownComplete;
+    private final AtomicBoolean closed = new AtomicBoolean();
 
     DiscordBot(@NotNull DiscordChatBridgePlugin plugin, @NotNull JDA jda,
                @NotNull ScheduledExecutorService scheduler) {
@@ -126,15 +127,13 @@ public class DiscordBot extends ListenerAdapter {
     }
 
     public boolean connected() {
-        var current = this.jda;
-        return !this.stopped && current != null && current.getStatus() == JDA.Status.CONNECTED;
+        return !this.closed.get() && this.jda.getStatus() == JDA.Status.CONNECTED;
     }
 
     boolean terminated() {
-        var current = this.jda;
-        return this.stopped || current == null || current.getStatus() == JDA.Status.SHUTDOWN
-                || current.getStatus() == JDA.Status.SHUTTING_DOWN
-                || current.getStatus() == JDA.Status.FAILED_TO_LOGIN;
+        var status = this.jda.getStatus();
+        return this.closed.get() || status == JDA.Status.SHUTDOWN
+                || status == JDA.Status.SHUTTING_DOWN || status == JDA.Status.FAILED_TO_LOGIN;
     }
 
     @Override
@@ -142,32 +141,32 @@ public class DiscordBot extends ListenerAdapter {
         this.plugin.getLifecycle().botStopped(this);
     }
 
-    public synchronized void shutdown() {
-        if (this.shutdownComplete) {
+    public void shutdown() {
+        if (!this.closed.compareAndSet(false, true)) {
             return;
         }
-        this.stopped = true;
         try {
             this.scheduler.shutdownNow();
         } finally {
             this.jda.shutdownNow();
         }
-        this.shutdownComplete = true;
-        this.jda = null;
-        this.scheduler = null;
     }
 
-    private synchronized void schedule(Runnable action, long delayMillis) {
+    private void schedule(Runnable action, long delayMillis) {
         if (!this.connected() || !this.plugin.enabled()) {
             return;
         }
-        this.scheduler.schedule(() -> {
-            synchronized (DiscordBot.this) {
+        try {
+            this.scheduler.schedule(() -> {
                 if (this.connected() && this.plugin.enabled()) {
                     action.run();
                 }
+            }, delayMillis, TimeUnit.MILLISECONDS);
+        } catch (RejectedExecutionException e) {
+            if (!this.closed.get()) {
+                throw e;
             }
-        }, delayMillis, TimeUnit.MILLISECONDS);
+        }
     }
 
     public void sendMessage(long id, @NotNull String message) {
@@ -178,11 +177,10 @@ public class DiscordBot extends ListenerAdapter {
     }
 
     public void sendMessage(long id, @NotNull MessageCreateData message) {
-        var current = this.jda;
-        if (!this.connected() || current == null) {
+        if (!this.connected()) {
             return;
         }
-        var channel = current.getChannelById(MessageChannel.class, id);
+        var channel = this.jda.getChannelById(MessageChannel.class, id);
 
         if (channel != null) {
             this.sendMessage(channel, message);

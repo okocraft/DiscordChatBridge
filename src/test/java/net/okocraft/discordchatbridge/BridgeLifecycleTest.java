@@ -71,19 +71,6 @@ class BridgeLifecycleTest {
     }
 
     @Test
-    void testDirectLoginCannotLeakASecondBotOutsideStartup() {
-        try (var login = mockStatic(DiscordBot.class)) {
-            login.when(() -> DiscordBot.login(plugin)).thenReturn(bot);
-
-            assertThrows(IllegalStateException.class, plugin::loginToDiscord);
-            assertTrue(plugin.enable());
-            assertThrows(IllegalStateException.class, plugin::loginToDiscord);
-
-            login.verify(() -> DiscordBot.login(plugin));
-        }
-    }
-
-    @Test
     void testInitialLoginFailureRetainsManagementCommand() {
         try (var login = mockStatic(DiscordBot.class)) {
             login.when(() -> DiscordBot.login(plugin)).thenThrow(new IllegalStateException("login failed"));

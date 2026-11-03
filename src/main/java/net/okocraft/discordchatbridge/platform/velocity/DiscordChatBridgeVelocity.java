@@ -41,6 +41,8 @@ import org.slf4j.Logger;
 
 import java.awt.Color;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 
 //@Plugin(id = "discordchatbridge", name = "DiscordChatBridge", version = "2.5",
 //        description = "A Paper/Velocity plugin that connects Vanilla chat or LunaChat and Discord",
@@ -57,8 +59,7 @@ public class DiscordChatBridgeVelocity implements DiscordChatBridgePlugin {
     private final BridgeLifecycle lifecycle = new BridgeLifecycle(this);
     private ChatSystem chatSystem;
     private FirstJoinListener firstJoinListener;
-    private VelocityServerListener serverListener;
-    private VelocityLunaChatListener lunaChatListener;
+    private final List<Object> listeners = new ArrayList<>();
     private volatile FirstJoinPlayerHolder firstJoinPlayers = new FirstJoinPlayerHolder();
 
     @Inject
@@ -140,28 +141,23 @@ public class DiscordChatBridgeVelocity implements DiscordChatBridgePlugin {
     @Override
     public void registerListeners() {
         if (this.server.getPluginManager().isLoaded("lunachat")) {
-            this.lunaChatListener = new VelocityLunaChatListener(this);
-            this.server.getEventManager().register(this, this.lunaChatListener);
+            var listener = new VelocityLunaChatListener(this);
+            this.listeners.add(listener);
+            this.server.getEventManager().register(this, listener);
         }
-        this.serverListener = new VelocityServerListener(this);
-        this.server.getEventManager().register(this, this.serverListener);
+        var listener = new VelocityServerListener(this);
+        this.listeners.add(listener);
+        this.server.getEventManager().register(this, listener);
     }
 
     @Override
     public void unregisterListeners() {
         RuntimeException failure = null;
-        if (this.serverListener != null) {
+        for (var iterator = this.listeners.iterator(); iterator.hasNext();) {
+            var listener = iterator.next();
             try {
-                this.server.getEventManager().unregisterListener(this, this.serverListener);
-                this.serverListener = null;
-            } catch (RuntimeException e) {
-                failure = e;
-            }
-        }
-        if (this.lunaChatListener != null) {
-            try {
-                this.server.getEventManager().unregisterListener(this, this.lunaChatListener);
-                this.lunaChatListener = null;
+                this.server.getEventManager().unregisterListener(this, listener);
+                iterator.remove();
             } catch (RuntimeException e) {
                 if (failure == null) {
                     failure = e;
