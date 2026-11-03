@@ -41,7 +41,7 @@ import java.nio.file.Path;
 
 public class DiscordChatBridgeBukkit extends JavaPlugin implements DiscordChatBridgePlugin {
 
-    private final LoggerWrapper wrappedLogger = new JavaLogger(this.getLogger());
+    private LoggerWrapper wrappedLogger;
     private final BukkitPlatform bukkitPlatform = new BukkitPlatform(this);
     private final ReloadCommand reloadCommand = new ReloadCommand(this);
     private volatile ConfigLoader.ConfigPair config;
@@ -54,6 +54,8 @@ public class DiscordChatBridgeBukkit extends JavaPlugin implements DiscordChatBr
 
     @Override
     public void onEnable() {
+        this.wrappedLogger = new JavaLogger(this.getLogger());
+
         if (!this.load()) {
             this.getServer().getPluginManager().disablePlugin(this);
             return;
