@@ -19,6 +19,7 @@
 
 package net.okocraft.discordchatbridge.platform.bukkit;
 
+import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.okocraft.discordchatbridge.chat.ChatSystem;
 import net.okocraft.discordchatbridge.constant.Constants;
@@ -31,8 +32,9 @@ public class PaperChatSystem implements ChatSystem {
     @Override
     public void sendChat(@NotNull String channelName, @NotNull String sender, @NotNull String source, @NotNull String message) {
         if (channelName.equals(Constants.GLOBAL_CHANNEL_NAME)) {
-            var chat = VanillaChatFormatter.format(sender, source, message);
-            Bukkit.broadcast(LegacyComponentSerializer.legacyAmpersand().deserialize(chat));
+            var prefix = VanillaChatFormatter.format(sender, source, "");
+            var chat = LegacyComponentSerializer.legacyAmpersand().deserialize(prefix).append(Component.text(message));
+            Bukkit.broadcast(chat);
         }
     }
 }
