@@ -29,6 +29,7 @@ import net.okocraft.discordchatbridge.logger.JavaLogger;
 import net.okocraft.discordchatbridge.logger.LoggerWrapper;
 import net.okocraft.discordchatbridge.platform.PlatformInfo;
 import net.okocraft.discordchatbridge.util.ColorSerializer;
+import net.okocraft.discordchatbridge.util.FirstJoinPlayerHolder;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.event.HandlerList;
@@ -48,6 +49,7 @@ public class DiscordChatBridgeBukkit extends JavaPlugin implements DiscordChatBr
     private DiscordBot bot;
     private ChatSystem chatSystem;
     private FirstJoinListener firstJoinListener;
+    private volatile FirstJoinPlayerHolder firstJoinPlayers = new FirstJoinPlayerHolder();
     private boolean isEnabled;
 
     @Override
@@ -146,8 +148,14 @@ public class DiscordChatBridgeBukkit extends JavaPlugin implements DiscordChatBr
     }
 
     @Override
+    public @NotNull FirstJoinPlayerHolder getFirstJoinPlayers() {
+        return this.firstJoinPlayers;
+    }
+
+    @Override
     public void registerLuckPermsFirstJoinListener() {
         if (this.getServer().getPluginManager().getPlugin("LuckPerms") != null) {
+            this.firstJoinPlayers = new FirstJoinPlayerHolder();
             this.firstJoinListener = new FirstJoinListener(this);
         }
     }
@@ -156,6 +164,7 @@ public class DiscordChatBridgeBukkit extends JavaPlugin implements DiscordChatBr
     public void unregisterLuckPermsFirstJoinListener() {
         if (this.firstJoinListener != null) {
             this.firstJoinListener.unsubscribe();
+            this.firstJoinListener = null;
         }
     }
 

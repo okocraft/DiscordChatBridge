@@ -22,7 +22,6 @@ package net.okocraft.discordchatbridge.listener;
 import net.okocraft.discordchatbridge.DiscordChatBridgePlugin;
 import net.okocraft.discordchatbridge.constant.Placeholders;
 import net.okocraft.discordchatbridge.util.ColorStripper;
-import net.okocraft.discordchatbridge.util.FirstJoinPlayerHolder;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
@@ -44,7 +43,7 @@ public abstract class ServerListener {
         this.plugin.getBot().updateGame();
 
         // The reason for not checking the config setting here is that if it is disabled, the user will not be added to the FirstJoinPlayerHolder.
-        if (FirstJoinPlayerHolder.remove(uuid)) {
+        if (this.plugin.getFirstJoinPlayers().remove(uuid)) {
             var format = this.plugin.getFormatConfig().server.firstJoin;
 
             if (!format.isEmpty()) {

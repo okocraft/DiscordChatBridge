@@ -25,6 +25,7 @@ import net.okocraft.discordchatbridge.config.FormatSettings;
 import net.okocraft.discordchatbridge.config.GeneralSettings;
 import net.okocraft.discordchatbridge.logger.LoggerWrapper;
 import net.okocraft.discordchatbridge.platform.PlatformInfo;
+import net.okocraft.discordchatbridge.util.FirstJoinPlayerHolder;
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.Color;
@@ -52,6 +53,8 @@ public interface DiscordChatBridgePlugin {
     @NotNull DiscordBot getBot();
 
     @NotNull ChatSystem getChatSystem();
+
+    @NotNull FirstJoinPlayerHolder getFirstJoinPlayers();
 
     @NotNull PlatformInfo getPlatformInfo();
 
