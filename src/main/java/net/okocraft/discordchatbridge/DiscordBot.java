@@ -95,13 +95,14 @@ public class DiscordBot extends ListenerAdapter {
         try {
             jda = JDABuilder.createDefault(plugin.getGeneralConfig().discord.token)
                     .addEventListeners(new DiscordListener(plugin))
-                    .setAutoReconnect(true)
+                    .setAutoReconnect(false)
                     .setStatus(plugin.getGeneralConfig().discordStatus())
                     .enableIntents(GatewayIntent.GUILD_MEMBERS, GatewayIntent.MESSAGE_CONTENT)
                     .setMemberCachePolicy(MemberCachePolicy.ALL)
                     .disableCache(Arrays.asList(CacheFlag.values()))
                     .build();
             jda.awaitReady();
+            jda.setAutoReconnect(true);
             bot = new DiscordBot(plugin, jda,
                     Executors.newSingleThreadScheduledExecutor(r -> new Thread(r, "DiscordChatBridge-Thread")));
             jda.addEventListener(bot);
@@ -127,6 +128,13 @@ public class DiscordBot extends ListenerAdapter {
     public boolean connected() {
         var current = this.jda;
         return !this.stopped && current != null && current.getStatus() == JDA.Status.CONNECTED;
+    }
+
+    boolean terminated() {
+        var current = this.jda;
+        return this.stopped || current == null || current.getStatus() == JDA.Status.SHUTDOWN
+                || current.getStatus() == JDA.Status.SHUTTING_DOWN
+                || current.getStatus() == JDA.Status.FAILED_TO_LOGIN;
     }
 
     @Override

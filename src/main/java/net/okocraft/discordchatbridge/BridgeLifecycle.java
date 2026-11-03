@@ -81,6 +81,9 @@ public final class BridgeLifecycle {
                 this.plugin.registerLuckPermsFirstJoinListener();
             }
             this.state = State.RUNNING;
+            if (this.bot.terminated()) {
+                throw new IllegalStateException("Discord connection terminated during startup");
+            }
             this.bot.updateGame();
             return true;
         } catch (Exception e) {

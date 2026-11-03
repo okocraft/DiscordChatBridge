@@ -118,7 +118,7 @@ class BridgeLifecycleTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"listeners", "luckperms", "presence"})
+    @ValueSource(strings = {"listeners", "luckperms", "presence", "terminated"})
     void testPartialStartupFailureRetiresBotAndRegistrations(String stage) {
         try (var login = mockStatic(DiscordBot.class)) {
             login.when(() -> DiscordBot.login(plugin)).thenReturn(bot);
@@ -126,6 +126,7 @@ class BridgeLifecycleTest {
                 case "listeners" -> doThrow(new IllegalStateException(stage)).when(plugin).registerListeners();
                 case "luckperms" -> doThrow(new IllegalStateException(stage)).when(plugin).registerLuckPermsFirstJoinListener();
                 case "presence" -> doThrow(new IllegalStateException(stage)).when(bot).updateGame();
+                case "terminated" -> when(bot.terminated()).thenReturn(true);
             }
 
             assertFalse(plugin.enable());

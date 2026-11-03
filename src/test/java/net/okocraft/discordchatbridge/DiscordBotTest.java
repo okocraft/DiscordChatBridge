@@ -155,6 +155,8 @@ class DiscordBotTest {
                 assertThrows(IllegalStateException.class, () -> DiscordBot.login(plugin));
                 assertTrue(Thread.currentThread().isInterrupted());
                 verify(jda).shutdownNow();
+                verify(builder).setAutoReconnect(false);
+                verify(jda, never()).setAutoReconnect(true);
             } finally {
                 Thread.interrupted();
             }
@@ -176,6 +178,8 @@ class DiscordBotTest {
 
             verify(jda).shutdownNow();
             verify(scheduler).shutdownNow();
+            verify(builder).setAutoReconnect(false);
+            verify(jda).setAutoReconnect(true);
         }
     }
 }
