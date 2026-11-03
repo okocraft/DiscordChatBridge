@@ -23,8 +23,6 @@ import io.papermc.paper.event.player.AsyncChatEvent;
 import net.okocraft.discordchatbridge.DiscordChatBridgePlugin;
 import net.okocraft.discordchatbridge.constant.Constants;
 import net.okocraft.discordchatbridge.listener.chat.AdventureChatListener;
-import net.okocraft.discordchatbridge.util.AdventureVanillaChatFormatter;
-import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -36,15 +34,13 @@ public class PaperChatListener extends AdventureChatListener implements Listener
         super(plugin);
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST)
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onChat(@NotNull AsyncChatEvent event) {
         if (event.isCancelled()) {
             return;
         }
 
         var sender = event.getPlayer();
-        this.processChat(Constants.GLOBAL_CHANNEL_NAME, sender.getName(), sender.displayName(), event.originalMessage());
-        Bukkit.broadcast(AdventureVanillaChatFormatter.format(sender.getName(), event.originalMessage()));
-        event.setCancelled(true);
+        this.processChat(Constants.GLOBAL_CHANNEL_NAME, sender.getName(), sender.displayName(), event.message());
     }
 }
