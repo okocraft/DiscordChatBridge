@@ -35,6 +35,7 @@ import net.okocraft.discordchatbridge.logger.LoggerWrapper;
 import net.okocraft.discordchatbridge.logger.Slf4jLogger;
 import net.okocraft.discordchatbridge.platform.PlatformInfo;
 import net.okocraft.discordchatbridge.util.ColorSerializer;
+import net.okocraft.discordchatbridge.util.FirstJoinPlayerHolder;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 
@@ -56,6 +57,7 @@ public class DiscordChatBridgeVelocity implements DiscordChatBridgePlugin {
     private DiscordBot bot;
     private ChatSystem chatSystem;
     private FirstJoinListener firstJoinListener;
+    private volatile FirstJoinPlayerHolder firstJoinPlayers = new FirstJoinPlayerHolder();
     private boolean isEnabled;
 
     @Inject
@@ -157,8 +159,14 @@ public class DiscordChatBridgeVelocity implements DiscordChatBridgePlugin {
     }
 
     @Override
+    public @NotNull FirstJoinPlayerHolder getFirstJoinPlayers() {
+        return this.firstJoinPlayers;
+    }
+
+    @Override
     public void registerLuckPermsFirstJoinListener() {
         if (this.server.getPluginManager().getPlugin("luckperms").isPresent()) {
+            this.firstJoinPlayers = new FirstJoinPlayerHolder();
             this.firstJoinListener = new FirstJoinListener(this);
         }
     }
@@ -167,6 +175,7 @@ public class DiscordChatBridgeVelocity implements DiscordChatBridgePlugin {
     public void unregisterLuckPermsFirstJoinListener() {
         if (this.firstJoinListener != null) {
             this.firstJoinListener.unsubscribe();
+            this.firstJoinListener = null;
         }
     }
 

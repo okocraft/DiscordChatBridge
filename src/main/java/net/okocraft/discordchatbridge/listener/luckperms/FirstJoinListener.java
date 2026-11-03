@@ -29,19 +29,22 @@ import org.jetbrains.annotations.NotNull;
 public class FirstJoinListener {
 
     private final EventSubscription<UserFirstLoginEvent> listener;
+    private final FirstJoinPlayerHolder players;
 
     public FirstJoinListener(@NotNull DiscordChatBridgePlugin plugin) {
+        this.players = plugin.getFirstJoinPlayers();
         this.listener =
                 LuckPermsProvider.get()
                         .getEventBus()
                         .subscribe(
                                 plugin,
                                 UserFirstLoginEvent.class,
-                                event -> FirstJoinPlayerHolder.add(event.getUniqueId())
+                                event -> this.players.add(event.getUniqueId())
                         );
     }
 
     public void unsubscribe() {
+        this.players.close();
         this.listener.close();
     }
 }

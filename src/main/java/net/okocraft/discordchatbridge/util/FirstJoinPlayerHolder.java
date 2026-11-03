@@ -21,19 +21,28 @@ package net.okocraft.discordchatbridge.util;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
-public final class FirstJoinPlayerHolder {
+public final class FirstJoinPlayerHolder implements AutoCloseable {
 
-    private static final List<UUID> FIRST_JOIN_PLAYERS = new ArrayList<>();
+    private final Set<UUID> players = new HashSet<>();
+    private boolean closed;
 
-    public static void add(@NotNull UUID uuid) {
-        FIRST_JOIN_PLAYERS.add(uuid);
+    public synchronized void add(@NotNull UUID uuid) {
+        if (!this.closed) {
+            this.players.add(uuid);
+        }
     }
 
-    public static boolean remove(@NotNull UUID uuid) {
-        return FIRST_JOIN_PLAYERS.remove(uuid);
+    public synchronized boolean remove(@NotNull UUID uuid) {
+        return this.players.remove(uuid);
+    }
+
+    @Override
+    public synchronized void close() {
+        this.closed = true;
+        this.players.clear();
     }
 }
