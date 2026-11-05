@@ -1,10 +1,10 @@
 [versions]
-gradle-plugins = "1.8.6"
+gradle-plugins = "1.9.0"
 junit = "6.1.3"
 mockito = "5.24.0"
 
 [libraries]
-platform-paper = { module = "io.papermc.paper:paper-api", version = "26.3.build.235-stable" }
+platform-paper = { module = "io.papermc.paper:paper-api", version = "26.3.build.237-stable" }
 platform-velocity = { module = "com.velocitypowered:velocity-api", version = "4.3.1" }
 luckperms = { module = "net.luckperms:api", version = "5.5" }
 lunachat = { module = "com.github.ucchyocean:LunaChat", version = "3.0.16" }
