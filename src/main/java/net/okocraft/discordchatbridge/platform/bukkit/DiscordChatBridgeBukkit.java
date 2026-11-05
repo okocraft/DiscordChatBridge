@@ -20,7 +20,7 @@
 package net.okocraft.discordchatbridge.platform.bukkit;
 
 import net.okocraft.discordchatbridge.config.ConfigLoader;
-import net.okocraft.discordchatbridge.DiscordBot;
+import net.okocraft.discordchatbridge.BridgeLifecycle;
 import net.okocraft.discordchatbridge.DiscordChatBridgePlugin;
 import net.okocraft.discordchatbridge.chat.ChatSystem;
 import net.okocraft.discordchatbridge.command.ReloadCommand;
@@ -46,11 +46,10 @@ public class DiscordChatBridgeBukkit extends JavaPlugin implements DiscordChatBr
     private final ReloadCommand reloadCommand = new ReloadCommand(this);
     private volatile ConfigLoader.ConfigPair config;
 
-    private DiscordBot bot;
+    private final BridgeLifecycle lifecycle = new BridgeLifecycle(this);
     private ChatSystem chatSystem;
     private FirstJoinListener firstJoinListener;
     private volatile FirstJoinPlayerHolder firstJoinPlayers = new FirstJoinPlayerHolder();
-    private boolean isEnabled;
 
     @Override
     public void onEnable() {
@@ -67,7 +66,7 @@ public class DiscordChatBridgeBukkit extends JavaPlugin implements DiscordChatBr
             this.chatSystem = new PaperChatSystem();
         }
 
-        this.isEnabled = this.enable();
+        this.enable();
     }
 
     @Override
@@ -101,8 +100,9 @@ public class DiscordChatBridgeBukkit extends JavaPlugin implements DiscordChatBr
         this.config = config;
     }
 
-    public @NotNull DiscordBot getBot() {
-        return this.bot;
+    @Override
+    public @NotNull BridgeLifecycle getLifecycle() {
+        return this.lifecycle;
     }
 
     @Override
@@ -113,11 +113,6 @@ public class DiscordChatBridgeBukkit extends JavaPlugin implements DiscordChatBr
     @Override
     public @NotNull PlatformInfo getPlatformInfo() {
         return this.bukkitPlatform;
-    }
-
-    @Override
-    public void loginToDiscord() {
-        this.bot = DiscordBot.login(this);
     }
 
     @Override
@@ -142,11 +137,6 @@ public class DiscordChatBridgeBukkit extends JavaPlugin implements DiscordChatBr
     @Override
     public void unregisterListeners() {
         HandlerList.unregisterAll(this);
-    }
-
-    @Override
-    public boolean enabled() {
-        return this.isEnabled;
     }
 
     @Override

@@ -69,6 +69,9 @@ public class DiscordListener extends ListenerAdapter {
 
     @Override
     public void onMessageReceived(@NotNull MessageReceivedEvent event) {
+        if (!this.plugin.enabled()) {
+            return;
+        }
         var member = event.getMember();
 
         if (!event.isFromGuild() || event.getAuthor().isBot() || member == null) {

@@ -27,7 +27,7 @@ import com.velocitypowered.api.event.proxy.ProxyShutdownEvent;
 //import com.velocitypowered.api.plugin.Plugin;
 import com.velocitypowered.api.plugin.annotation.DataDirectory;
 import com.velocitypowered.api.proxy.ProxyServer;
-import net.okocraft.discordchatbridge.DiscordBot;
+import net.okocraft.discordchatbridge.BridgeLifecycle;
 import net.okocraft.discordchatbridge.DiscordChatBridgePlugin;
 import net.okocraft.discordchatbridge.chat.ChatSystem;
 import net.okocraft.discordchatbridge.listener.luckperms.FirstJoinListener;
@@ -41,6 +41,8 @@ import org.slf4j.Logger;
 
 import java.awt.Color;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 
 //@Plugin(id = "discordchatbridge", name = "DiscordChatBridge", version = "2.5",
 //        description = "A Paper/Velocity plugin that connects Vanilla chat or LunaChat and Discord",
@@ -54,11 +56,11 @@ public class DiscordChatBridgeVelocity implements DiscordChatBridgePlugin {
     private volatile ConfigLoader.ConfigPair config;
     private final VelocityPlatform velocityPlatform;
 
-    private DiscordBot bot;
+    private final BridgeLifecycle lifecycle = new BridgeLifecycle(this);
     private ChatSystem chatSystem;
     private FirstJoinListener firstJoinListener;
+    private final List<Object> listeners = new ArrayList<>();
     private volatile FirstJoinPlayerHolder firstJoinPlayers = new FirstJoinPlayerHolder();
-    private boolean isEnabled;
 
     @Inject
     public DiscordChatBridgeVelocity(@NotNull ProxyServer server, @NotNull Logger logger,
@@ -80,7 +82,7 @@ public class DiscordChatBridgeVelocity implements DiscordChatBridgePlugin {
             this.chatSystem = new VelocityLunaChatSystem();
         }
 
-        this.isEnabled = this.enable();
+        this.enable();
     }
 
     @Subscribe
@@ -108,8 +110,9 @@ public class DiscordChatBridgeVelocity implements DiscordChatBridgePlugin {
         this.config = config;
     }
 
-    public @NotNull DiscordBot getBot() {
-        return this.bot;
+    @Override
+    public @NotNull BridgeLifecycle getLifecycle() {
+        return this.lifecycle;
     }
 
     @Override
@@ -120,11 +123,6 @@ public class DiscordChatBridgeVelocity implements DiscordChatBridgePlugin {
     @Override
     public @NotNull PlatformInfo getPlatformInfo() {
         return this.velocityPlatform;
-    }
-
-    @Override
-    public void loginToDiscord() {
-        this.bot = DiscordBot.login(this);
     }
 
     @Override
@@ -143,19 +141,34 @@ public class DiscordChatBridgeVelocity implements DiscordChatBridgePlugin {
     @Override
     public void registerListeners() {
         if (this.server.getPluginManager().isLoaded("lunachat")) {
-            this.server.getEventManager().register(this, new VelocityLunaChatListener(this));
+            var listener = new VelocityLunaChatListener(this);
+            this.listeners.add(listener);
+            this.server.getEventManager().register(this, listener);
         }
-        this.server.getEventManager().register(this, new VelocityServerListener(this));
+        var listener = new VelocityServerListener(this);
+        this.listeners.add(listener);
+        this.server.getEventManager().register(this, listener);
     }
 
     @Override
     public void unregisterListeners() {
-        this.server.getEventManager().unregisterListeners(this);
-    }
-
-    @Override
-    public boolean enabled() {
-        return this.isEnabled;
+        RuntimeException failure = null;
+        for (var iterator = this.listeners.iterator(); iterator.hasNext();) {
+            var listener = iterator.next();
+            try {
+                this.server.getEventManager().unregisterListener(this, listener);
+                iterator.remove();
+            } catch (RuntimeException e) {
+                if (failure == null) {
+                    failure = e;
+                } else {
+                    failure.addSuppressed(e);
+                }
+            }
+        }
+        if (failure != null) {
+            throw failure;
+        }
     }
 
     @Override

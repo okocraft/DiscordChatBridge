@@ -50,7 +50,11 @@ public interface DiscordChatBridgePlugin {
         return this.getSettings().format();
     }
 
-    @NotNull DiscordBot getBot();
+    @NotNull BridgeLifecycle getLifecycle();
+
+    default @NotNull DiscordBot getBot() {
+        return this.getLifecycle().bot();
+    }
 
     @NotNull ChatSystem getChatSystem();
 
@@ -77,40 +81,20 @@ public interface DiscordChatBridgePlugin {
             return false;
         }
 
-        this.disable();
-        this.setSettings(next);
-        return this.enable();
+        return this.getLifecycle().restart(next);
     }
 
     default boolean enable() {
-        try {
-            this.loginToDiscord();
-            this.getBot().updateGame();
-        } catch (Exception e) {
-            this.getWrappedLogger().error("Could not login to Discord", e);
-            return false;
-        }
-
-        this.registerCommands();
-        this.registerListeners();
-
-        if (this.getGeneralConfig().messageSendingSetting.firstJoin) {
-            this.registerLuckPermsFirstJoinListener();
-        }
-
-        return true;
+        return this.getLifecycle().start();
     }
 
     default void disable() {
-        if (this.enabled()) {
-            this.getBot().shutdown();
-            this.unregisterCommands();
-            this.unregisterListeners();
-            this.unregisterLuckPermsFirstJoinListener();
-        }
+        this.getLifecycle().stop();
     }
 
-    void loginToDiscord();
+    default void loginToDiscord() {
+        this.getLifecycle().login();
+    }
 
     void registerCommands();
 
@@ -120,7 +104,9 @@ public interface DiscordChatBridgePlugin {
 
     void unregisterListeners();
 
-    boolean enabled();
+    default boolean enabled() {
+        return this.getLifecycle().state() == BridgeLifecycle.State.RUNNING;
+    }
 
     void registerLuckPermsFirstJoinListener();
 

@@ -52,7 +52,11 @@ dependencies {
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.configurate.yaml)
     testImplementation(libs.platform.paper)
+    testImplementation(libs.platform.velocity)
     testImplementation(libs.luckperms)
+    testRuntimeOnly(libs.lunachat) {
+        isTransitive = false
+    }
 }
 
 val pluginProperties = mapOf(
