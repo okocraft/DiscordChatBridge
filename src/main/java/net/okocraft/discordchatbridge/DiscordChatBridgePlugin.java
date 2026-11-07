@@ -77,9 +77,29 @@ public interface DiscordChatBridgePlugin {
             return false;
         }
 
-        this.disable();
+        var previous = this.getGeneralConfig();
         this.setSettings(next);
-        return this.enable();
+
+        var bot = this.getBot();
+        if (bot == null) {
+            return this.enable();
+        }
+
+        if (bot.isStopped() || !previous.discord.token.equals(next.general().discord.token)) {
+            this.shutdownBot();
+            this.loginToDiscord();
+        }
+        this.getBot().updateGame();
+
+        var firstJoin = next.general().messageSendingSetting.firstJoin;
+        if (firstJoin != previous.messageSendingSetting.firstJoin) {
+            if (firstJoin) {
+                this.registerLuckPermsFirstJoinListener();
+            } else {
+                this.unregisterLuckPermsFirstJoinListener();
+            }
+        }
+        return true;
     }
 
     default boolean enable() {

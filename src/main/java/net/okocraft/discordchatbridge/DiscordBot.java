@@ -127,6 +127,11 @@ public class DiscordBot {
         }
     }
 
+    public boolean isStopped() {
+        var jda = this.jda;
+        return this.scheduler.isShutdown() || jda != null && jda.getStatus() == JDA.Status.SHUTDOWN;
+    }
+
     public void sendMessage(long id, @NotNull String message) {
         this.sendMessage(id, new MessageCreateBuilder().setContent(message).build());
     }
@@ -216,7 +221,7 @@ public class DiscordBot {
                                     );
                     var url = this.plugin.getGeneralConfig().discord.activity.url;
 
-            this.jda.getPresence().setActivity(Activity.of(type, game, url));
+            this.jda.getPresence().setPresence(this.plugin.getGeneralConfig().discordStatus(), Activity.of(type, game, url));
                 }, 1, TimeUnit.SECONDS
         );
     }

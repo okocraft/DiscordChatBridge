@@ -54,6 +54,10 @@ dependencies {
     testImplementation(libs.platform.paper)
     testImplementation(libs.platform.velocity)
     testImplementation(libs.luckperms)
+    testImplementation(libs.lunachat) {
+        exclude(group = "org.bstats", module = "bstats-bukkit")
+        exclude(group = "org.bstats", module = "bstats-bungeecord")
+    }
 }
 
 val pluginProperties = mapOf(

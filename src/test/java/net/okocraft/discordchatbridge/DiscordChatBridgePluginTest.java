@@ -19,14 +19,24 @@
 
 package net.okocraft.discordchatbridge;
 
+import net.okocraft.discordchatbridge.config.ConfigLoader;
+import net.okocraft.discordchatbridge.config.FormatSettings;
 import net.okocraft.discordchatbridge.config.GeneralSettings;
 import net.okocraft.discordchatbridge.logger.LoggerWrapper;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class DiscordChatBridgePluginTest {
+
+    @TempDir
+    Path dataDirectory;
 
     private final DiscordChatBridgePlugin plugin = mock(DiscordChatBridgePlugin.class, CALLS_REAL_METHODS);
     private final LoggerWrapper logger = mock(LoggerWrapper.class);
@@ -75,5 +85,79 @@ class DiscordChatBridgePluginTest {
         verify(plugin).unregisterListeners();
         verify(plugin).unregisterLuckPermsFirstJoinListener();
         verify(plugin).shutdownBot();
+    }
+
+    @Test
+    void testReloadWithInvalidConfigurationKeepsCurrentState() throws IOException {
+        Files.writeString(dataDirectory.resolve("config.yml"), "discord:\n  token: ''\n");
+        doReturn(dataDirectory).when(plugin).getDataDirectory();
+        doReturn(logger).when(plugin).getWrappedLogger();
+
+        assertFalse(plugin.reload());
+
+        verify(plugin, never()).setSettings(any());
+        verify(plugin, never()).shutdownBot();
+    }
+
+    @Test
+    void testReloadWithSameTokenKeepsConnection() throws IOException {
+        var bot = mock(DiscordBot.class);
+        Files.writeString(dataDirectory.resolve("config.yml"), "discord:\n  token: test-token\n");
+        general.discord.token = "test-token";
+        doReturn(dataDirectory).when(plugin).getDataDirectory();
+        doReturn(new ConfigLoader.ConfigPair(general, new FormatSettings())).when(plugin).getSettings();
+        doReturn(bot).when(plugin).getBot();
+
+        assertTrue(plugin.reload());
+
+        verify(plugin).setSettings(any());
+        verify(plugin, never()).shutdownBot();
+        verify(plugin, never()).loginToDiscord();
+        verify(bot).updateGame();
+    }
+
+    @Test
+    void testReloadWithChangedTokenReconnects() throws IOException {
+        Files.writeString(dataDirectory.resolve("config.yml"), "discord:\n  token: new-token\n");
+        general.discord.token = "old-token";
+        doReturn(dataDirectory).when(plugin).getDataDirectory();
+        doReturn(new ConfigLoader.ConfigPair(general, new FormatSettings())).when(plugin).getSettings();
+        doReturn(mock(DiscordBot.class)).when(plugin).getBot();
+
+        assertTrue(plugin.reload());
+
+        verify(plugin).shutdownBot();
+        verify(plugin).loginToDiscord();
+    }
+
+    @Test
+    void testReloadReconnectsStoppedBot() throws IOException {
+        var bot = mock(DiscordBot.class);
+        when(bot.isStopped()).thenReturn(true);
+        Files.writeString(dataDirectory.resolve("config.yml"), "discord:\n  token: test-token\n");
+        general.discord.token = "test-token";
+        doReturn(dataDirectory).when(plugin).getDataDirectory();
+        doReturn(new ConfigLoader.ConfigPair(general, new FormatSettings())).when(plugin).getSettings();
+        doReturn(bot).when(plugin).getBot();
+
+        assertTrue(plugin.reload());
+
+        verify(plugin).shutdownBot();
+        verify(plugin).loginToDiscord();
+    }
+
+    @Test
+    void testReloadDisablingFirstJoinUnsubscribesFromLuckPerms() throws IOException {
+        Files.writeString(dataDirectory.resolve("config.yml"),
+                "discord:\n  token: test-token\nmessage-sending-setting:\n  first-join: false\n");
+        general.discord.token = "test-token";
+        doReturn(dataDirectory).when(plugin).getDataDirectory();
+        doReturn(new ConfigLoader.ConfigPair(general, new FormatSettings())).when(plugin).getSettings();
+        doReturn(mock(DiscordBot.class)).when(plugin).getBot();
+
+        assertTrue(plugin.reload());
+
+        verify(plugin).unregisterLuckPermsFirstJoinListener();
+        verify(plugin, never()).registerLuckPermsFirstJoinListener();
     }
 }
