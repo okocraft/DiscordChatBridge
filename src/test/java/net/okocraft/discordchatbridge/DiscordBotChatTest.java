@@ -38,6 +38,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.ArgumentCaptor;
 
+import java.util.EnumSet;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -86,7 +87,7 @@ class DiscordBotChatTest {
 
         bot.sendChat(1L, message, "Steve", "Steve");
 
-        assertEquals(expected, sentContent());
+        assertEquals(expected, sent().getContent());
     }
 
     @Test
@@ -96,7 +97,7 @@ class DiscordBotChatTest {
 
         bot.sendChat(1L, message, "Steve", "Steve");
 
-        assertEquals(message, sentContent());
+        assertEquals(message, sent().getContent());
     }
 
     @Test
@@ -111,15 +112,43 @@ class DiscordBotChatTest {
         verify(channel, never()).sendMessage(any(MessageCreateData.class));
     }
 
+    @Test
+    void testChatNotifiesOnlyUsers() {
+        bot = new DiscordBot(plugin, () -> jda);
+
+        bot.sendChat(1L, "hello", "Steve", "Steve");
+
+        assertEquals(EnumSet.of(Message.MentionType.EMOJI, Message.MentionType.USER, Message.MentionType.CHANNEL),
+                sent().getAllowedMentions());
+    }
+
+    @Test
+    void testSystemMessageNotifiesNobody() {
+        bot = new DiscordBot(plugin, () -> jda);
+
+        bot.sendMessage(1L, "@everyone joined");
+
+        assertEquals(EnumSet.noneOf(Message.MentionType.class), sent().getAllowedMentions());
+    }
+
+    @Test
+    void testReplyToChannelNotifiesNobody() {
+        bot = new DiscordBot(plugin, () -> jda);
+
+        bot.sendMessage(channel, "@everyone is online");
+
+        assertEquals(EnumSet.noneOf(Message.MentionType.class), sent().getAllowedMentions());
+    }
+
     private static <M extends IMentionable> List<M> mentions(Class<M> type, String mention) {
         var mentionable = mock(type);
         when(mentionable.getAsMention()).thenReturn(mention);
         return List.of(mentionable);
     }
 
-    private String sentContent() {
+    private MessageCreateData sent() {
         var captor = ArgumentCaptor.forClass(MessageCreateData.class);
         verify(channel, timeout(5_000)).sendMessage(captor.capture());
-        return captor.getValue().getContent();
+        return captor.getValue();
     }
 }
