@@ -156,11 +156,12 @@ public class DiscordBot {
     public void sendMessage(@NotNull MessageChannel channel, @NotNull MessageCreateData message) {
         this.scheduler.submit(() -> {
             if (channel.canTalk()) {
-                channel.sendMessage(message).queue();
+                channel.sendMessage(message).queue(null, failure -> this.plugin.getWrappedLogger().warning(
+                        "Could not send message to channel " + channel.getId() + ": " + failure.getMessage()
+                ));
             } else {
                 this.plugin.getWrappedLogger().warning(
-                        "Could not send message to channel. " +
-                                "id: " + channel.getId() + " content: " + message.getContent()
+                        "Could not send message to channel " + channel.getId() + ": no permission to send messages"
                 );
             }
         });
@@ -172,7 +173,11 @@ public class DiscordBot {
     }
 
     public void addReaction(@NotNull Message message, @NotNull String unicode) {
-        this.scheduler.submit(() -> message.addReaction(Emoji.fromUnicode(unicode)).queue());
+        this.scheduler.submit(() -> message.addReaction(Emoji.fromUnicode(unicode)).queue(null, failure ->
+                this.plugin.getWrappedLogger().warning(
+                        "Could not add reaction to message " + message.getId() + ": " + failure.getMessage()
+                )
+        ));
     }
 
     public @Nullable Role getFirstRole(@NotNull Member member) {
@@ -207,7 +212,9 @@ public class DiscordBot {
         if (plain.length() <= Message.MAX_CONTENT_LENGTH) {
             this.sendMessage(id, new MessageCreateBuilder().addContent(plain).setAllowedMentions(ALLOWED_MENTION_TYPE).build());
         } else {
-            this.plugin.getWrappedLogger().warning("The message is too long! :" + plain);
+            this.plugin.getWrappedLogger().warning(
+                    "Could not send message to channel " + id + ": too long (" + plain.length() + " characters)"
+            );
         }
     }
 

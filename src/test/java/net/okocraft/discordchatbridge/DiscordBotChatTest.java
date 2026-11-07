@@ -26,6 +26,7 @@ import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
+import net.dv8tion.jda.api.requests.RestAction;
 import net.dv8tion.jda.api.requests.restaction.MessageCreateAction;
 import net.dv8tion.jda.api.utils.concurrent.Task;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
@@ -40,6 +41,7 @@ import org.mockito.ArgumentCaptor;
 
 import java.util.EnumSet;
 import java.util.List;
+import java.util.function.Consumer;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -50,6 +52,8 @@ class DiscordBotChatTest {
     private final JDA jda = mock(JDA.class);
     private final Guild guild = mock(Guild.class);
     private final MessageChannel channel = mock(MessageChannel.class);
+    private final MessageCreateAction action = mock(MessageCreateAction.class);
+    private final LoggerWrapper logger = mock(LoggerWrapper.class);
     private final FormatSettings format = new FormatSettings();
     private DiscordBot bot;
 
@@ -61,7 +65,7 @@ class DiscordBotChatTest {
         doReturn(mock(Task.class)).when(guild).loadMembers();
         when(jda.getChannelById(MessageChannel.class, 1L)).thenReturn(channel);
         when(channel.canTalk()).thenReturn(true);
-        when(channel.sendMessage(any(MessageCreateData.class))).thenReturn(mock(MessageCreateAction.class));
+        when(channel.sendMessage(any(MessageCreateData.class))).thenReturn(action);
     }
 
     @AfterEach
@@ -101,15 +105,70 @@ class DiscordBotChatTest {
     }
 
     @Test
-    void testMessageOverMaximumLengthIsNotSent() {
-        var logger = mock(LoggerWrapper.class);
+    void testMessageOverMaximumLengthIsLoggedWithoutContent() {
         when(plugin.getWrappedLogger()).thenReturn(logger);
         bot = new DiscordBot(plugin, () -> jda);
 
         bot.sendChat(1L, "a".repeat(Message.MAX_CONTENT_LENGTH + 1), "Steve", "Steve");
 
-        verify(logger, timeout(5_000)).warning(startsWith("The message is too long!"));
+        verify(logger, timeout(5_000)).warning("Could not send message to channel 1: too long (2001 characters)");
         verify(channel, never()).sendMessage(any(MessageCreateData.class));
+    }
+
+    @Test
+    void testSendFailureIsLoggedWithChannelAndReason() {
+        when(plugin.getWrappedLogger()).thenReturn(logger);
+        when(channel.getId()).thenReturn("1");
+        doAnswer(invocation -> {
+            invocation.<Consumer<Throwable>>getArgument(1).accept(new IllegalStateException("50013: Missing Permissions"));
+            return null;
+        }).when(action).queue(isNull(), any());
+        bot = new DiscordBot(plugin, () -> jda);
+
+        bot.sendMessage(1L, "secret");
+
+        verify(logger, timeout(5_000)).warning("Could not send message to channel 1: 50013: Missing Permissions");
+    }
+
+    @Test
+    void testChannelWithoutPermissionIsLoggedWithoutContent() {
+        when(plugin.getWrappedLogger()).thenReturn(logger);
+        when(channel.getId()).thenReturn("1");
+        when(channel.canTalk()).thenReturn(false);
+        bot = new DiscordBot(plugin, () -> jda);
+
+        bot.sendMessage(1L, "secret");
+
+        verify(logger, timeout(5_000)).warning("Could not send message to channel 1: no permission to send messages");
+        verify(channel, never()).sendMessage(any(MessageCreateData.class));
+    }
+
+    @Test
+    void testUnknownChannelIsLogged() {
+        when(plugin.getWrappedLogger()).thenReturn(logger);
+        bot = new DiscordBot(plugin, () -> jda);
+
+        bot.sendMessage(2L, "secret");
+
+        verify(logger, timeout(5_000)).warning("Could not find the channel with id 2");
+    }
+
+    @Test
+    void testReactionFailureIsLoggedWithMessageAndReason() {
+        var message = mock(Message.class);
+        RestAction<Void> reaction = mock();
+        when(plugin.getWrappedLogger()).thenReturn(logger);
+        when(message.getId()).thenReturn("5");
+        when(message.addReaction(any())).thenReturn(reaction);
+        doAnswer(invocation -> {
+            invocation.<Consumer<Throwable>>getArgument(1).accept(new IllegalStateException("10008: Unknown Message"));
+            return null;
+        }).when(reaction).queue(isNull(), any());
+        bot = new DiscordBot(plugin, () -> jda);
+
+        bot.addReaction(message, "U+26A0");
+
+        verify(logger, timeout(5_000)).warning("Could not add reaction to message 5: 10008: Unknown Message");
     }
 
     @Test
