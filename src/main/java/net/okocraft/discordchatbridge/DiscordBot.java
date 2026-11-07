@@ -53,6 +53,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.regex.MatchResult;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class DiscordBot {
@@ -71,7 +72,7 @@ public class DiscordBot {
     private static final Comparator<Role> ROLE_COMPARATOR = Comparator.comparingInt(Role::getPosition);
 
     private static Pattern createMentionPattern(@NotNull String mark) {
-        return Pattern.compile(mark + "([^" + mark + "]*?)(?:\\s|$)");
+        return Pattern.compile(mark + "([^" + mark + "]*?)(?=\\s|$)");
     }
 
     private final DiscordChatBridgePlugin plugin;
@@ -203,7 +204,7 @@ public class DiscordBot {
             plain = this.replaceChannel(plain);
         }
 
-        if (plain.length() < Message.MAX_CONTENT_LENGTH) {
+        if (plain.length() <= Message.MAX_CONTENT_LENGTH) {
             this.sendMessage(id, new MessageCreateBuilder().addContent(plain).setAllowedMentions(ALLOWED_MENTION_TYPE).build());
         } else {
             this.plugin.getWrappedLogger().warning("The message is too long! :" + plain);
@@ -231,11 +232,11 @@ public class DiscordBot {
     }
 
     private @NotNull String replaceMention(@NotNull String original) {
-        return MENTION_PATTERN.matcher(original).replaceAll(result ->
+        return MENTION_PATTERN.matcher(original).replaceAll(result -> Matcher.quoteReplacement(
                 Optional.of(result)
                         .map(this::searchForUserOrRoleMention)
                         .orElseGet(result::group)
-        );
+        ));
     }
 
     private @Nullable String searchForUserOrRoleMention(@NotNull MatchResult result) {
@@ -262,15 +263,15 @@ public class DiscordBot {
     }
 
     private @NotNull String replaceChannel(@NotNull String original) {
-        return CHANNEL_PATTERN.matcher(original).replaceAll(result ->
+        return CHANNEL_PATTERN.matcher(original).replaceAll(result -> Matcher.quoteReplacement(
                 Optional.of(result)
                         .map(this::searchForChannelMention)
                         .orElseGet(result::group)
-        );
+        ));
     }
 
     private @Nullable String searchForChannelMention(@NotNull MatchResult result) {
-        var channelName = result.group();
+        var channelName = result.group(1);
         return this.getMentionableFromAllGuilds(guild -> this.searchForGuildMessageChannels(guild, channelName));
     }
 
