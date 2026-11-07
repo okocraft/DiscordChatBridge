@@ -33,6 +33,6 @@ public class VelocityLunaChatListener extends LunaChatListener  {
 
     @Subscribe
     public void onChat(@NotNull LunaChatVelocityChannelMessageEvent e) {
-        processChat(e.getChannelName(), e.getDisplayName(), e.getMember(), e.getOriginalMessage());
+        processChat(e.getChannelName(), e.getMember(), e.getOriginalMessage());
     }
 }
