@@ -20,6 +20,7 @@
 package net.okocraft.discordchatbridge.listener.chat;
 
 import com.github.ucchyocean.lc3.member.ChannelMember;
+import com.github.ucchyocean.lc3.member.ChannelMemberOther;
 import net.okocraft.discordchatbridge.DiscordChatBridgePlugin;
 import org.jetbrains.annotations.NotNull;
 
@@ -33,12 +34,12 @@ public abstract class LunaChatListener extends AbstractChatListener {
         this.plugin = plugin;
     }
 
-    protected void processChat(@NotNull String channelName, @NotNull String displayName,
-                               @NotNull ChannelMember member, @NotNull String message) {
+    protected void processChat(@NotNull String channelName, @NotNull ChannelMember member, @NotNull String message) {
         var config = this.plugin.getGeneralConfig();
         var sourceName = config.discordSourceName;
 
-        if (displayName.endsWith(sourceName)) {
+        // Discord messages are relayed via Channel#chatFromOtherSource, which names the member "<sender>@<source>".
+        if (member instanceof ChannelMemberOther && (sourceName.isEmpty() || member.getName().endsWith("@" + sourceName))) {
             return;
         }
 

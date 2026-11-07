@@ -20,6 +20,7 @@
 package net.okocraft.discordchatbridge.listener.chat;
 
 import com.github.ucchyocean.lc3.member.ChannelMember;
+import com.github.ucchyocean.lc3.member.ChannelMemberOther;
 import net.okocraft.discordchatbridge.DiscordBot;
 import net.okocraft.discordchatbridge.DiscordChatBridgePlugin;
 import net.okocraft.discordchatbridge.config.GeneralSettings;
@@ -50,7 +51,7 @@ class LunaChatListenerTest {
         when(member.getName()).thenReturn("Alice");
         when(member.getDisplayName()).thenReturn("Alice");
 
-        listener.processChat("trade", "Alice", member, "hello");
+        listener.processChat("trade", member, "hello");
 
         verify(bot).sendChat(30L, "hello", "Alice", "Alice");
     }
@@ -59,7 +60,48 @@ class LunaChatListenerTest {
     void testChannelLinkedToZeroIsIgnored() {
         config.channels = Map.of("trade", 0L);
 
-        listener.processChat("trade", "Alice", member, "hello");
+        listener.processChat("trade", member, "hello");
+
+        verifyNoInteractions(bot);
+    }
+
+    @Test
+    void testPlayerWhoseNameEndsWithSourceNameIsForwarded() {
+        config.channels = Map.of("trade", 30L);
+        when(plugin.getBot()).thenReturn(bot);
+        when(member.getName()).thenReturn("HeroDis");
+        when(member.getDisplayName()).thenReturn("HeroDis");
+
+        listener.processChat("trade", member, "hello");
+
+        verify(bot).sendChat(30L, "hello", "HeroDis", "HeroDis");
+    }
+
+    @Test
+    void testMessageRelayedFromDiscordIsNotForwarded() {
+        config.channels = Map.of("trade", 30L);
+
+        listener.processChat("trade", new ChannelMemberOther("Bob@Dis"), "hello");
+
+        verifyNoInteractions(bot);
+    }
+
+    @Test
+    void testMessageFromAnotherExternalSourceIsForwarded() {
+        config.channels = Map.of("trade", 30L);
+        when(plugin.getBot()).thenReturn(bot);
+
+        listener.processChat("trade", new ChannelMemberOther("Carol@IRC"), "hello");
+
+        verify(bot).sendChat(30L, "hello", "Carol@IRC", "Carol@IRC");
+    }
+
+    @Test
+    void testEmptySourceNameStopsAllExternalMessages() {
+        config.channels = Map.of("trade", 30L);
+        config.discordSourceName = "";
+
+        listener.processChat("trade", new ChannelMemberOther("Carol"), "hello");
 
         verifyNoInteractions(bot);
     }
