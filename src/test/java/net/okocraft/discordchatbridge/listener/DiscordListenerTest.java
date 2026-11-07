@@ -282,6 +282,25 @@ class DiscordListenerTest {
         verify(plugin, never()).getBot();
     }
 
+    @Test
+    void testChannelLinkedAfterCreationIsForwarded() {
+        var listener = new DiscordListener(plugin);
+        var reloaded = new GeneralSettings();
+        reloaded.channels = Map.of("trade", 30L);
+        reloaded.rolePrefix = Map.of("enable", "false");
+        when(plugin.getGeneralConfig()).thenReturn(reloaded);
+        when(channel.getIdLong()).thenReturn(30L);
+        when(event.getMessage()).thenReturn(message);
+        when(message.getContentDisplay()).thenReturn("hello");
+        when(message.getAttachments()).thenReturn(List.of());
+        when(member.getEffectiveName()).thenReturn("Alice");
+        when(plugin.getChatSystem()).thenReturn(chat);
+
+        listener.onMessageReceived(event);
+
+        verify(chat).sendChat("trade", "Alice", "Dis", "hello");
+    }
+
     private void preparePlayerListCommand() {
         when(channel.getIdLong()).thenReturn(10L);
         when(event.getMessage()).thenReturn(message);

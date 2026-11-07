@@ -23,38 +23,28 @@ import com.github.ucchyocean.lc3.member.ChannelMember;
 import net.okocraft.discordchatbridge.DiscordChatBridgePlugin;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.HashMap;
-import java.util.Map;
-
 public abstract class LunaChatListener extends AbstractChatListener {
 
     private final DiscordChatBridgePlugin plugin;
-    private final Map<String, Long> linkedChannels = new HashMap<>();
 
     public LunaChatListener(@NotNull DiscordChatBridgePlugin plugin) {
         super(plugin);
 
         this.plugin = plugin;
-
-        var channelSection = plugin.getGeneralConfig().channels;
-        for (var entry : channelSection.entrySet()) {
-            if (entry.getValue() != 0) {
-                this.linkedChannels.put(entry.getKey(), entry.getValue());
-            }
-        }
     }
 
     protected void processChat(@NotNull String channelName, @NotNull String displayName,
                                @NotNull ChannelMember member, @NotNull String message) {
-        var sourceName = this.plugin.getGeneralConfig().discordSourceName;
+        var config = this.plugin.getGeneralConfig();
+        var sourceName = config.discordSourceName;
 
         if (displayName.endsWith(sourceName)) {
             return;
         }
 
-        var id = this.linkedChannels.get(channelName);
+        var id = config.channels.get(channelName);
 
-        if (id == null) {
+        if (id == null || id == 0) {
             return;
         }
 

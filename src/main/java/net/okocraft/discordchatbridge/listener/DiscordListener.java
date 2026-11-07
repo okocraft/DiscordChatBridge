@@ -32,7 +32,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.awt.Color;
 import java.time.Clock;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
@@ -40,9 +39,6 @@ import java.util.concurrent.atomic.AtomicLong;
 public class DiscordListener extends ListenerAdapter {
 
     private final DiscordChatBridgePlugin plugin;
-    private final Map<Long, String> linkedChannels = new HashMap<>();
-
-    private final Map<String, String> rolePrefixes;
     private final String defaultRoleColorCode;
 
     private final Clock clock;
@@ -55,15 +51,6 @@ public class DiscordListener extends ListenerAdapter {
     DiscordListener(@NotNull DiscordChatBridgePlugin plugin, @NotNull Clock clock) {
         this.plugin = plugin;
         this.clock = clock;
-
-        var channelSection = plugin.getGeneralConfig().channels;
-        for (var entry : channelSection.entrySet()) {
-            if (entry.getValue() != 0) {
-                this.linkedChannels.put(entry.getValue(), entry.getKey());
-            }
-        }
-
-        this.rolePrefixes = plugin.getGeneralConfig().rolePrefix;
         this.defaultRoleColorCode = plugin.serializeColor(new Color(Role.DEFAULT_COLOR_RAW));
     }
 
@@ -76,8 +63,13 @@ public class DiscordListener extends ListenerAdapter {
         }
 
         var channelId = event.getChannel().getIdLong();
-        var channelName = this.linkedChannels.get(channelId);
-        var systemChannel = this.plugin.getGeneralConfig().systemChannel;
+        var config = this.plugin.getGeneralConfig();
+        var channelName = config.channels.entrySet().stream()
+                .filter(entry -> entry.getValue() == channelId)
+                .map(Map.Entry::getKey)
+                .findFirst()
+                .orElse(null);
+        var systemChannel = config.systemChannel;
 
         if (channelName == null && (systemChannel == 0 || channelId != systemChannel)) {
             return;
@@ -93,8 +85,6 @@ public class DiscordListener extends ListenerAdapter {
         if (channelName == null) {
             return;
         }
-
-        var config = this.plugin.getGeneralConfig();
 
         int maxLength = config.chatMaxLength;
 
@@ -184,7 +174,7 @@ public class DiscordListener extends ListenerAdapter {
 
         if (role != null) {
             var roleColorCode = Optional.ofNullable(role.getColors().getPrimary()).map(this.plugin::serializeColor).orElse(this.defaultRoleColorCode);
-            var rolePrefix = this.rolePrefixes.getOrDefault(Long.toString(role.getIdLong()), "");
+            var rolePrefix = this.plugin.getGeneralConfig().rolePrefix.getOrDefault(Long.toString(role.getIdLong()), "");
 
             if (rolePrefix.isEmpty()) {
                 prefix = this.plugin.getGeneralConfig()
