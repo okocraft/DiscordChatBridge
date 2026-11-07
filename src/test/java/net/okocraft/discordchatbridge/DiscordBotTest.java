@@ -20,10 +20,14 @@
 package net.okocraft.discordchatbridge;
 
 import net.dv8tion.jda.api.JDA;
-import net.dv8tion.jda.api.JDABuilder;
-import net.okocraft.discordchatbridge.config.GeneralSettings;
+import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
+import net.dv8tion.jda.api.requests.restaction.MessageCreateAction;
+import net.dv8tion.jda.api.utils.messages.MessageCreateData;
+import net.okocraft.discordchatbridge.logger.LoggerWrapper;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+
+import java.util.concurrent.CountDownLatch;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -32,26 +36,80 @@ class DiscordBotTest {
 
     private final DiscordChatBridgePlugin plugin = mock(DiscordChatBridgePlugin.class);
     private final JDA jda = mock(JDA.class);
-    private final JDABuilder builder = mock(JDABuilder.class, RETURNS_SELF);
+    private DiscordBot bot;
 
     @AfterEach
-    void clearInterruptFlag() {
-        Thread.interrupted();
+    void tearDown() {
+        bot.shutdown();
     }
 
     @Test
-    void testInterruptedLoginShutsDownJdaAndKeepsInterruptFlag() throws InterruptedException {
-        when(plugin.getGeneralConfig()).thenReturn(new GeneralSettings());
-        when(builder.build()).thenReturn(jda);
-        when(jda.awaitReady()).thenThrow(new InterruptedException());
+    void testMessageSentWhileConnectingIsDeliveredAfterReady() throws InterruptedException {
+        var ready = new CountDownLatch(1);
+        var channel = mock(MessageChannel.class);
+        var action = mock(MessageCreateAction.class);
+        when(jda.awaitReady()).thenAnswer(invocation -> {
+            ready.await();
+            return jda;
+        });
+        when(jda.getChannelById(MessageChannel.class, 1L)).thenReturn(channel);
+        when(channel.canTalk()).thenReturn(true);
+        when(channel.sendMessage(any(MessageCreateData.class))).thenReturn(action);
+        bot = new DiscordBot(plugin, () -> jda);
 
-        try (var factory = mockStatic(JDABuilder.class)) {
-            factory.when(() -> JDABuilder.createDefault(anyString())).thenReturn(builder);
+        bot.sendMessage(1L, "hello");
 
-            assertThrows(IllegalStateException.class, () -> DiscordBot.login(plugin));
-        }
+        verify(channel, never()).sendMessage(any(MessageCreateData.class));
+        ready.countDown();
+        verify(action, timeout(5_000)).queue();
+    }
 
-        verify(jda).shutdownNow();
-        assertTrue(Thread.currentThread().isInterrupted());
+    @Test
+    void testLoginFailureIsLoggedAndLaterMessagesAreDiscarded() {
+        var logger = mock(LoggerWrapper.class);
+        var failure = new IllegalStateException("invalid token");
+        when(plugin.getWrappedLogger()).thenReturn(logger);
+        bot = new DiscordBot(plugin, () -> {
+            throw failure;
+        });
+
+        verify(logger, timeout(5_000)).error("Could not log in to Discord", failure);
+        assertDoesNotThrow(() -> bot.sendMessage(1L, "hello"));
+    }
+
+    @Test
+    void testShutdownWhileAwaitingReadyClosesJda() throws InterruptedException {
+        var connecting = new CountDownLatch(1);
+        when(jda.awaitReady()).thenAnswer(invocation -> {
+            connecting.countDown();
+            new CountDownLatch(1).await();
+            return jda;
+        });
+        bot = new DiscordBot(plugin, () -> jda);
+        connecting.await();
+
+        bot.shutdown();
+
+        verify(jda).shutdown();
+    }
+
+    @Test
+    void testShutdownBeforeJdaIsCreatedClosesItOnceCreated() throws InterruptedException {
+        var building = new CountDownLatch(1);
+        bot = new DiscordBot(plugin, () -> {
+            building.countDown();
+            try {
+                new CountDownLatch(1).await();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+            return jda;
+        });
+        building.await();
+
+        bot.shutdown();
+
+        verify(jda, timeout(5_000)).shutdownNow();
+        verify(jda, never()).awaitReady();
     }
 }
