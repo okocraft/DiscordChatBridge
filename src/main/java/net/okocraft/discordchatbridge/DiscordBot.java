@@ -79,8 +79,9 @@ public class DiscordBot {
     private DiscordBot(@NotNull DiscordChatBridgePlugin plugin, @NotNull JDA jda) {
         this.plugin = plugin;
         this.jda = jda;
-        this.loadMembers();
         this.scheduler = Executors.newSingleThreadScheduledExecutor(r -> new Thread(r, "DiscordChatBridge-Thread"));
+
+        this.loadMembers();
     }
 
     @Contract("_ -> new")
@@ -97,11 +98,9 @@ public class DiscordBot {
         try {
             jda.awaitReady();
             return new DiscordBot(plugin, jda);
-        } catch (InterruptedException | RuntimeException e) {
+        } catch (InterruptedException e) {
             jda.shutdownNow();
-            if (e instanceof InterruptedException) {
-                Thread.currentThread().interrupt();
-            }
+            Thread.currentThread().interrupt();
             throw new IllegalStateException("Could not log in to Discord", e);
         }
     }

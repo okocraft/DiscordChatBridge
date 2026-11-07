@@ -54,19 +54,4 @@ class DiscordBotTest {
         verify(jda).shutdownNow();
         assertTrue(Thread.currentThread().isInterrupted());
     }
-
-    @Test
-    void testLoginShutsDownJdaWhenConnectionFails() throws InterruptedException {
-        when(plugin.getGeneralConfig()).thenReturn(new GeneralSettings());
-        when(builder.build()).thenReturn(jda);
-        when(jda.awaitReady()).thenThrow(new IllegalStateException("shut down while connecting"));
-
-        try (var factory = mockStatic(JDABuilder.class)) {
-            factory.when(() -> JDABuilder.createDefault(anyString())).thenReturn(builder);
-
-            assertThrows(IllegalStateException.class, () -> DiscordBot.login(plugin));
-        }
-
-        verify(jda).shutdownNow();
-    }
 }

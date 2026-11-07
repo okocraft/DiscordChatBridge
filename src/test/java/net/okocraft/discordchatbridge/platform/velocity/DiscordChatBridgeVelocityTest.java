@@ -59,21 +59,14 @@ class DiscordChatBridgeVelocityTest {
         plugin = new DiscordChatBridgeVelocity(server, mock(Logger.class), dataDirectory);
     }
 
-    private void enableWithBot() {
-        try (var login = mockStatic(DiscordBot.class)) {
-            login.when(() -> DiscordBot.login(plugin)).thenReturn(bot);
-            plugin.onEnable(null);
-        }
-    }
-
     @Test
     void testReloadCommandIsRegisteredOnceAcrossRestart() {
         when(server.getEventManager()).thenReturn(eventManager);
-        enableWithBot();
 
-        plugin.disable();
         try (var login = mockStatic(DiscordBot.class)) {
             login.when(() -> DiscordBot.login(plugin)).thenReturn(bot);
+            plugin.onEnable(null);
+            plugin.disable();
             plugin.enable();
         }
 
@@ -84,7 +77,10 @@ class DiscordChatBridgeVelocityTest {
     @Test
     void testDisableUnregistersOnlyOwnListeners() {
         when(server.getEventManager()).thenReturn(eventManager);
-        enableWithBot();
+        try (var login = mockStatic(DiscordBot.class)) {
+            login.when(() -> DiscordBot.login(plugin)).thenReturn(bot);
+            plugin.onEnable(null);
+        }
 
         plugin.disable();
 
@@ -107,7 +103,10 @@ class DiscordChatBridgeVelocityTest {
     @Test
     void testRepeatedShutdownShutsDownBotOnce() {
         when(server.getEventManager()).thenReturn(eventManager);
-        enableWithBot();
+        try (var login = mockStatic(DiscordBot.class)) {
+            login.when(() -> DiscordBot.login(plugin)).thenReturn(bot);
+            plugin.onEnable(null);
+        }
 
         plugin.onDisable(null);
         plugin.onDisable(null);

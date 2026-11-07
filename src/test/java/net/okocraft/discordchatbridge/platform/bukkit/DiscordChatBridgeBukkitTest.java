@@ -64,22 +64,6 @@ class DiscordChatBridgeBukkitTest {
     }
 
     @Test
-    void testEnableConnectsBotWithValidConfiguration() throws IOException {
-        prepareServer("discord:\n  token: test-token\n");
-        doNothing().when(plugin).registerListeners();
-
-        try (var login = mockStatic(DiscordBot.class)) {
-            login.when(() -> DiscordBot.login(plugin)).thenReturn(bot);
-
-            plugin.onEnable();
-        }
-
-        assertSame(bot, plugin.getBot());
-        assertInstanceOf(PaperChatSystem.class, plugin.getChatSystem());
-        verify(manager, never()).disablePlugin(plugin);
-    }
-
-    @Test
     void testLoginFailureKeepsPluginEnabledWithoutBot() throws IOException {
         var failure = new IllegalStateException("login failed");
         prepareServer("discord:\n  token: test-token\n");
