@@ -61,7 +61,7 @@ class DiscordBotTest {
 
         verify(channel, never()).sendMessage(any(MessageCreateData.class));
         ready.countDown();
-        verify(action, timeout(5_000)).queue();
+        verify(action, timeout(5_000)).queue(isNull(), any());
     }
 
     @Test
