@@ -480,6 +480,7 @@ Supported targets, from the plugin descriptors:
 
 ## Test Design Notes
 
+- `./gradlew runServer` starts a Paper server in `run/paper`, and `./gradlew runVelocity` starts a Velocity proxy in `run/velocity` with the bundled LunaChat fork from `libs/`. Both use the distribution JAR. Set `server-ip=127.0.0.1` and `online-mode=false` (Paper `server.properties`) or `bind = "127.0.0.1:25577"` (Velocity `velocity.toml`) before the first start, and put the test configuration in the plugin data folder.
 - Use a dedicated test guild and bot. Enable the Server Members and Message Content privileged intents for the bot. Never commit the token or paste it into issues, logs or pull requests.
 - Without LunaChat, Minecraft chat goes to `system-channel` and only `channels.global` is relayed to Minecraft. Set both to the same channel id for a two-way test.
 - Notifications are observed most reliably from a second Discord client logged in as the mentioned member, with notifications enabled for the test channel.

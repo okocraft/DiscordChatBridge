@@ -4,3 +4,4 @@ build/
 # intellij
 /.idea
 *.iml
+run/

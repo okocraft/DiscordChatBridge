@@ -1,6 +1,8 @@
 plugins {
     alias(libs.plugins.jcommon)
     alias(libs.plugins.bundler)
+    alias(libs.plugins.run.server)
+    alias(libs.plugins.run.velocity)
 }
 
 description = "A Paper/Velocity plugin that connects Vanilla chat or LunaChat and Discord"
@@ -60,6 +62,12 @@ dependencies {
     }
 }
 
+val velocityPlugins = configurations.create("velocityPlugins")
+
+dependencies {
+    velocityPlugins(libs.okochat.legacy)
+}
+
 val pluginProperties = mapOf(
     "version" to project.version.toString(),
     "description" to project.description,
@@ -98,5 +106,16 @@ tasks {
         relocate("org.jetbrains", "net.okocraft.discordchatbridge.lib.jetbrains")
         relocate("org.intellij", "net.okocraft.discordchatbridge.lib.intellij")
         relocate("kotlin", "net.okocraft.discordchatbridge.lib.kotlin")
+    }
+
+    runServer {
+        runDirectory = layout.projectDirectory.dir("run/paper")
+        minecraftVersion(libs.versions.paper.get().substringBefore(".build"))
+        systemProperty("com.mojang.eula.agree", "true")
+    }
+    runVelocity {
+        runDirectory = layout.projectDirectory.dir("run/velocity")
+        velocityVersion(libs.versions.velocity.get())
+        pluginJars(velocityPlugins)
     }
 }
