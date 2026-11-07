@@ -46,10 +46,12 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.regex.MatchResult;
 import java.util.regex.Pattern;
 
@@ -73,41 +75,56 @@ public class DiscordBot {
     }
 
     private final DiscordChatBridgePlugin plugin;
-    private final JDA jda;
-    private final ScheduledExecutorService scheduler;
+    // Work submitted after shutdown or a failed login is discarded instead of throwing to the caller.
+    private final ScheduledExecutorService scheduler = new ScheduledThreadPoolExecutor(
+            1, r -> new Thread(r, "DiscordChatBridge-Thread"), new ThreadPoolExecutor.DiscardPolicy()
+    );
+    private volatile JDA jda;
 
-    private DiscordBot(@NotNull DiscordChatBridgePlugin plugin, @NotNull JDA jda) {
+    DiscordBot(@NotNull DiscordChatBridgePlugin plugin, @NotNull Supplier<JDA> connector) {
         this.plugin = plugin;
-        this.jda = jda;
-        this.scheduler = Executors.newSingleThreadScheduledExecutor(r -> new Thread(r, "DiscordChatBridge-Thread"));
-
-        this.loadMembers();
+        this.scheduler.execute(() -> this.connect(connector));
     }
 
     @Contract("_ -> new")
-    public static @NotNull DiscordBot login(@NotNull DiscordChatBridgePlugin plugin) throws IllegalStateException {
-        var jda = JDABuilder.createDefault(plugin.getGeneralConfig().discord.token)
+    public static @NotNull DiscordBot login(@NotNull DiscordChatBridgePlugin plugin) {
+        return new DiscordBot(plugin, () -> JDABuilder.createDefault(plugin.getGeneralConfig().discord.token)
                 .addEventListeners(new DiscordListener(plugin))
                 .setAutoReconnect(true)
                 .setStatus(plugin.getGeneralConfig().discordStatus())
                 .enableIntents(GatewayIntent.GUILD_MEMBERS, GatewayIntent.MESSAGE_CONTENT)
                 .setMemberCachePolicy(MemberCachePolicy.ALL)
                 .disableCache(Arrays.asList(CacheFlag.values()))
-                .build();
+                .build());
+    }
 
+    private void connect(@NotNull Supplier<JDA> connector) {
         try {
+            var jda = connector.get();
+            this.jda = jda;
+            // shutdown() may have read jda before it was assigned.
+            if (this.scheduler.isShutdown()) {
+                jda.shutdownNow();
+                return;
+            }
             jda.awaitReady();
-            return new DiscordBot(plugin, jda);
+            this.loadMembers();
         } catch (InterruptedException e) {
-            jda.shutdownNow();
             Thread.currentThread().interrupt();
-            throw new IllegalStateException("Could not log in to Discord", e);
+        } catch (RuntimeException e) {
+            if (!this.scheduler.isShutdown()) {
+                this.scheduler.shutdownNow();
+                this.plugin.getWrappedLogger().error("Could not log in to Discord", e);
+            }
         }
     }
 
     public void shutdown() {
-        this.jda.shutdown();
-        this.scheduler.shutdown();
+        this.scheduler.shutdownNow();
+        var jda = this.jda;
+        if (jda != null) {
+            jda.shutdown();
+        }
     }
 
     public void sendMessage(long id, @NotNull String message) {
@@ -115,13 +132,15 @@ public class DiscordBot {
     }
 
     public void sendMessage(long id, @NotNull MessageCreateData message) {
-        var channel = this.jda.getChannelById(MessageChannel.class, id);
+        this.scheduler.submit(() -> {
+            var channel = this.jda.getChannelById(MessageChannel.class, id);
 
-        if (channel != null) {
-            this.sendMessage(channel, message);
-        } else {
-            this.plugin.getWrappedLogger().warning("Could not find the channel with id " + id);
-        }
+            if (channel != null) {
+                this.sendMessage(channel, message);
+            } else {
+                this.plugin.getWrappedLogger().warning("Could not find the channel with id " + id);
+            }
+        });
     }
 
     public void sendMessage(@NotNull MessageChannel channel, @NotNull String message) {
