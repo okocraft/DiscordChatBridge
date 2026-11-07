@@ -1,3 +1,5 @@
+import xyz.jpenilla.runpaper.task.RunServer
+
 plugins {
     alias(libs.plugins.jcommon)
     alias(libs.plugins.bundler)
@@ -117,5 +119,13 @@ tasks {
         runDirectory = layout.projectDirectory.dir("run/velocity")
         velocityVersion(libs.versions.velocity.get())
         pluginJars(velocityPlugins)
+    }
+    register<RunServer>("runVelocityBackend") {
+        description = "Run a Paper server without the plugin as the backend of runVelocity."
+        runDirectory = layout.projectDirectory.dir("run/velocity-backend")
+        minecraftVersion(libs.versions.paper.get().substringBefore(".build"))
+        systemProperty("com.mojang.eula.agree", "true")
+        // The lobby server in Velocity's default velocity.toml, which forwards no player info.
+        args("--host", "127.0.0.1", "--port", "30066", "--online-mode", "false")
     }
 }
