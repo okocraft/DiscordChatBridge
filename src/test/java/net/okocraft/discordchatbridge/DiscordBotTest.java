@@ -27,6 +27,7 @@ import net.okocraft.discordchatbridge.logger.LoggerWrapper;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
+import java.time.Duration;
 import java.util.concurrent.CountDownLatch;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -55,7 +56,7 @@ class DiscordBotTest {
         when(jda.getChannelById(MessageChannel.class, 1L)).thenReturn(channel);
         when(channel.canTalk()).thenReturn(true);
         when(channel.sendMessage(any(MessageCreateData.class))).thenReturn(action);
-        bot = new DiscordBot(plugin, () -> jda);
+        bot = new DiscordBot(plugin, () -> jda, Duration.ZERO);
 
         bot.sendMessage(1L, "hello");
 
@@ -71,7 +72,7 @@ class DiscordBotTest {
         when(plugin.getWrappedLogger()).thenReturn(logger);
         bot = new DiscordBot(plugin, () -> {
             throw failure;
-        });
+        }, Duration.ZERO);
 
         verify(logger, timeout(5_000)).error("Could not log in to Discord", failure);
         assertDoesNotThrow(() -> bot.sendMessage(1L, "hello"));
@@ -85,7 +86,7 @@ class DiscordBotTest {
             new CountDownLatch(1).await();
             return jda;
         });
-        bot = new DiscordBot(plugin, () -> jda);
+        bot = new DiscordBot(plugin, () -> jda, Duration.ZERO);
         connecting.await();
 
         bot.shutdown();
@@ -104,7 +105,7 @@ class DiscordBotTest {
                 Thread.currentThread().interrupt();
             }
             return jda;
-        });
+        }, Duration.ZERO);
         building.await();
 
         bot.shutdown();

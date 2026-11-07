@@ -41,6 +41,7 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
@@ -50,6 +51,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.regex.MatchResult;
@@ -80,10 +82,14 @@ public class DiscordBot {
     private final ScheduledExecutorService scheduler = new ScheduledThreadPoolExecutor(
             1, r -> new Thread(r, "DiscordChatBridge-Thread"), new ThreadPoolExecutor.DiscardPolicy()
     );
+    private final Duration presenceUpdateDelay;
+    private final AtomicBoolean presenceUpdateScheduled = new AtomicBoolean();
     private volatile JDA jda;
 
-    DiscordBot(@NotNull DiscordChatBridgePlugin plugin, @NotNull Supplier<JDA> connector) {
+    DiscordBot(@NotNull DiscordChatBridgePlugin plugin, @NotNull Supplier<JDA> connector,
+               @NotNull Duration presenceUpdateDelay) {
         this.plugin = plugin;
+        this.presenceUpdateDelay = presenceUpdateDelay;
         this.scheduler.execute(() -> this.connect(connector));
     }
 
@@ -96,7 +102,7 @@ public class DiscordBot {
                 .enableIntents(GatewayIntent.GUILD_MEMBERS, GatewayIntent.MESSAGE_CONTENT)
                 .setMemberCachePolicy(MemberCachePolicy.ALL)
                 .disableCache(Arrays.asList(CacheFlag.values()))
-                .build());
+                .build(), Duration.ofSeconds(1));
     }
 
     private void connect(@NotNull Supplier<JDA> connector) {
@@ -219,7 +225,12 @@ public class DiscordBot {
     }
 
     public void updateGame() {
+        if (!this.presenceUpdateScheduled.compareAndSet(false, true)) {
+            return;
+        }
+
         this.scheduler.schedule(() -> {
+                    this.presenceUpdateScheduled.set(false);
                     var type = this.plugin.getGeneralConfig().discordActivityType();
                     var game =
                             this.plugin.getGeneralConfig()
@@ -230,7 +241,7 @@ public class DiscordBot {
                     var url = this.plugin.getGeneralConfig().discord.activity.url;
 
             this.jda.getPresence().setPresence(this.plugin.getGeneralConfig().discordStatus(), Activity.of(type, game, url));
-                }, 1, TimeUnit.SECONDS
+                }, this.presenceUpdateDelay.toMillis(), TimeUnit.MILLISECONDS
         );
     }
 
