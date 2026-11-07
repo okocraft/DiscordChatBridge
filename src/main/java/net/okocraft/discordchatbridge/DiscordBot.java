@@ -79,27 +79,29 @@ public class DiscordBot {
     private DiscordBot(@NotNull DiscordChatBridgePlugin plugin, @NotNull JDA jda) {
         this.plugin = plugin;
         this.jda = jda;
-        this.scheduler = Executors.newSingleThreadScheduledExecutor(r -> new Thread(r, "DiscordChatBridge-Thread"));
-
         this.loadMembers();
+        this.scheduler = Executors.newSingleThreadScheduledExecutor(r -> new Thread(r, "DiscordChatBridge-Thread"));
     }
 
     @Contract("_ -> new")
     public static @NotNull DiscordBot login(@NotNull DiscordChatBridgePlugin plugin) throws IllegalStateException {
+        var jda = JDABuilder.createDefault(plugin.getGeneralConfig().discord.token)
+                .addEventListeners(new DiscordListener(plugin))
+                .setAutoReconnect(true)
+                .setStatus(plugin.getGeneralConfig().discordStatus())
+                .enableIntents(GatewayIntent.GUILD_MEMBERS, GatewayIntent.MESSAGE_CONTENT)
+                .setMemberCachePolicy(MemberCachePolicy.ALL)
+                .disableCache(Arrays.asList(CacheFlag.values()))
+                .build();
+
         try {
-            return new DiscordBot(
-                    plugin,
-                    JDABuilder.createDefault(plugin.getGeneralConfig().discord.token)
-                            .addEventListeners(new DiscordListener(plugin))
-                            .setAutoReconnect(true)
-                            .setStatus(plugin.getGeneralConfig().discordStatus())
-                            .enableIntents(GatewayIntent.GUILD_MEMBERS, GatewayIntent.MESSAGE_CONTENT)
-                            .setMemberCachePolicy(MemberCachePolicy.ALL)
-                            .disableCache(Arrays.asList(CacheFlag.values()))
-                            .build()
-                            .awaitReady()
-            );
-        } catch (InterruptedException e) {
+            jda.awaitReady();
+            return new DiscordBot(plugin, jda);
+        } catch (InterruptedException | RuntimeException e) {
+            jda.shutdownNow();
+            if (e instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+            }
             throw new IllegalStateException("Could not log in to Discord", e);
         }
     }

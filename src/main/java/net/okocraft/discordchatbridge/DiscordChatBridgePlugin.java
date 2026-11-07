@@ -85,42 +85,34 @@ public interface DiscordChatBridgePlugin {
     default boolean enable() {
         try {
             this.loginToDiscord();
+            this.registerListeners();
+
+            if (this.getGeneralConfig().messageSendingSetting.firstJoin) {
+                this.registerLuckPermsFirstJoinListener();
+            }
+
             this.getBot().updateGame();
+            return true;
         } catch (Exception e) {
-            this.getWrappedLogger().error("Could not login to Discord", e);
+            this.getWrappedLogger().error("Could not enable DiscordChatBridge", e);
+            this.disable();
             return false;
         }
-
-        this.registerCommands();
-        this.registerListeners();
-
-        if (this.getGeneralConfig().messageSendingSetting.firstJoin) {
-            this.registerLuckPermsFirstJoinListener();
-        }
-
-        return true;
     }
 
     default void disable() {
-        if (this.enabled()) {
-            this.getBot().shutdown();
-            this.unregisterCommands();
-            this.unregisterListeners();
-            this.unregisterLuckPermsFirstJoinListener();
-        }
+        this.unregisterListeners();
+        this.unregisterLuckPermsFirstJoinListener();
+        this.shutdownBot();
     }
 
     void loginToDiscord();
 
-    void registerCommands();
-
-    void unregisterCommands();
+    void shutdownBot();
 
     void registerListeners();
 
     void unregisterListeners();
-
-    boolean enabled();
 
     void registerLuckPermsFirstJoinListener();
 
