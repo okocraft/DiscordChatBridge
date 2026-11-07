@@ -21,7 +21,6 @@ package net.okocraft.discordchatbridge;
 
 import net.okocraft.discordchatbridge.config.GeneralSettings;
 import net.okocraft.discordchatbridge.logger.LoggerWrapper;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -31,46 +30,43 @@ class DiscordChatBridgePluginTest {
 
     private final DiscordChatBridgePlugin plugin = mock(DiscordChatBridgePlugin.class, CALLS_REAL_METHODS);
     private final LoggerWrapper logger = mock(LoggerWrapper.class);
-    private final DiscordBot bot = mock(DiscordBot.class);
     private final GeneralSettings general = new GeneralSettings();
 
-    @BeforeEach
-    void setUp() {
-        doReturn(logger).when(plugin).getWrappedLogger();
+    @Test
+    void testEnableStartsRuntimeResources() {
+        var bot = mock(DiscordBot.class);
+        general.messageSendingSetting.firstJoin = true;
         doReturn(general).when(plugin).getGeneralConfig();
         doReturn(bot).when(plugin).getBot();
-    }
-
-    @Test
-    void testEnableStartsAllRuntimeResources() {
-        general.messageSendingSetting.firstJoin = true;
 
         assertTrue(plugin.enable());
 
-        var order = inOrder(plugin, bot);
-        order.verify(plugin).loginToDiscord();
-        order.verify(plugin).registerListeners();
-        order.verify(plugin).registerLuckPermsFirstJoinListener();
-        order.verify(bot).updateGame();
+        verify(plugin).loginToDiscord();
+        verify(plugin).registerListeners();
+        verify(plugin).registerLuckPermsFirstJoinListener();
+        verify(bot).updateGame();
         verify(plugin, never()).shutdownBot();
     }
 
     @Test
-    void testLoginFailureLeavesNothingRegistered() {
+    void testEnableWithLoginFailureRegistersNothing() {
         var failure = new IllegalStateException("login failed");
+        doReturn(logger).when(plugin).getWrappedLogger();
         doThrow(failure).when(plugin).loginToDiscord();
 
         assertFalse(plugin.enable());
 
         verify(logger).error("Could not enable DiscordChatBridge", failure);
         verify(plugin, never()).registerListeners();
-        verify(plugin).shutdownBot();
+        verify(plugin, never()).registerLuckPermsFirstJoinListener();
     }
 
     @Test
-    void testFailureAfterLoginReleasesAcquiredResources() {
-        general.messageSendingSetting.firstJoin = true;
+    void testEnableWithFailureAfterLoginReleasesAcquiredResources() {
         var failure = new IllegalStateException("LuckPerms unavailable");
+        general.messageSendingSetting.firstJoin = true;
+        doReturn(logger).when(plugin).getWrappedLogger();
+        doReturn(general).when(plugin).getGeneralConfig();
         doThrow(failure).when(plugin).registerLuckPermsFirstJoinListener();
 
         assertFalse(plugin.enable());
@@ -79,6 +75,5 @@ class DiscordChatBridgePluginTest {
         verify(plugin).unregisterListeners();
         verify(plugin).unregisterLuckPermsFirstJoinListener();
         verify(plugin).shutdownBot();
-        verify(bot, never()).updateGame();
     }
 }

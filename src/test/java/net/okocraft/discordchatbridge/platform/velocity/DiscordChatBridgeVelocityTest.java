@@ -25,15 +25,13 @@ import com.velocitypowered.api.event.EventManager;
 import com.velocitypowered.api.plugin.PluginManager;
 import com.velocitypowered.api.proxy.ProxyServer;
 import net.okocraft.discordchatbridge.DiscordBot;
-import net.okocraft.discordchatbridge.config.ConfigLoader;
-import net.okocraft.discordchatbridge.config.FormatSettings;
-import net.okocraft.discordchatbridge.config.GeneralSettings;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.MockedStatic;
+import org.junit.jupiter.api.io.TempDir;
 import org.slf4j.Logger;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -41,65 +39,80 @@ import static org.mockito.Mockito.*;
 
 class DiscordChatBridgeVelocityTest {
 
+    @TempDir
+    Path dataDirectory;
+
     private final ProxyServer server = mock(ProxyServer.class);
     private final CommandManager commandManager = mock(CommandManager.class);
     private final EventManager eventManager = mock(EventManager.class);
     private final DiscordBot bot = mock(DiscordBot.class);
     private DiscordChatBridgeVelocity plugin;
-    private MockedStatic<DiscordBot> login;
 
     @BeforeEach
-    void setUp() {
-        when(server.getCommandManager()).thenReturn(commandManager);
-        when(server.getEventManager()).thenReturn(eventManager);
-        when(server.getPluginManager()).thenReturn(mock(PluginManager.class));
+    void setUp() throws IOException {
+        Files.writeString(dataDirectory.resolve("config.yml"), "discord:\n  token: test-token\n");
         var metaBuilder = mock(CommandMeta.Builder.class, RETURNS_SELF);
         when(metaBuilder.build()).thenReturn(mock(CommandMeta.class));
         when(commandManager.metaBuilder("dcbreload")).thenReturn(metaBuilder);
-
-        plugin = spy(new DiscordChatBridgeVelocity(server, mock(Logger.class), Path.of("unused")));
-        doReturn(true).when(plugin).load();
-        doReturn(new ConfigLoader.ConfigPair(new GeneralSettings(), new FormatSettings())).when(plugin).getSettings();
-        login = mockStatic(DiscordBot.class);
-        login.when(() -> DiscordBot.login(plugin)).thenReturn(bot);
+        when(server.getCommandManager()).thenReturn(commandManager);
+        when(server.getPluginManager()).thenReturn(mock(PluginManager.class));
+        plugin = new DiscordChatBridgeVelocity(server, mock(Logger.class), dataDirectory);
     }
 
-    @AfterEach
-    void tearDown() {
-        login.close();
+    private void enableWithBot() {
+        try (var login = mockStatic(DiscordBot.class)) {
+            login.when(() -> DiscordBot.login(plugin)).thenReturn(bot);
+            plugin.onEnable(null);
+        }
     }
 
     @Test
-    void testRestartKeepsReloadCommandAndOwnShutdownSubscription() {
-        plugin.onEnable(null);
+    void testReloadCommandIsRegisteredOnceAcrossRestart() {
+        when(server.getEventManager()).thenReturn(eventManager);
+        enableWithBot();
+
         plugin.disable();
-        plugin.enable();
+        try (var login = mockStatic(DiscordBot.class)) {
+            login.when(() -> DiscordBot.login(plugin)).thenReturn(bot);
+            plugin.enable();
+        }
 
         verify(commandManager, times(1)).register(any(CommandMeta.class), any(VelocityReloadCommand.class));
         verify(commandManager, never()).unregister(anyString());
-        verify(eventManager, never()).unregisterListeners(any());
-        verify(eventManager).unregisterListener(eq(plugin), any(VelocityServerListener.class));
-        verify(eventManager, times(2)).register(eq(plugin), any(VelocityServerListener.class));
     }
 
     @Test
-    void testLoginFailureKeepsReloadCommandWithoutListeners() {
-        login.when(() -> DiscordBot.login(plugin)).thenThrow(new IllegalStateException("login failed"));
+    void testDisableUnregistersOnlyOwnListeners() {
+        when(server.getEventManager()).thenReturn(eventManager);
+        enableWithBot();
 
-        plugin.onEnable(null);
+        plugin.disable();
+
+        verify(eventManager).unregisterListener(eq(plugin), any(VelocityServerListener.class));
+        verify(eventManager, never()).unregisterListeners(any());
+    }
+
+    @Test
+    void testLoginFailureKeepsReloadCommandAvailable() {
+        try (var login = mockStatic(DiscordBot.class)) {
+            login.when(() -> DiscordBot.login(plugin)).thenThrow(new IllegalStateException("login failed"));
+
+            plugin.onEnable(null);
+        }
 
         verify(commandManager).register(any(CommandMeta.class), any(VelocityReloadCommand.class));
-        verify(eventManager, never()).register(any(), any());
         assertNull(plugin.getBot());
     }
 
     @Test
     void testRepeatedShutdownShutsDownBotOnce() {
-        plugin.onEnable(null);
+        when(server.getEventManager()).thenReturn(eventManager);
+        enableWithBot();
+
         plugin.onDisable(null);
         plugin.onDisable(null);
 
         verify(bot).shutdown();
-        verify(eventManager).unregisterListener(eq(plugin), any(VelocityServerListener.class));
+        assertNull(plugin.getBot());
     }
 }

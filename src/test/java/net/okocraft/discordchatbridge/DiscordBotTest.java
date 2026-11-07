@@ -23,9 +23,7 @@ import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.okocraft.discordchatbridge.config.GeneralSettings;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.MockedStatic;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -34,38 +32,40 @@ class DiscordBotTest {
 
     private final DiscordChatBridgePlugin plugin = mock(DiscordChatBridgePlugin.class);
     private final JDA jda = mock(JDA.class);
-    private MockedStatic<JDABuilder> builderFactory;
-
-    @BeforeEach
-    void setUp() {
-        when(plugin.getGeneralConfig()).thenReturn(new GeneralSettings());
-        var builder = mock(JDABuilder.class, RETURNS_SELF);
-        when(builder.build()).thenReturn(jda);
-        builderFactory = mockStatic(JDABuilder.class);
-        builderFactory.when(() -> JDABuilder.createDefault(anyString())).thenReturn(builder);
-    }
+    private final JDABuilder builder = mock(JDABuilder.class, RETURNS_SELF);
 
     @AfterEach
-    void tearDown() {
-        builderFactory.close();
+    void clearInterruptFlag() {
         Thread.interrupted();
     }
 
     @Test
     void testInterruptedLoginShutsDownJdaAndKeepsInterruptFlag() throws InterruptedException {
+        when(plugin.getGeneralConfig()).thenReturn(new GeneralSettings());
+        when(builder.build()).thenReturn(jda);
         when(jda.awaitReady()).thenThrow(new InterruptedException());
 
-        assertThrows(IllegalStateException.class, () -> DiscordBot.login(plugin));
+        try (var factory = mockStatic(JDABuilder.class)) {
+            factory.when(() -> JDABuilder.createDefault(anyString())).thenReturn(builder);
+
+            assertThrows(IllegalStateException.class, () -> DiscordBot.login(plugin));
+        }
 
         verify(jda).shutdownNow();
         assertTrue(Thread.currentThread().isInterrupted());
     }
 
     @Test
-    void testFailedLoginShutsDownJda() throws InterruptedException {
+    void testLoginShutsDownJdaWhenConnectionFails() throws InterruptedException {
+        when(plugin.getGeneralConfig()).thenReturn(new GeneralSettings());
+        when(builder.build()).thenReturn(jda);
         when(jda.awaitReady()).thenThrow(new IllegalStateException("shut down while connecting"));
 
-        assertThrows(IllegalStateException.class, () -> DiscordBot.login(plugin));
+        try (var factory = mockStatic(JDABuilder.class)) {
+            factory.when(() -> JDABuilder.createDefault(anyString())).thenReturn(builder);
+
+            assertThrows(IllegalStateException.class, () -> DiscordBot.login(plugin));
+        }
 
         verify(jda).shutdownNow();
     }
