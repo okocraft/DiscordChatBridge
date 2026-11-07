@@ -39,6 +39,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.ArgumentCaptor;
 
+import java.time.Duration;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.function.Consumer;
@@ -87,7 +88,7 @@ class DiscordBotChatTest {
         doReturn(mentions(Member.class, "<@2>")).when(guild).getMembersByEffectiveName("Bob", true);
         doReturn(mentions(Member.class, "<@3>")).when(guild).getMembersByEffectiveName("アリス", true);
         doReturn(mentions(TextChannel.class, "<#9>")).when(guild).getTextChannelsByName("general", true);
-        bot = new DiscordBot(plugin, () -> jda);
+        bot = new DiscordBot(plugin, () -> jda, Duration.ZERO);
 
         bot.sendChat(1L, message, "Steve", "Steve");
 
@@ -97,7 +98,7 @@ class DiscordBotChatTest {
     @Test
     void testMessageAtMaximumLengthIsSent() {
         var message = "a".repeat(Message.MAX_CONTENT_LENGTH);
-        bot = new DiscordBot(plugin, () -> jda);
+        bot = new DiscordBot(plugin, () -> jda, Duration.ZERO);
 
         bot.sendChat(1L, message, "Steve", "Steve");
 
@@ -107,7 +108,7 @@ class DiscordBotChatTest {
     @Test
     void testMessageOverMaximumLengthIsLoggedWithoutContent() {
         when(plugin.getWrappedLogger()).thenReturn(logger);
-        bot = new DiscordBot(plugin, () -> jda);
+        bot = new DiscordBot(plugin, () -> jda, Duration.ZERO);
 
         bot.sendChat(1L, "a".repeat(Message.MAX_CONTENT_LENGTH + 1), "Steve", "Steve");
 
@@ -123,7 +124,7 @@ class DiscordBotChatTest {
             invocation.<Consumer<Throwable>>getArgument(1).accept(new IllegalStateException("50013: Missing Permissions"));
             return null;
         }).when(action).queue(isNull(), any());
-        bot = new DiscordBot(plugin, () -> jda);
+        bot = new DiscordBot(plugin, () -> jda, Duration.ZERO);
 
         bot.sendMessage(1L, "secret");
 
@@ -135,7 +136,7 @@ class DiscordBotChatTest {
         when(plugin.getWrappedLogger()).thenReturn(logger);
         when(channel.getId()).thenReturn("1");
         when(channel.canTalk()).thenReturn(false);
-        bot = new DiscordBot(plugin, () -> jda);
+        bot = new DiscordBot(plugin, () -> jda, Duration.ZERO);
 
         bot.sendMessage(1L, "secret");
 
@@ -146,7 +147,7 @@ class DiscordBotChatTest {
     @Test
     void testUnknownChannelIsLogged() {
         when(plugin.getWrappedLogger()).thenReturn(logger);
-        bot = new DiscordBot(plugin, () -> jda);
+        bot = new DiscordBot(plugin, () -> jda, Duration.ZERO);
 
         bot.sendMessage(2L, "secret");
 
@@ -164,7 +165,7 @@ class DiscordBotChatTest {
             invocation.<Consumer<Throwable>>getArgument(1).accept(new IllegalStateException("10008: Unknown Message"));
             return null;
         }).when(reaction).queue(isNull(), any());
-        bot = new DiscordBot(plugin, () -> jda);
+        bot = new DiscordBot(plugin, () -> jda, Duration.ZERO);
 
         bot.addReaction(message, "U+26A0");
 
@@ -173,7 +174,7 @@ class DiscordBotChatTest {
 
     @Test
     void testChatNotifiesOnlyUsers() {
-        bot = new DiscordBot(plugin, () -> jda);
+        bot = new DiscordBot(plugin, () -> jda, Duration.ZERO);
 
         bot.sendChat(1L, "hello", "Steve", "Steve");
 
@@ -183,7 +184,7 @@ class DiscordBotChatTest {
 
     @Test
     void testSystemMessageNotifiesNobody() {
-        bot = new DiscordBot(plugin, () -> jda);
+        bot = new DiscordBot(plugin, () -> jda, Duration.ZERO);
 
         bot.sendMessage(1L, "@everyone joined");
 
@@ -192,7 +193,7 @@ class DiscordBotChatTest {
 
     @Test
     void testReplyToChannelNotifiesNobody() {
-        bot = new DiscordBot(plugin, () -> jda);
+        bot = new DiscordBot(plugin, () -> jda, Duration.ZERO);
 
         bot.sendMessage(channel, "@everyone is online");
 
