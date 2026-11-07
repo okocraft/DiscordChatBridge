@@ -134,7 +134,7 @@ public class DiscordBot {
     }
 
     public void sendMessage(long id, @NotNull String message) {
-        this.sendMessage(id, new MessageCreateBuilder().setContent(message).build());
+        this.sendMessage(id, new MessageCreateBuilder().setContent(message).setAllowedMentions(Set.of()).build());
     }
 
     public void sendMessage(long id, @NotNull MessageCreateData message) {
@@ -150,7 +150,7 @@ public class DiscordBot {
     }
 
     public void sendMessage(@NotNull MessageChannel channel, @NotNull String message) {
-        this.sendMessage(channel, new MessageCreateBuilder().setContent(message).build());
+        this.sendMessage(channel, new MessageCreateBuilder().setContent(message).setAllowedMentions(Set.of()).build());
     }
 
     public void sendMessage(@NotNull MessageChannel channel, @NotNull MessageCreateData message) {
