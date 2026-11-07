@@ -86,20 +86,21 @@ public class DiscordBot {
 
     @Contract("_ -> new")
     public static @NotNull DiscordBot login(@NotNull DiscordChatBridgePlugin plugin) throws IllegalStateException {
+        var jda = JDABuilder.createDefault(plugin.getGeneralConfig().discord.token)
+                .addEventListeners(new DiscordListener(plugin))
+                .setAutoReconnect(true)
+                .setStatus(plugin.getGeneralConfig().discordStatus())
+                .enableIntents(GatewayIntent.GUILD_MEMBERS, GatewayIntent.MESSAGE_CONTENT)
+                .setMemberCachePolicy(MemberCachePolicy.ALL)
+                .disableCache(Arrays.asList(CacheFlag.values()))
+                .build();
+
         try {
-            return new DiscordBot(
-                    plugin,
-                    JDABuilder.createDefault(plugin.getGeneralConfig().discord.token)
-                            .addEventListeners(new DiscordListener(plugin))
-                            .setAutoReconnect(true)
-                            .setStatus(plugin.getGeneralConfig().discordStatus())
-                            .enableIntents(GatewayIntent.GUILD_MEMBERS, GatewayIntent.MESSAGE_CONTENT)
-                            .setMemberCachePolicy(MemberCachePolicy.ALL)
-                            .disableCache(Arrays.asList(CacheFlag.values()))
-                            .build()
-                            .awaitReady()
-            );
+            jda.awaitReady();
+            return new DiscordBot(plugin, jda);
         } catch (InterruptedException e) {
+            jda.shutdownNow();
+            Thread.currentThread().interrupt();
             throw new IllegalStateException("Could not log in to Discord", e);
         }
     }

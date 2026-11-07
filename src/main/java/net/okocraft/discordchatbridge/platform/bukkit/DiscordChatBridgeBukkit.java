@@ -46,11 +46,10 @@ public class DiscordChatBridgeBukkit extends JavaPlugin implements DiscordChatBr
     private final ReloadCommand reloadCommand = new ReloadCommand(this);
     private volatile ConfigLoader.ConfigPair config;
 
-    private DiscordBot bot;
+    private volatile DiscordBot bot;
     private ChatSystem chatSystem;
     private FirstJoinListener firstJoinListener;
     private volatile FirstJoinPlayerHolder firstJoinPlayers = new FirstJoinPlayerHolder();
-    private boolean isEnabled;
 
     @Override
     public void onEnable() {
@@ -67,7 +66,7 @@ public class DiscordChatBridgeBukkit extends JavaPlugin implements DiscordChatBr
             this.chatSystem = new PaperChatSystem();
         }
 
-        this.isEnabled = this.enable();
+        this.enable();
     }
 
     @Override
@@ -121,11 +120,12 @@ public class DiscordChatBridgeBukkit extends JavaPlugin implements DiscordChatBr
     }
 
     @Override
-    public void registerCommands() {
-    }
-
-    @Override
-    public void unregisterCommands() {
+    public void shutdownBot() {
+        var bot = this.bot;
+        if (bot != null) {
+            this.bot = null;
+            bot.shutdown();
+        }
     }
 
     @Override
@@ -142,11 +142,6 @@ public class DiscordChatBridgeBukkit extends JavaPlugin implements DiscordChatBr
     @Override
     public void unregisterListeners() {
         HandlerList.unregisterAll(this);
-    }
-
-    @Override
-    public boolean enabled() {
-        return this.isEnabled;
     }
 
     @Override

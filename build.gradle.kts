@@ -52,6 +52,7 @@ dependencies {
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.configurate.yaml)
     testImplementation(libs.platform.paper)
+    testImplementation(libs.platform.velocity)
     testImplementation(libs.luckperms)
 }
 

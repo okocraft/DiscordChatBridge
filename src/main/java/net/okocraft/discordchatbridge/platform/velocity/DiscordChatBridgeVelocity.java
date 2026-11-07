@@ -41,6 +41,8 @@ import org.slf4j.Logger;
 
 import java.awt.Color;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 
 //@Plugin(id = "discordchatbridge", name = "DiscordChatBridge", version = "2.5",
 //        description = "A Paper/Velocity plugin that connects Vanilla chat or LunaChat and Discord",
@@ -54,11 +56,11 @@ public class DiscordChatBridgeVelocity implements DiscordChatBridgePlugin {
     private volatile ConfigLoader.ConfigPair config;
     private final VelocityPlatform velocityPlatform;
 
-    private DiscordBot bot;
+    private volatile DiscordBot bot;
     private ChatSystem chatSystem;
     private FirstJoinListener firstJoinListener;
     private volatile FirstJoinPlayerHolder firstJoinPlayers = new FirstJoinPlayerHolder();
-    private boolean isEnabled;
+    private final List<Object> listeners = new ArrayList<>();
 
     @Inject
     public DiscordChatBridgeVelocity(@NotNull ProxyServer server, @NotNull Logger logger,
@@ -80,7 +82,12 @@ public class DiscordChatBridgeVelocity implements DiscordChatBridgePlugin {
             this.chatSystem = new VelocityLunaChatSystem();
         }
 
-        this.isEnabled = this.enable();
+        this.server.getCommandManager().register(
+                this.server.getCommandManager().metaBuilder("dcbreload").build(),
+                new VelocityReloadCommand(this)
+        );
+
+        this.enable();
     }
 
     @Subscribe
@@ -128,34 +135,28 @@ public class DiscordChatBridgeVelocity implements DiscordChatBridgePlugin {
     }
 
     @Override
-    public void registerCommands() {
-        this.server.getCommandManager().register(
-                this.server.getCommandManager().metaBuilder("dcbreload").build(),
-                new VelocityReloadCommand(this)
-        );
-    }
-
-    @Override
-    public void unregisterCommands() {
-        this.server.getCommandManager().unregister("dcbreload");
+    public void shutdownBot() {
+        var bot = this.bot;
+        if (bot != null) {
+            this.bot = null;
+            bot.shutdown();
+        }
     }
 
     @Override
     public void registerListeners() {
         if (this.server.getPluginManager().isLoaded("lunachat")) {
-            this.server.getEventManager().register(this, new VelocityLunaChatListener(this));
+            this.listeners.add(new VelocityLunaChatListener(this));
         }
-        this.server.getEventManager().register(this, new VelocityServerListener(this));
+        this.listeners.add(new VelocityServerListener(this));
+        this.listeners.forEach(listener -> this.server.getEventManager().register(this, listener));
     }
 
     @Override
     public void unregisterListeners() {
-        this.server.getEventManager().unregisterListeners(this);
-    }
-
-    @Override
-    public boolean enabled() {
-        return this.isEnabled;
+        // unregisterListeners(this) would also remove this instance's ProxyShutdownEvent subscription.
+        this.listeners.forEach(listener -> this.server.getEventManager().unregisterListener(this, listener));
+        this.listeners.clear();
     }
 
     @Override

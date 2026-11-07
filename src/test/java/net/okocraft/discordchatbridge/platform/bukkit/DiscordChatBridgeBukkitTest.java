@@ -23,7 +23,11 @@ import net.okocraft.discordchatbridge.DiscordBot;
 import org.bukkit.Server;
 import org.bukkit.plugin.PluginManager;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -32,89 +36,69 @@ import static org.mockito.Mockito.*;
 
 class DiscordChatBridgeBukkitTest {
 
-    @Test
-    void testEnableInitializesLoggerBeforeConfigurationAndCanDisable() {
-        var plugin = mock(DiscordChatBridgeBukkit.class, CALLS_REAL_METHODS);
-        var logger = mock(Logger.class);
+    @TempDir
+    Path dataDirectory;
+
+    private final DiscordChatBridgeBukkit plugin = mock(DiscordChatBridgeBukkit.class, CALLS_REAL_METHODS);
+    private final Logger logger = mock(Logger.class);
+    private final PluginManager manager = mock(PluginManager.class);
+    private final DiscordBot bot = mock(DiscordBot.class);
+
+    private void prepareServer(String config) throws IOException {
+        Files.writeString(dataDirectory.resolve("config.yml"), config);
         var server = mock(Server.class);
-        var manager = mock(PluginManager.class);
-        doReturn(logger).when(plugin).getLogger();
-        doReturn(server).when(plugin).getServer();
         when(server.getPluginManager()).thenReturn(manager);
-        doAnswer(invocation -> {
-            plugin.getWrappedLogger().warning("loading configuration");
-            return true;
-        }).when(plugin).load();
-        doReturn(true).when(plugin).enable();
-        var bot = mock(DiscordBot.class);
-        doReturn(bot).when(plugin).getBot();
-        doNothing().when(plugin).unregisterListeners();
-
-        plugin.onEnable();
-
-        verify(logger).warning("loading configuration");
-        assertTrue(plugin.enabled());
-        assertInstanceOf(PaperChatSystem.class, plugin.getChatSystem());
-        verify(manager, never()).disablePlugin(plugin);
-        plugin.onDisable();
-        verify(bot).shutdown();
-        verify(plugin).unregisterListeners();
+        doReturn(server).when(plugin).getServer();
+        doReturn(logger).when(plugin).getLogger();
+        doReturn(dataDirectory.toFile()).when(plugin).getDataFolder();
     }
 
     @Test
-    void testConfigurationFailureCanLogAndDisableWithoutStartup() {
-        var plugin = mock(DiscordChatBridgeBukkit.class, CALLS_REAL_METHODS);
-        var logger = mock(Logger.class);
-        var server = mock(Server.class);
-        var manager = mock(PluginManager.class);
-        var failure = new IllegalStateException("configuration failed");
-        doReturn(logger).when(plugin).getLogger();
-        doReturn(server).when(plugin).getServer();
-        when(server.getPluginManager()).thenReturn(manager);
-        doAnswer(invocation -> {
-            plugin.getWrappedLogger().error("load failed", failure);
-            return false;
-        }).when(plugin).load();
+    void testInvalidConfigurationIsLoggedAndDisablesPlugin() throws IOException {
+        prepareServer("discord:\n  token: ''\n");
 
         plugin.onEnable();
-        assertDoesNotThrow(plugin::onDisable);
 
-        verify(logger).log(Level.SEVERE, "load failed", failure);
+        verify(logger).log(eq(Level.SEVERE), startsWith("Could not load plugin configuration"), any(IOException.class));
         verify(manager).disablePlugin(plugin);
-        verify(plugin, never()).enable();
-        verify(plugin, never()).getBot();
-        assertFalse(plugin.enabled());
     }
 
     @Test
-    void testStartupFailureKeepsLoggerAvailableAndDisableIsSafe() {
-        var plugin = mock(DiscordChatBridgeBukkit.class, CALLS_REAL_METHODS);
-        var logger = mock(Logger.class);
-        var server = mock(Server.class);
-        var manager = mock(PluginManager.class);
-        doReturn(logger).when(plugin).getLogger();
-        doReturn(server).when(plugin).getServer();
-        when(server.getPluginManager()).thenReturn(manager);
-        doReturn(true).when(plugin).load();
-        doReturn(false).when(plugin).enable();
+    void testLoginFailureKeepsPluginEnabledWithoutBot() throws IOException {
+        var failure = new IllegalStateException("login failed");
+        prepareServer("discord:\n  token: test-token\n");
 
-        plugin.onEnable();
-        plugin.getWrappedLogger().warning("startup failed");
-        assertDoesNotThrow(plugin::onDisable);
+        try (var login = mockStatic(DiscordBot.class)) {
+            login.when(() -> DiscordBot.login(plugin)).thenThrow(failure);
 
-        verify(logger).warning("startup failed");
-        assertFalse(plugin.enabled());
-        verify(plugin, never()).getBot();
+            plugin.onEnable();
+        }
+
+        verify(logger).log(Level.SEVERE, "Could not enable DiscordChatBridge", failure);
+        verify(manager, never()).disablePlugin(plugin);
+        assertNull(plugin.getBot());
+    }
+
+    @Test
+    void testRepeatedDisableShutsDownBotOnce() throws IOException {
+        prepareServer("discord:\n  token: test-token\n");
+        doNothing().when(plugin).registerListeners();
+        try (var login = mockStatic(DiscordBot.class)) {
+            login.when(() -> DiscordBot.login(plugin)).thenReturn(bot);
+            plugin.onEnable();
+        }
+
+        plugin.onDisable();
+        plugin.onDisable();
+
+        verify(bot).shutdown();
+        assertNull(plugin.getBot());
     }
 
     @Test
     void testDisableBeforeEnableDoesNotRequireInitializedLogger() {
-        var plugin = mock(DiscordChatBridgeBukkit.class, CALLS_REAL_METHODS);
-
         assertDoesNotThrow(plugin::onDisable);
 
         verify(plugin, never()).getLogger();
-        verify(plugin, never()).getWrappedLogger();
-        verify(plugin, never()).getBot();
     }
 }
